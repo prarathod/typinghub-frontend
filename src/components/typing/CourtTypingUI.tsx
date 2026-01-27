@@ -1,0 +1,356 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import jsPDF from "jspdf";
+
+import { TestResultsModal } from "@/components/typing/TestResultsModal";
+import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
+import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
+import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+const AUTO_SUBMIT_OPTIONS = [
+  { value: 0, label: "Off" },
+  { value: 5 * 60, label: "5 minutes" },
+  { value: 10 * 60, label: "10 minutes" },
+  { value: 15 * 60, label: "15 minutes" }
+] as const;
+
+type CourtTypingUIProps = {
+  paragraph: ParagraphDetail;
+};
+
+export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [input, setInput] = useState("");
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [showTimer, setShowTimer] = useState(true);
+  const [autoSubmitSeconds, setAutoSubmitSeconds] = useState(0);
+  const [isStarted, setIsStarted] = useState(false);
+  const [totalKeystrokes, setTotalKeystrokes] = useState(0);
+  const [backspaceCount, setBackspaceCount] = useState(0);
+  const [resultsOpen, setResultsOpen] = useState(false);
+  const [resultsMetrics, setResultsMetrics] = useState<TypingMetrics | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const autoSubmitTriggeredRef = useRef(false);
+  const inputRef = useRef(input);
+  const totalKeystrokesRef = useRef(totalKeystrokes);
+  const backspaceCountRef = useRef(backspaceCount);
+  const timerSecondsRef = useRef(timerSeconds);
+
+  useEffect(() => {
+    inputRef.current = input;
+    totalKeystrokesRef.current = totalKeystrokes;
+    backspaceCountRef.current = backspaceCount;
+    timerSecondsRef.current = timerSeconds;
+  }, [input, totalKeystrokes, backspaceCount, timerSeconds]);
+
+  const submitCurrentAttempt = useCallback(async () => {
+    if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    autoSubmitTriggeredRef.current = true;
+    setHasSubmitted(true);
+    setTimerStarted(false);
+    const currentInput = inputRef.current;
+    const currentKeystrokes = totalKeystrokesRef.current;
+    const currentBackspace = backspaceCountRef.current;
+    const currentTime = timerSecondsRef.current;
+    const metrics = computeTypingMetrics(
+      paragraph.text,
+      currentInput,
+      currentTime,
+      currentKeystrokes,
+      currentBackspace,
+      paragraph.language
+    );
+    setResultsMetrics(metrics);
+    setResultsOpen(true);
+    try {
+      await submitTypingResult(paragraph._id, {
+        timeTakenSeconds: metrics.timeTakenSeconds,
+        accuracy: metrics.accuracy,
+        totalKeystrokes: metrics.totalKeystrokes,
+        backspaceCount: metrics.backspaceCount,
+        wordsTyped: metrics.wordsTyped,
+        wpm: metrics.wpm,
+        kpm: metrics.kpm,
+        incorrectWordsCount: metrics.incorrectWordsCount,
+        incorrectWords: metrics.incorrectWords,
+        correctWordsCount: metrics.correctWordsCount,
+        userInput: metrics.userInput
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
+        queryClient.invalidateQueries({ queryKey: ["history", paragraph._id] }),
+        queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
+      ]);
+    } catch (err) {
+      console.error("Failed to store submission:", err);
+    }
+  }, [hasSubmitted, paragraph.text, paragraph._id, paragraph.language, queryClient]);
+
+  useEffect(() => {
+    if (!timerStarted || hasSubmitted || autoSubmitTriggeredRef.current) return;
+    const id = setInterval(() => {
+      setTimerSeconds((s) => {
+        const next = s + 1;
+        if (autoSubmitSeconds > 0 && next >= autoSubmitSeconds && !autoSubmitTriggeredRef.current) {
+          submitCurrentAttempt();
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [timerStarted, hasSubmitted, autoSubmitSeconds, submitCurrentAttempt]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (hasSubmitted || !isStarted) return;
+    const next = e.target.value;
+    const delta = next.length - input.length;
+    if (delta > 0) setTotalKeystrokes((k) => k + delta);
+    setInput(next);
+    if (next.length > 0 && !timerStarted) setTimerStarted(true);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (hasSubmitted || !isStarted) return;
+    if (e.key === "Backspace") setBackspaceCount((c) => c + 1);
+  };
+
+  const handleStart = () => {
+    setIsStarted(true);
+    setTimerStarted(true);
+    textareaRef.current?.focus();
+  };
+
+  const handleSubmit = async () => {
+    if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    await submitCurrentAttempt();
+  };
+
+  const handleRestart = () => {
+    setInput("");
+    setTimerSeconds(0);
+    setTimerStarted(false);
+    setHasSubmitted(false);
+    setIsStarted(false);
+    setTotalKeystrokes(0);
+    setBackspaceCount(0);
+    setResultsOpen(false);
+    setResultsMetrics(null);
+    autoSubmitTriggeredRef.current = false;
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    let yPos = 20;
+    
+    // Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Title:", 14, yPos);
+    yPos += 8;
+    doc.setFont("helvetica", "normal");
+    const titleLines = doc.splitTextToSize(paragraph.title, 180);
+    doc.text(titleLines, 14, yPos);
+    yPos += titleLines.length * 6 + 5;
+    
+    // Description
+    if (paragraph.description) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Description:", 14, yPos);
+      yPos += 8;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      const descLines = doc.splitTextToSize(paragraph.description, 180);
+      doc.text(descLines, 14, yPos);
+      yPos += descLines.length * 6 + 5;
+    }
+    
+    // Instruction
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Start typing from below:", 14, yPos);
+    yPos += 8;
+    
+    // Paragraph text
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(paragraph.text, 180);
+    doc.text(lines, 14, yPos);
+    
+    doc.save(`${paragraph.title.replace(/[^a-z0-9]/gi, "_")}.pdf`);
+  };
+
+  return (
+    <main className="container py-4">
+      <TestResultsModal
+        open={resultsOpen}
+        onOpenChange={setResultsOpen}
+        metrics={resultsMetrics}
+        paragraphId={paragraph._id}
+        onRetry={handleRestart}
+        onNext={() => navigate(`/practice/${paragraph.category}`)}
+      />
+      <div className="mb-3">
+        <Link to="/practice" className="text-primary text-decoration-none small">
+          ← Back to practice
+        </Link>
+      </div>
+
+      <div className="mb-3">
+        <h1 className="h4 fw-bold text-dark mb-1">{paragraph.title}</h1>
+        <p className="text-muted small mb-0">{paragraph.description}</p>
+        <span className="badge bg-secondary rounded-pill mt-2">
+          {paragraph.difficulty}
+        </span>
+      </div>
+
+      {!isStarted && (
+        <div className="card border shadow-sm mb-3">
+          <div className="card-body">
+            <h2 className="h6 fw-semibold mb-3">Paragraph to type</h2>
+            <div
+              className="font-monospace overflow-auto rounded-3 p-4 mb-0"
+              style={{
+                whiteSpace: "pre-wrap",
+                minHeight: "200px",
+                maxHeight: "400px",
+                backgroundColor: "#f0f4f8",
+                fontSize: "16px",
+                lineHeight: 1.6,
+                color: "#1a1a1a"
+              }}
+            >
+              {paragraph.text}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
+        {showTimer && isStarted && (
+          <div className="d-flex align-items-center gap-2">
+            <span className="small fw-semibold">Timer:</span>
+            <span
+              className="badge bg-primary rounded-pill px-3 py-2 font-monospace"
+              role="timer"
+              aria-live="polite"
+            >
+              {formatTime(timerSeconds)}
+            </span>
+          </div>
+        )}
+        {!isStarted && (
+          <>
+            <label className="d-flex align-items-center gap-2 small mb-0">
+              <input
+                type="checkbox"
+                checked={showTimer}
+                onChange={(e) => setShowTimer(e.target.checked)}
+                className="form-check-input"
+              />
+              <span>Show timer</span>
+            </label>
+            <div className="d-flex align-items-center gap-2">
+              <label className="small mb-0">Auto submit:</label>
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "auto" }}
+                value={autoSubmitSeconds}
+                onChange={(e) => setAutoSubmitSeconds(Number(e.target.value))}
+                disabled={isStarted}
+              >
+                {AUTO_SUBMIT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleStart}
+              disabled={isStarted}
+            >
+              Start Paragraph
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={handleDownloadPDF}
+            >
+              Download Paragraph PDF
+            </button>
+          </>
+        )}
+        {isStarted && (
+          <>
+            <label className="d-flex align-items-center gap-2 small mb-0">
+              <input
+                type="checkbox"
+                checked={showTimer}
+                onChange={(e) => setShowTimer(e.target.checked)}
+                className="form-check-input"
+              />
+              <span>Show timer</span>
+            </label>
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm"
+              onClick={handleRestart}
+            >
+              Restart
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleSubmit}
+              disabled={hasSubmitted}
+            >
+              Submit
+            </button>
+          </>
+        )}
+      </div>
+
+      {isStarted && (
+        <div className="card border shadow-sm">
+          <div className="card-body">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h2 className="h6 fw-semibold mb-0">Your typing</h2>
+              {hasSubmitted && (
+                <span className="badge bg-success">
+                  Done · {formatTime(timerSeconds)}
+                </span>
+              )}
+            </div>
+            <textarea
+              ref={textareaRef}
+              className="form-control font-monospace"
+              rows={12}
+              placeholder="Start typing the paragraph..."
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              spellCheck={false}
+              disabled={hasSubmitted}
+              autoFocus
+              aria-label="Typing input"
+              style={{ fontSize: "16px", lineHeight: 1.6 }}
+            />
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
