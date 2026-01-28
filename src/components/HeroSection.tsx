@@ -23,7 +23,7 @@ export function HeroSection() {
       <img
         src={heroIntroJpeg}
         alt="Intro"
-        className="hero-section-media position-absolute top-0 start-0 w-100 h-100"
+        className="hero-section-media position-absolute"
         style={{
           opacity: videoReady ? 0 : 1,
           transition: "opacity 0.5s ease-in-out",
@@ -40,7 +40,7 @@ export function HeroSection() {
         muted
         loop
         playsInline
-        className="hero-section-media position-absolute top-0 start-0 w-100 h-100"
+        className="hero-section-media position-absolute"
         style={{
           opacity: videoReady ? 1 : 0,
           transition: "opacity 0.5s ease-in-out",
