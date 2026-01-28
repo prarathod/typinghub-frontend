@@ -18,7 +18,7 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="hero-section w-100 overflow-hidden position-relative bg-dark">
+    <section className="hero-section w-100 overflow-hidden position-relative">
       {/* JPEG shown initially while video loads */}
       <img
         src={heroIntroJpeg}
