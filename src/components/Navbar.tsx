@@ -4,6 +4,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { LoginDialog } from "@/components/LoginDialog";
 import { logout } from "@/features/auth/authApi";
 import { useAuthStore } from "@/stores/authStore";
+import { getApiBaseUrl } from "@/lib/api";
 
 function Logo() {
   return (
@@ -52,6 +53,12 @@ export function Navbar() {
 
   const closeMenu = () => setIsOpen(false);
   const isLoggedIn = Boolean(user);
+
+  const handleGetStarted = () => {
+    closeMenu();
+    // Go directly to Google OAuth (no popup)
+    window.location.href = `${getApiBaseUrl()}/auth/google`;
+  };
 
   useEffect(() => {
     if (!avatarDropdownOpen) return;
@@ -172,10 +179,7 @@ export function Navbar() {
               <button
                 type="button"
                 className="btn btn-primary rounded-pill px-4"
-                onClick={() => {
-                  setAuthOpen(true);
-                  closeMenu();
-                }}
+                onClick={handleGetStarted}
               >
                 Get Started
               </button>

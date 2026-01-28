@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { LoginDialog } from "@/components/LoginDialog";
 import {
   createOrder,
   loadRazorpayScript,
   verifyPayment
 } from "@/features/payments/paymentsApi";
 import { useAuthStore } from "@/stores/authStore";
+import { getApiBaseUrl } from "@/lib/api";
 
 const tiers = [
   {
@@ -42,13 +42,13 @@ const tiers = [
 export function Pricing() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
-  const [loginOpen, setLoginOpen] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const handleAdvanceGetStarted = () => {
     if (!user) {
-      setLoginOpen(true);
+      // Redirect to Google OAuth (no popup)
+      window.location.href = `${getApiBaseUrl()}/auth/google`;
       return;
     }
     runPayment();
@@ -175,7 +175,6 @@ export function Pricing() {
           </div>
         </div>
       </section>
-      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
     </>
   );
 }
