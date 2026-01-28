@@ -5,6 +5,7 @@ import {
   deleteParagraph,
   fetchParagraphs,
   updateParagraph,
+  updateParagraphPublished,
   type AdminParagraph
 } from "@/features/admin/adminApi";
 
@@ -15,7 +16,8 @@ const EMPTY_PARAGRAPH: Omit<AdminParagraph, "_id" | "solvedCount" | "createdAt">
   isFree: true,
   language: "english",
   category: "lessons",
-  text: ""
+  text: "",
+  published: false
 };
 
 export function AdminParagraphsPage() {
@@ -47,8 +49,21 @@ export function AdminParagraphsPage() {
     setEditingParagraph({ ...EMPTY_PARAGRAPH, _id: "", solvedCount: 0, createdAt: "" } as AdminParagraph);
   };
 
+  const handleTogglePublished = async (para: AdminParagraph) => {
+    const next = !(para.published ?? false);
+    try {
+      await updateParagraphPublished(para._id, next);
+      queryClient.invalidateQueries({ queryKey: ["admin-paragraphs"] });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update publish status");
+    }
+  };
+
   const handleEdit = (para: AdminParagraph) => {
-    setEditingParagraph({ ...para });
+    setEditingParagraph({
+      ...para,
+      published: para.published ?? false
+    });
     setCreatingParagraph(false);
   };
 
@@ -163,6 +178,7 @@ export function AdminParagraphsPage() {
                       <th>Category</th>
                       <th>Difficulty</th>
                       <th>Free/Paid</th>
+                      <th>Published</th>
                       <th>Solved</th>
                       <th>Created</th>
                       <th>Actions</th>
@@ -199,6 +215,21 @@ export function AdminParagraphsPage() {
                           >
                             {para.isFree ? "Free" : "Paid"}
                           </span>
+                        </td>
+                        <td>
+                          <div className="form-check form-switch mb-0">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              role="switch"
+                              id={`publish-${para._id}`}
+                              checked={para.published ?? false}
+                              onChange={() => handleTogglePublished(para)}
+                            />
+                            <label className="form-check-label small" htmlFor={`publish-${para._id}`}>
+                              {(para.published ?? false) ? "Published" : "Unpublished"}
+                            </label>
+                          </div>
                         </td>
                         <td>{para.solvedCount}</td>
                         <td>{new Date(para.createdAt).toLocaleDateString()}</td>
@@ -304,7 +335,7 @@ export function AdminParagraphsPage() {
                   }}
                 />
               </div>
-              <div className="modal-body">
+              <div className="modal-body overflow-auto" style={{ maxHeight: "70vh" }}>
                 <div className="row g-3">
                   <div className="col-md-6">
                     <label className="form-label">Title</label>
@@ -385,6 +416,26 @@ export function AdminParagraphsPage() {
                       <option value="true">Free</option>
                       <option value="false">Paid</option>
                     </select>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-check form-switch py-2">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        role="switch"
+                        id="edit-published"
+                        checked={Boolean(editingParagraph.published)}
+                        onChange={(e) =>
+                          setEditingParagraph({
+                            ...editingParagraph,
+                            published: e.target.checked
+                          })
+                        }
+                      />
+                      <label className="form-check-label fw-medium" htmlFor="edit-published">
+                        Published — visible on practice pages
+                      </label>
+                    </div>
                   </div>
                   <div className="col-12">
                     <label className="form-label">Description</label>

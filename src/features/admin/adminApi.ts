@@ -29,6 +29,7 @@ export type AdminParagraph = {
   category: "lessons" | "court-exam" | "mpsc";
   solvedCount: number;
   text: string;
+  published: boolean;
   createdAt: string;
 };
 
@@ -180,6 +181,16 @@ export async function updateParagraph(
 
 export async function deleteParagraph(id: string): Promise<void> {
   await adminApi.delete(`/admin/paragraphs/${id}`);
+}
+
+export async function updateParagraphPublished(
+  id: string,
+  published: boolean
+): Promise<AdminParagraph> {
+  const { data } = await adminApi.put<AdminParagraph>(`/admin/paragraphs/${id}`, {
+    published
+  });
+  return data;
 }
 
 export async function fetchSubmissions(params?: {
