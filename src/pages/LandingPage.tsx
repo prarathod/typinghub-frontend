@@ -1,12 +1,12 @@
 import { HeroSection } from "@/components/HeroSection";
 import { Pricing } from "@/components/Pricing";
-import { TypingOptionsSection } from "@/components/TypingOptionsSection";
+import { TypingIntroSection } from "@/components/TypingIntroSection";
 
 export const LandingPage = () => {
   return (
     <main>
       <HeroSection />
-      <TypingOptionsSection />
+      <TypingIntroSection />
       <section className="container py-5 text-center">
         <h1 className="display-5 fw-bold mb-3">TypingHub</h1>
         <p className="text-muted lead">
