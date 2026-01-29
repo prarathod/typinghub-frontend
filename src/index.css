@@ -16,6 +16,31 @@ body {
   color: #111827;
 }
 
+/* Navbar: larger text and background */
+.typinghub-navbar {
+  --navbar-bg: #1e3a5f;
+}
+.typinghub-navbar .navbar-brand {
+  font-size: 1.15rem;
+}
+.typinghub-navbar .typinghub-nav-link {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+.typinghub-navbar .typinghub-nav-link:hover {
+  color: #fff !important;
+}
+.typinghub-navbar .typinghub-nav-link.active {
+  color: #fff !important;
+  font-weight: 600;
+}
+.typinghub-navbar .typinghub-nav-cta {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--navbar-bg, #1e3a5f);
+}
+
 a {
   color: inherit;
   text-decoration: none;

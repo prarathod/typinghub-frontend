@@ -18,7 +18,7 @@ function Logo() {
       style={{ borderRadius: "6px" }}
       aria-hidden="true"
     >
-      <rect width="36" height="36" rx="6" fill="#212529" />
+      <rect width="36" height="36" rx="6" fill="rgba(255,255,255,0.2)" />
       <text
         x="18"
         y="24"
@@ -83,7 +83,10 @@ export function Navbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <nav
+      className="navbar navbar-expand-lg navbar-dark shadow-sm typinghub-navbar"
+      style={{ backgroundColor: "var(--navbar-bg, #1e3a5f)" }}
+    >
       <LoginDialog open={authOpen} onOpenChange={setAuthOpen} />
       <div className="container-fluid">
         <Link className="navbar-brand d-flex align-items-center" to="/">
@@ -106,7 +109,7 @@ export function Navbar() {
               <li className="nav-item" key={to}>
                 <NavLink
                   className={({ isActive }) =>
-                    `nav-link ${isActive ? "text-secondary fw-medium" : "text-primary"}`
+                    `nav-link typinghub-nav-link ${isActive ? "active" : ""}`
                   }
                   to={to}
                   onClick={closeMenu}
@@ -140,7 +143,7 @@ export function Navbar() {
                     />
                   ) : (
                     <div
-                      className="rounded-circle bg-primary bg-opacity-25 text-primary d-flex align-items-center justify-content-center fw-semibold"
+                      className="rounded-circle bg-white bg-opacity-25 text-white d-flex align-items-center justify-content-center fw-semibold typinghub-nav-link"
                       style={{ width: 36, height: 36 }}
                     >
                       {user?.name?.charAt(0) ?? "?"}
@@ -178,7 +181,7 @@ export function Navbar() {
             ) : (
               <button
                 type="button"
-                className="btn btn-primary rounded-pill px-4"
+                className="btn btn-light rounded-pill px-4 typinghub-nav-cta"
                 onClick={handleGetStarted}
               >
                 Get Started
