@@ -26,7 +26,7 @@ function BulletOutlineIcon() {
 
 const tiers = [
   {
-    name: "Basic",
+    name: "For Free User",
     price: "Free",
     period: "",
     subtitle: "Start practicing instantly — no account needed.",
@@ -91,7 +91,7 @@ export function Pricing() {
         amount,
         currency,
         order_id: orderId,
-        name: "TypingHub",
+        name: "Typing Practice Hub",
         description: "Advance plan – ₹299/mo",
         handler: async (res: {
           razorpay_payment_id: string;

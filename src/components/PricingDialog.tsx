@@ -46,7 +46,7 @@ export function PricingDialog({ open, onOpenChange }: PricingDialogProps) {
         amount,
         currency,
         order_id: orderId,
-        name: "TypingHub",
+        name: "Typing Practice Hub",
         description: "Advance plan – ₹299/mo",
         handler: async (res: {
           razorpay_payment_id: string;

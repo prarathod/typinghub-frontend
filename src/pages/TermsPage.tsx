@@ -9,7 +9,7 @@ export const TermsPage = () => {
           Terms and conditions
         </h1>
         <p className="text-sm text-slate-600">
-          Please read these terms carefully before using TypingHub.
+          Please read these terms carefully before using Typing Practice Hub.
         </p>
       </div>
       <div className="mt-8 space-y-8 text-sm text-slate-700">
@@ -42,7 +42,7 @@ export const TermsPage = () => {
             Limitation of liability
           </h2>
           <p>
-            TypingHub is provided on an “as is” basis. We are not liable for any
+            Typing Practice Hub is provided on an “as is” basis. We are not liable for any
             indirect or incidental damages arising from use of the platform.
           </p>
         </section>

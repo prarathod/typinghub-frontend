@@ -20,7 +20,7 @@ export const ContactPage = () => {
             For account or practice issues, email our support team.
           </p>
           <div className="mt-4 space-y-2 text-sm text-slate-700">
-            <p>Email: help@typinghub.in</p>
+            <p>Email: help@typingpracticehub.in</p>
             <p>Phone: +91 90000 00000</p>
             <p>WhatsApp: +91 90000 00000</p>
           </div>
@@ -39,7 +39,7 @@ export const ContactPage = () => {
       </div>
       <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
         Prefer writing? Send your queries to{" "}
-        <span className="font-semibold text-slate-900">support@typinghub.in</span>
+        <span className="font-semibold text-slate-900">support@typingpracticehub.in</span>
         .
       </div>
     </div>

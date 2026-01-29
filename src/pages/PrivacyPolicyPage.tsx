@@ -55,7 +55,7 @@ export const PrivacyPolicyPage = () => {
           </h2>
           <p>
             If you have any questions about this policy, email us at
-            help@typinghub.in. We may update this policy periodically, and the
+            help@typingpracticehub.in. We may update this policy periodically, and the
             latest version will always be available on this page.
           </p>
         </section>
