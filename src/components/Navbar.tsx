@@ -119,7 +119,7 @@ export function Navbar() {
               </li>
             ))}
           </ul>
-          <div className="d-flex flex-column flex-lg-row align-items-center gap-2 ms-lg-auto">
+          <div className="d-flex flex-column flex-lg-row align-items-center gap-2">
             {isLoggedIn ? (
               <div
                 className="position-relative"
