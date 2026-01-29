@@ -1,14 +1,11 @@
 import { api } from "@/lib/api";
 
-export type Difficulty = "easy" | "intermediate" | "hard";
 export type Language = "english" | "marathi";
 export type Category = "lessons" | "court-exam" | "mpsc";
 
 export type ParagraphListItem = {
   _id: string;
   title: string;
-  description: string;
-  difficulty: Difficulty;
   isFree: boolean;
   language: Language;
   category: Category;
@@ -26,13 +23,11 @@ export type ParagraphsResponse = {
 };
 
 export type PriceFilter = "all" | "free" | "paid";
-export type DifficultyFilter = "all" | Difficulty;
 
 export type FetchParagraphsParams = {
   language: Language;
   category?: Category;
   price?: PriceFilter;
-  difficulty?: DifficultyFilter;
   page?: number;
   limit?: number;
 };
@@ -40,7 +35,7 @@ export type FetchParagraphsParams = {
 export async function fetchParagraphs(
   params: FetchParagraphsParams
 ): Promise<ParagraphsResponse> {
-  const { language, category, price, difficulty, page = 1, limit = 12 } = params;
+  const { language, category, price, page = 1, limit = 12 } = params;
   const queryParams: Record<string, string | number> = {
     language,
     page,
@@ -48,7 +43,6 @@ export async function fetchParagraphs(
   };
   if (category) queryParams.category = category;
   if (price && price !== "all") queryParams.price = price;
-  if (difficulty && difficulty !== "all") queryParams.difficulty = difficulty;
   const { data } = await api.get<ParagraphsResponse>("/paragraphs", {
     params: queryParams
   });

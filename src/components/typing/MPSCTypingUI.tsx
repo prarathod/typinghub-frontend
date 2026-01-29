@@ -19,7 +19,6 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
       </div>
       <div className="mb-4">
         <h1 className="display-6 fw-bold text-dark mb-2">{paragraph.title}</h1>
-        <p className="text-muted small mb-0">{paragraph.description}</p>
       </div>
       <div
         className="bg-light rounded-3 p-4 font-monospace small"

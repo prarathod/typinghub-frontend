@@ -162,19 +162,6 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     doc.text(titleLines, 14, yPos);
     yPos += titleLines.length * 6 + 5;
     
-    // Description
-    if (paragraph.description) {
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text("Description:", 14, yPos);
-      yPos += 8;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      const descLines = doc.splitTextToSize(paragraph.description, 180);
-      doc.text(descLines, 14, yPos);
-      yPos += descLines.length * 6 + 5;
-    }
-    
     // Instruction
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
@@ -208,10 +195,6 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
 
       <div className="mb-3">
         <h1 className="h4 fw-bold text-dark mb-1">{paragraph.title}</h1>
-        <p className="text-muted small mb-0">{paragraph.description}</p>
-        <span className="badge bg-secondary rounded-pill mt-2">
-          {paragraph.difficulty}
-        </span>
       </div>
 
       {!isStarted && (

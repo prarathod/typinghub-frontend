@@ -67,7 +67,7 @@ const features = [
       {
         icon: "📄",
         title: "PDF Download",
-        description: "Download paragraph as PDF with title, description, and instructions. Perfect for offline practice and exam preparation."
+        description: "Download paragraph as PDF with title and instructions. Perfect for offline practice and exam preparation."
       },
       {
         icon: "⏰",
@@ -126,13 +126,13 @@ const features = [
       },
       {
         icon: "📊",
-        title: "Difficulty Levels",
-        description: "Practice paragraphs categorized by difficulty: Easy, Intermediate, and Hard. Progress at your own pace."
+        title: "Practice Categories",
+        description: "Practice paragraphs organized by category: Lessons, Court Exam, and MPSC. Choose what fits your exam preparation."
       },
       {
         icon: "🔍",
         title: "Smart Filtering",
-        description: "Filter paragraphs by price (Free/Paid/All) and difficulty level. Find the perfect practice content for your needs."
+        description: "Filter paragraphs by price (Free/Paid/All). Find the perfect practice content for your needs."
       },
       {
         icon: "✅",

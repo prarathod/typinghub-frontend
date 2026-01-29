@@ -35,10 +35,6 @@ export function MarathiPracticePage() {
               <h2 className="h5 fw-semibold mb-4">Session controls</h2>
               <div className="d-flex flex-column gap-3 small">
                 <div className="d-flex justify-content-between align-items-center rounded-3 border bg-light px-3 py-2">
-                  <span className="text-muted">Difficulty</span>
-                  <span className="fw-semibold">Intermediate</span>
-                </div>
-                <div className="d-flex justify-content-between align-items-center rounded-3 border bg-light px-3 py-2">
                   <span className="text-muted">Timer</span>
                   <span className="fw-semibold">15:00</span>
                 </div>

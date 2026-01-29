@@ -11,8 +11,6 @@ import {
 
 const EMPTY_PARAGRAPH: Omit<AdminParagraph, "_id" | "solvedCount" | "createdAt"> = {
   title: "",
-  description: "",
-  difficulty: "easy",
   isFree: true,
   language: "english",
   category: "lessons",
@@ -24,7 +22,6 @@ export function AdminParagraphsPage() {
   const [page, setPage] = useState(1);
   const [languageFilter, setLanguageFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [editingParagraph, setEditingParagraph] =
     useState<AdminParagraph | null>(null);
   const [creatingParagraph, setCreatingParagraph] = useState(false);
@@ -33,14 +30,13 @@ export function AdminParagraphsPage() {
   const limit = 20;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-paragraphs", page, languageFilter, categoryFilter, difficultyFilter],
+    queryKey: ["admin-paragraphs", page, languageFilter, categoryFilter],
     queryFn: () =>
       fetchParagraphs({
         page,
         limit,
         language: languageFilter !== "all" ? languageFilter : undefined,
-        category: categoryFilter !== "all" ? categoryFilter : undefined,
-        difficulty: difficultyFilter !== "all" ? difficultyFilter : undefined
+        category: categoryFilter !== "all" ? categoryFilter : undefined
       })
   });
 
@@ -140,21 +136,6 @@ export function AdminParagraphsPage() {
                 <option value="mpsc">MPSC</option>
               </select>
             </div>
-            <div className="col-md-3">
-              <select
-                className="form-select"
-                value={difficultyFilter}
-                onChange={(e) => {
-                  setDifficultyFilter(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="all">All difficulties</option>
-                <option value="easy">Easy</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
           </div>
         </div>
       </div>
@@ -176,7 +157,6 @@ export function AdminParagraphsPage() {
                       <th>Title</th>
                       <th>Language</th>
                       <th>Category</th>
-                      <th>Difficulty</th>
                       <th>Free/Paid</th>
                       <th>Published</th>
                       <th>Solved</th>
@@ -194,19 +174,6 @@ export function AdminParagraphsPage() {
                         <td>
                           <span className="badge bg-secondary">
                             {para.category}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              para.difficulty === "easy"
-                                ? "bg-success"
-                                : para.difficulty === "intermediate"
-                                  ? "bg-warning text-dark"
-                                  : "bg-danger"
-                            }`}
-                          >
-                            {para.difficulty}
                           </span>
                         </td>
                         <td>
@@ -352,23 +319,6 @@ export function AdminParagraphsPage() {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Difficulty</label>
-                    <select
-                      className="form-select"
-                      value={editingParagraph.difficulty}
-                      onChange={(e) =>
-                        setEditingParagraph({
-                          ...editingParagraph,
-                          difficulty: e.target.value as "easy" | "intermediate" | "hard"
-                        })
-                      }
-                    >
-                      <option value="easy">Easy</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="hard">Hard</option>
-                    </select>
-                  </div>
-                  <div className="col-md-6">
                     <label className="form-label">Language</label>
                     <select
                       className="form-select"
@@ -436,20 +386,6 @@ export function AdminParagraphsPage() {
                         Published — visible on practice pages
                       </label>
                     </div>
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label">Description</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editingParagraph.description}
-                      onChange={(e) =>
-                        setEditingParagraph({
-                          ...editingParagraph,
-                          description: e.target.value
-                        })
-                      }
-                    />
                   </div>
                   <div className="col-12">
                     <label className="form-label">Text</label>

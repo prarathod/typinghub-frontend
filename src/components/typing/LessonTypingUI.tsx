@@ -164,10 +164,6 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
         <div className="mb-3">
           <h1 className="h4 fw-bold text-dark mb-1">{paragraph.title}</h1>
-          <p className="text-muted small mb-0">{paragraph.description}</p>
-          <span className="badge bg-secondary rounded-pill mt-2">
-            {paragraph.difficulty}
-          </span>
         </div>
 
         <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">

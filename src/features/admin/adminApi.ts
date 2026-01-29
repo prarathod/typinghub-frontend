@@ -22,8 +22,6 @@ export type AdminUser = {
 export type AdminParagraph = {
   _id: string;
   title: string;
-  description: string;
-  difficulty: "easy" | "intermediate" | "hard";
   isFree: boolean;
   language: "english" | "marathi";
   category: "lessons" | "court-exam" | "mpsc";
@@ -147,7 +145,6 @@ export async function fetchParagraphs(params?: {
   limit?: number;
   language?: string;
   category?: string;
-  difficulty?: string;
 }): Promise<PaginatedResponse<AdminParagraph>> {
   const { data } = await adminApi.get<PaginatedResponse<AdminParagraph>>(
     "/admin/paragraphs",

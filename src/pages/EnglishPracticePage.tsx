@@ -6,24 +6,10 @@ import { LoginDialog } from "@/components/LoginDialog";
 import { PricingDialog } from "@/components/PricingDialog";
 import {
   fetchParagraphs,
-  type DifficultyFilter,
   type ParagraphListItem,
   type PriceFilter,
 } from "@/features/paragraphs/paragraphsApi";
 import { useAuthStore } from "@/stores/authStore";
-
-function difficultyBadgeClass(d: string) {
-  switch (d) {
-    case "easy":
-      return "bg-success";
-    case "intermediate":
-      return "bg-warning text-dark";
-    case "hard":
-      return "bg-danger";
-    default:
-      return "bg-secondary";
-  }
-}
 
 type ParagraphCardProps = {
   p: ParagraphListItem;
@@ -55,9 +41,6 @@ function ParagraphCard({ p, onClick }: ParagraphCardProps) {
     >
       <div className="card-body d-flex flex-column">
         <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-          <span className={`badge rounded-pill ${difficultyBadgeClass(p.difficulty)}`}>
-            {p.difficulty}
-          </span>
           <span className={`badge rounded-pill ${p.isFree ? "bg-info" : "bg-dark"}`}>
             {p.isFree ? "Free" : "Paid"}
           </span>
@@ -69,8 +52,7 @@ function ParagraphCard({ p, onClick }: ParagraphCardProps) {
           </span>
         </div>
         <h3 className="h6 fw-bold text-dark mb-2">{p.title}</h3>
-        <p className="text-muted small mb-3 flex-grow-1">{p.description}</p>
-        <p className="mb-0 small text-secondary">
+        <p className="mb-0 small text-secondary flex-grow-1">
           {p.solvedCount === 0
             ? "Not solved yet"
             : `${p.solvedCount} users completed`}
@@ -98,17 +80,9 @@ const PRICE_OPTIONS: { value: PriceFilter; label: string }[] = [
   { value: "paid", label: "Paid" },
 ];
 
-const DIFFICULTY_OPTIONS: { value: DifficultyFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "easy", label: "Easy" },
-  { value: "intermediate", label: "Medium" },
-  { value: "hard", label: "Hard" },
-];
-
 export function EnglishPracticePage() {
   const [page, setPage] = useState(1);
   const [price, setPrice] = useState<PriceFilter>("all");
-  const [difficulty, setDifficulty] = useState<DifficultyFilter>("all");
   const [loginOpen, setLoginOpen] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const limit = 12;
@@ -120,10 +94,6 @@ export function EnglishPracticePage() {
 
   const handlePriceChange = (v: PriceFilter) => {
     setPrice(v);
-    setPage(1);
-  };
-  const handleDifficultyChange = (v: DifficultyFilter) => {
-    setDifficulty(v);
     setPage(1);
   };
 
@@ -144,13 +114,12 @@ export function EnglishPracticePage() {
   };
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["paragraphs", "english", category, price, difficulty, page],
+    queryKey: ["paragraphs", "english", category, price, page],
     queryFn: () =>
       fetchParagraphs({
         language: "english",
         ...(category && { category }),
         price,
-        difficulty,
         page,
         limit
       })
@@ -190,21 +159,6 @@ export function EnglishPracticePage() {
               ))}
             </div>
           </div>
-          <div className="col-auto">
-            <span className="text-muted small fw-semibold me-2">Difficulty:</span>
-            <div className="btn-group btn-group-sm" role="group" aria-label="Filter by difficulty">
-              {DIFFICULTY_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`btn ${difficulty === opt.value ? "btn-primary" : "btn-outline-secondary"}`}
-                  onClick={() => handleDifficultyChange(opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -226,7 +180,7 @@ export function EnglishPracticePage() {
         <>
           {data.items.length === 0 ? (
             <div className="alert alert-info" role="alert">
-              {price !== "all" || difficulty !== "all"
+              {price !== "all"
                 ? "No paragraphs match your filters. Try different options."
                 : "No English paragraphs yet. Check back later."}
             </div>
