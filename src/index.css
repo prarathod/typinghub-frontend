@@ -18,7 +18,7 @@ body {
 
 /* Navbar: larger text and background */
 .typinghub-navbar {
-  --navbar-bg: #1e3a5f;
+  --navbar-bg: #189fa8;
 }
 .typinghub-navbar .navbar-brand {
   font-size: 1.15rem;
