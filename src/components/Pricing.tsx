@@ -8,31 +8,51 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { getApiBaseUrl } from "@/lib/api";
 
+function BulletFilledIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className="flex-shrink-0 mt-1 me-2 text-primary" aria-hidden>
+      <circle cx="8" cy="8" r="4" />
+    </svg>
+  );
+}
+
+function BulletOutlineIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 16 16" className="flex-shrink-0 mt-1 me-2 text-secondary" aria-hidden>
+      <circle cx="8" cy="8" r="4" />
+    </svg>
+  );
+}
+
 const tiers = [
   {
     name: "Basic",
     price: "Free",
-    period: "/mo",
-    description: "Perfect for getting started with typing practice.",
+    period: "",
+    subtitle: "Start practicing instantly — no account needed.",
+    description: "Perfect for beginners and casual practice.",
     features: [
-      "Limited typing lessons",
-      "Basic practice exercises",
-      "Progress tracking",
-      "Email support",
+      "5 Typing Passages FREE — No login required",
+      "+5 Bonus Passages after Sign-Up",
+      "5 Free Typing Lessons to build strong basics",
+      "Online Typing Practice with Result Analysis",
+      "Exam-Level Passages for real test preparation",
     ],
     paid: false,
   },
   {
-    name: "Advance",
-    price: "₹299",
+    name: "Premium",
+    price: "₹49",
     period: "/mo",
-    description: "For serious learners and exam preparation.",
+    subtitle: "Unlock your full typing potential.",
+    description: "",
     features: [
-      "Unlimited typing lessons",
-      "Advanced practice & mock tests",
-      "Detailed analytics & insights",
-      "Priority support",
-      "Leaderboard access",
+      "Unlimited Typing Practice — No limits",
+      "Access to All Passages in the system",
+      "Full Typing Lessons Access",
+      "Detailed Progress Tracking to see improvement",
+      "Exam-Ready Practice for speed and accuracy",
+      "Result-Oriented Passages designed for performance",
     ],
     paid: true,
     primary: true,
@@ -135,15 +155,20 @@ export function Pricing() {
                     <h5 className="text-muted text-uppercase small fw-semibold mb-2">
                       {tier.name}
                     </h5>
-                    <div className="mb-3">
+                    <div className="mb-2">
                       <span className="display-5 fw-bold">{tier.price}</span>
-                      <span className="text-muted">{tier.period}</span>
+                      <span className="text-muted">{"period" in tier ? tier.period : ""}</span>
                     </div>
-                    <p className="text-muted small mb-4">{tier.description}</p>
+                    {"subtitle" in tier && tier.subtitle && (
+                      <p className="text-body small mb-3 fw-medium">{tier.subtitle}</p>
+                    )}
+                    {"description" in tier && tier.description && (
+                      <p className="text-muted small mb-3">{tier.description}</p>
+                    )}
                     <ul className="list-unstyled mb-4">
                       {tier.features.map((feature, i) => (
                         <li key={i} className="mb-2 d-flex align-items-start">
-                          <span className="text-success me-2">✓</span>
+                          {i % 2 === 0 ? <BulletFilledIcon /> : <BulletOutlineIcon />}
                           <span className="small">{feature}</span>
                         </li>
                       ))}

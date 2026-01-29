@@ -16,6 +16,29 @@ function GiftIcon() {
   );
 }
 
+function RocketIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-primary flex-shrink-0"
+      aria-hidden
+    >
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="M12 15 9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+    </svg>
+  );
+}
+
 function KeyboardIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -82,6 +105,18 @@ export function TypingIntroSection() {
           <GiftIcon />
           <p className="mb-0 fw-semibold" style={{ color: "#1e3a5f", fontSize: "1rem" }}>
             Practice 5 Typing Passages <span className="text-success">FREE</span> – No Sign-Up Required
+          </p>
+        </div>
+        <div
+          className="d-flex align-items-center justify-content-center gap-3 rounded-3 shadow-sm py-3 px-4 mb-4 mx-auto"
+          style={{
+            maxWidth: "520px",
+            backgroundColor: "#cce5ff",
+          }}
+        >
+          <RocketIcon />
+          <p className="mb-0 fw-semibold" style={{ color: "#1e3a5f", fontSize: "1rem" }}>
+            Sign up and unlock <span className="text-success">5 Additional Passages</span>  to level up your speed even faster
           </p>
         </div>
         {/* Language cards */}
