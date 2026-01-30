@@ -253,7 +253,7 @@ export function Pricing() {
                         </button>
                         {expandedProduct === p.productId && (
                           <p className="small text-muted mb-0 mt-1 text-primary" style={{ lineHeight: 1.4 }}>
-                            Full access to all passages in this course. Practice and track progress + All Lessons Included.
+                            All passages, full lessons access, and progress tracking tools included.
                           </p>
                         )}
                       </div>
