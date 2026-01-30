@@ -192,13 +192,16 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         className="mb-3"
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
+          gridTemplateColumns: isStarted ? "auto 1fr auto" : "1fr auto 1fr",
           gap: "0.75rem",
           alignItems: "center"
         }}
       >
         <div />
-        <h1 className="h4 fw-bold text-dark mb-0 text-center">
+        <h1
+          className="h4 fw-bold text-dark mb-0 text-center"
+          style={isStarted ? { justifySelf: "center" } : undefined}
+        >
           {paragraph.title}
         </h1>
         <div />
@@ -301,43 +304,51 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             >
               Restart
             </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={handleSubmit}
-              disabled={hasSubmitted}
-            >
-              Submit
-            </button>
           </>
         )}
       </div>
 
       {isStarted && (
-        <div className="card border shadow-sm">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h2 className="h6 fw-semibold mb-0">Your typing</h2>
+        <div style={{ width: "70%", maxWidth: "70%", marginLeft: "auto", marginRight: "auto" }}>
+          <div
+            className="card border"
+            style={{
+              boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.1)"
+            }}
+          >
+            <div className="card-body p-0">
               {hasSubmitted && (
-                <span className="badge bg-success">
-                  Done · {formatTime(timerSeconds)}
-                </span>
+                <div className="d-flex justify-content-end p-2 border-bottom">
+                  <span className="badge bg-success">
+                    Done · {formatTime(timerSeconds)}
+                  </span>
+                </div>
               )}
+              <textarea
+                ref={textareaRef}
+                className="form-control font-monospace border-0"
+                rows={12}
+                placeholder="Start typing the paragraph..."
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                spellCheck={false}
+                disabled={hasSubmitted}
+                autoFocus
+                aria-label="Typing input"
+                style={{ fontSize: "16px", lineHeight: 1.6, padding: 4, minHeight: "80vh" }}
+              />
             </div>
-            <textarea
-              ref={textareaRef}
-              className="form-control font-monospace"
-              rows={12}
-              placeholder="Start typing the paragraph..."
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              spellCheck={false}
+          </div>
+          <div className="d-flex justify-content-center mt-4 mb-3">
+            <button
+              type="button"
+              className="btn btn-primary btn-lg px-5"
+              onClick={handleSubmit}
               disabled={hasSubmitted}
-              autoFocus
-              aria-label="Typing input"
-              style={{ fontSize: "16px", lineHeight: 1.6 }}
-            />
+            >
+              Submit
+            </button>
           </div>
         </div>
       )}
