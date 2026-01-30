@@ -9,6 +9,8 @@ import {
   type ParagraphListItem,
   type PriceFilter,
 } from "@/features/paragraphs/paragraphsApi";
+import { hasAccessToParagraph } from "@/lib/access";
+import { getProductIdForParagraph } from "@/lib/access";
 import { useAuthStore } from "@/stores/authStore";
 
 type ParagraphCardProps = {
@@ -16,12 +18,15 @@ type ParagraphCardProps = {
   onClick: (p: ParagraphListItem) => void;
 };
 
+const PARAGRAPH_CARD_CLASS =
+  "bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 p-4 shadow-sm h-100 d-flex flex-column";
+
 function ParagraphCard({ p, onClick }: ParagraphCardProps) {
   return (
     <div
       role="button"
       tabIndex={0}
-      className="card h-100 border shadow-sm"
+      className={PARAGRAPH_CARD_CLASS}
       style={{ cursor: "pointer", transition: "box-shadow 0.2s, transform 0.2s" }}
       onClick={() => onClick(p)}
       onMouseEnter={(e) => {
@@ -39,25 +44,23 @@ function ParagraphCard({ p, onClick }: ParagraphCardProps) {
         }
       }}
     >
-      <div className="card-body d-flex flex-column">
-        <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-          <span className={`badge rounded-pill ${p.isFree ? "bg-info" : "bg-dark"}`}>
-            {p.isFree ? "Free" : "Paid"}
-          </span>
-          <span
-            className={`badge rounded-pill ${p.solvedByUser ? "bg-success" : "bg-secondary bg-opacity-50"}`}
-            title={p.solvedByUser ? "You've solved this paragraph" : "Not solved by you yet"}
-          >
-            {p.solvedByUser ? "Solved" : "Not solved"}
-          </span>
-        </div>
-        <h3 className="h6 fw-bold text-dark mb-2">{p.title}</h3>
-        <p className="mb-0 small text-secondary flex-grow-1">
-          {p.solvedCount === 0
-            ? "Not solved yet"
-            : `${p.solvedCount} users completed`}
-        </p>
+      <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <span className={`badge rounded-pill ${p.isFree ? "bg-info" : "bg-dark"}`}>
+          {p.isFree ? "Free" : "Paid"}
+        </span>
+        <span
+          className={`badge rounded-pill ${p.solvedByUser ? "bg-success" : "bg-secondary bg-opacity-50"}`}
+          title={p.solvedByUser ? "You've solved this paragraph" : "Not solved by you yet"}
+        >
+          {p.solvedByUser ? "Solved" : "Not solved"}
+        </span>
       </div>
+      <h3 className="h5 fw-bold text-dark mb-2">{p.title}</h3>
+      <p className="mb-0 small text-secondary mt-auto">
+        {p.solvedCount === 0
+          ? "Not solved yet"
+          : `${p.solvedCount} users completed`}
+      </p>
     </div>
   );
 }
@@ -80,11 +83,31 @@ const PRICE_OPTIONS: { value: PriceFilter; label: string }[] = [
   { value: "paid", label: "Paid" },
 ];
 
+/** Parse "Lesson X.Y" or "X.Y" from title; return [major, minor] for sort. Non-matching titles get [Infinity, Infinity] so they sort last, then by title. */
+function getLessonSortKey(title: string): [number, number] {
+  const match = title.match(/(?:Lesson\s*)?(\d+)(?:\.(\d+))?/i) ?? title.match(/(\d+)\.(\d+)/);
+  if (match) {
+    const major = parseInt(match[1], 10);
+    const minor = match[2] ? parseInt(match[2], 10) : 0;
+    return [major, minor];
+  }
+  return [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
+}
+
+function lessonOrderComparator(a: ParagraphListItem, b: ParagraphListItem): number {
+  const [aMajor, aMinor] = getLessonSortKey(a.title);
+  const [bMajor, bMinor] = getLessonSortKey(b.title);
+  if (aMajor !== bMajor) return aMajor - bMajor;
+  if (aMinor !== bMinor) return aMinor - bMinor;
+  return a.title.localeCompare(b.title);
+}
+
 export function EnglishPracticePage() {
   const [page, setPage] = useState(1);
   const [price, setPrice] = useState<PriceFilter>("all");
   const [loginOpen, setLoginOpen] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
+  const [pricingProductId, setPricingProductId] = useState<string | null>(null);
   const limit = 12;
   const navigate = useNavigate();
   const location = useLocation();
@@ -106,7 +129,8 @@ export function EnglishPracticePage() {
       setLoginOpen(true);
       return;
     }
-    if (!user.isPaid) {
+    if (!hasAccessToParagraph(user, p)) {
+      setPricingProductId(getProductIdForParagraph(p.language, p.category));
       setPricingOpen(true);
       return;
     }
@@ -125,17 +149,32 @@ export function EnglishPracticePage() {
       })
   });
 
+  const displayItems =
+    data?.items && category === "lessons"
+      ? [...data.items].sort(lessonOrderComparator)
+      : data?.items ?? [];
+
   return (
     <main className="container py-5">
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
-      <PricingDialog open={pricingOpen} onOpenChange={setPricingOpen} />
-      <div className="mb-4">
+      <PricingDialog
+        open={pricingOpen}
+        onOpenChange={setPricingOpen}
+        productId={pricingProductId}
+      />
+      <div
+        className="mb-4"
+        style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "0.75rem", alignItems: "center" }}
+      >
         <Link to="/practice" className="text-primary text-decoration-none small">
           ← Back to practice
         </Link>
+        <h1 className="display-6 fw-bold text-dark mb-0 text-center">
+          {categoryTitle}
+        </h1>
+        <div />
       </div>
-      <div className="mb-4">
-        <h1 className="display-6 fw-bold text-dark mb-2">{categoryTitle}</h1>
+      <div className="mb-5 text-center">
         <p className="text-muted mb-0">
           Start a focused session with English typing passages. Track your
           progress in real time.
@@ -143,7 +182,7 @@ export function EnglishPracticePage() {
       </div>
 
       <div className="mb-4">
-        <div className="row g-3 align-items-center flex-wrap">
+        <div className="row g-3 align-items-center flex-wrap justify-content-center">
           <div className="col-auto">
             <span className="text-muted small fw-semibold me-2">Price:</span>
             <div className="btn-group btn-group-sm" role="group" aria-label="Filter by price">
@@ -151,7 +190,7 @@ export function EnglishPracticePage() {
                 <button
                   key={opt.value}
                   type="button"
-                  className={`btn ${price === opt.value ? "btn-primary" : "btn-outline-secondary"}`}
+                  className={`btn ${price === opt.value ? "btn-success" : "btn-outline-success"}`}
                   onClick={() => handlePriceChange(opt.value)}
                 >
                   {opt.label}
@@ -171,22 +210,22 @@ export function EnglishPracticePage() {
       )}
 
       {isError && (
-        <div className="alert alert-danger" role="alert">
+        <div className="alert alert-danger rounded-3" role="alert">
           {error instanceof Error ? error.message : "Failed to load paragraphs."}
         </div>
       )}
 
       {!isLoading && !isError && data && (
         <>
-          {data.items.length === 0 ? (
-            <div className="alert alert-info" role="alert">
+          {displayItems.length === 0 ? (
+            <div className="alert alert-info rounded-3" role="alert">
               {price !== "all"
                 ? "No paragraphs match your filters. Try different options."
                 : "No English paragraphs yet. Check back later."}
             </div>
           ) : (
             <div className="row g-4 mb-4">
-              {data.items.map((p) => (
+              {displayItems.map((p) => (
                 <div key={p._id} className="col-12 col-sm-6 col-lg-4">
                   <ParagraphCard p={p} onClick={handleCardClick} />
                 </div>
@@ -194,7 +233,7 @@ export function EnglishPracticePage() {
             </div>
           )}
 
-          {data.items.length > 0 && data.totalPages > 1 && (
+          {displayItems.length > 0 && data.totalPages > 1 && (
             <nav aria-label="Paragraphs pagination" className="d-flex justify-content-center">
               <ul className="pagination mb-0">
                 <li className={`page-item ${page <= 1 ? "disabled" : ""}`}>
