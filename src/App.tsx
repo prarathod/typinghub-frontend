@@ -21,13 +21,14 @@ import { TypingPage } from "@/pages/TypingPage";
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isTypingPage = /^\/practice\/english\/[^/]+$/.test(location.pathname);
 
   return (
     <div
       className="d-flex flex-column"
       style={{ minHeight: "100vh" }}
     >
-      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute && !isTypingPage && <Navbar />}
       <div className="flex-grow-1">
         <Routes>
           <Route path="/admin" element={<AdminLoginPage />} />
@@ -83,7 +84,7 @@ function AppContent() {
           <Route path="/practice/marathi" element={<MarathiPracticePage />} />
         </Routes>
       </div>
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isTypingPage && <Footer />}
     </div>
   );
 }
