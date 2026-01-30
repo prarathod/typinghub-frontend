@@ -21,11 +21,52 @@ function isOmitted(word: string): boolean {
   return /^\[omitted:/.test(word);
 }
 
+function splitWords(s: string): string[] {
+  return s.split(/\s+/).filter(Boolean);
+}
+
+/** Renders user input with correct (green) and incorrect (red) word highlighting when expectedText is provided. */
+function UserInputHighlighted({
+  userInput,
+  expectedText
+}: {
+  userInput: string;
+  expectedText: string;
+}) {
+  const expectedWords = splitWords(expectedText);
+  const tokens = userInput.split(/(\s+)/);
+  let wordIndex = 0;
+  return (
+    <>
+      {tokens.map((t, i) => {
+        if (/^\s+$/.test(t)) return <span key={i}>{t}</span>;
+        const isCorrect =
+          expectedWords[wordIndex] !== undefined && t === expectedWords[wordIndex];
+        wordIndex++;
+        return (
+          <span
+            key={i}
+            style={{
+              color: isCorrect ? "#15803d" : "#b91c1c",
+              padding: "0 1px",
+              borderRadius: "2px"
+            }}
+          >
+            {t}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 type TestResultsModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   metrics: TypingMetrics | null;
   paragraphId: string;
+  /** When provided, User Input section highlights correct vs incorrect words. */
+  expectedText?: string;
   onRetry?: () => void;
   onNext?: () => void;
 };
@@ -35,12 +76,22 @@ export function TestResultsModal({
   onOpenChange,
   metrics,
   paragraphId,
+  expectedText,
   onRetry,
   onNext
 }: TestResultsModalProps) {
   const [showViewDetails, setShowViewDetails] = useState(false);
   useEffect(() => {
     if (open) setShowViewDetails(false);
+  }, [open]);
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
   }, [open]);
   if (!metrics) return null;
 
@@ -61,8 +112,14 @@ export function TestResultsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-lg max-h-[90vh] overflow-y-auto border-2 border-dark"
-        style={{ margin: "1.5rem", padding: "1.5rem 1.75rem" }}
+        className="max-w-[90vw] max-h-[90vh] overflow-y-auto border-2 border-dark box-border"
+        style={{
+          margin: "1.5rem",
+          padding: "1.5rem 1.75rem",
+          borderRightWidth: "2px",
+          borderRightStyle: "solid",
+          borderRightColor: "#212529"
+        }}
         aria-describedby="test-results-description"
       >
         <DialogHeader className="d-flex flex-row justify-content-between align-items-start border-bottom border-secondary pb-3 mb-4">
@@ -137,7 +194,14 @@ export function TestResultsModal({
                 overflowY: "auto"
               }}
             >
-              {metrics.userInput || "(none)"}
+              {expectedText && metrics.userInput ? (
+                <UserInputHighlighted
+                  userInput={metrics.userInput}
+                  expectedText={expectedText}
+                />
+              ) : (
+                metrics.userInput || "(none)"
+              )}
             </div>
           </div>
         </div>

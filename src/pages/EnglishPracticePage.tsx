@@ -45,22 +45,18 @@ function ParagraphCard({ p, onClick }: ParagraphCardProps) {
       }}
     >
       <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <span className={`badge rounded-pill ${p.isFree ? "bg-info" : "bg-dark"}`}>
+        <span className={`badge rounded-pill ${p.isFree ? "bg-success" : "bg-dark"}`}>
           {p.isFree ? "Free" : "Paid"}
         </span>
         <span
           className={`badge rounded-pill ${p.solvedByUser ? "bg-success" : "bg-secondary bg-opacity-50"}`}
           title={p.solvedByUser ? "You've solved this paragraph" : "Not solved by you yet"}
         >
-          {p.solvedByUser ? "Solved" : "Not solved"}
+          {p.solvedByUser ? "solved" : ""}
         </span>
       </div>
       <h3 className="h5 fw-bold text-dark mb-2">{p.title}</h3>
-      <p className="mb-0 small text-secondary mt-auto">
-        {p.solvedCount === 0
-          ? "Not solved yet"
-          : `${p.solvedCount} users completed`}
-      </p>
+
     </div>
   );
 }
@@ -226,7 +222,7 @@ export function EnglishPracticePage() {
           ) : (
             <div className="row g-4 mb-4">
               {displayItems.map((p) => (
-                <div key={p._id} className="col-12 col-sm-6 col-lg-4">
+                <div key={p._id} className="col-6 col-sm-4 col-lg-2">
                   <ParagraphCard p={p} onClick={handleCardClick} />
                 </div>
               ))}

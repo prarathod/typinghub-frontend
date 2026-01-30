@@ -184,17 +184,26 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         onOpenChange={setResultsOpen}
         metrics={resultsMetrics}
         paragraphId={paragraph._id}
+        expectedText={paragraph.text}
         onRetry={handleRestart}
         onNext={() => navigate(`/practice/${paragraph.category}`)}
       />
-      <div className="mb-3">
-        <Link to="/practice" className="text-primary text-decoration-none small">
+      <div
+        className="mb-3"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
+          gap: "0.75rem",
+          alignItems: "center"
+        }}
+      >
+        <Link to="/practice/court-exam" className="text-primary text-decoration-none small">
           ← Back to practice
         </Link>
-      </div>
-
-      <div className="mb-3">
-        <h1 className="h4 fw-bold text-dark mb-1">{paragraph.title}</h1>
+        <h1 className="h4 fw-bold text-dark mb-0 text-center">
+          {paragraph.title}
+        </h1>
+        <div />
       </div>
 
       {!isStarted && (
@@ -207,7 +216,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
                 whiteSpace: "pre-wrap",
                 minHeight: "200px",
                 maxHeight: "400px",
-                backgroundColor: "#f0f4f8",
+                backgroundColor: "#f8f9fa",
                 fontSize: "16px",
                 lineHeight: 1.6,
                 color: "#1a1a1a"

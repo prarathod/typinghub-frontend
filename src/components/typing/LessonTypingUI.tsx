@@ -145,25 +145,53 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         onOpenChange={setResultsOpen}
         metrics={resultsMetrics}
         paragraphId={paragraph._id}
+        expectedText={paragraph.text}
         onRetry={handleRestart}
         onNext={() => navigate(`/practice/${paragraph.category}`)}
       />
-      <div ref={fullscreenRef} className="typing-lesson-root">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-          <Link to="/practice" className="text-primary text-decoration-none small">
+      <div
+        ref={fullscreenRef}
+        className="typing-lesson-root"
+        style={
+          isFullScreen
+            ? { minHeight: "100vh", backgroundColor: "#fff", padding: "1rem" }
+            : undefined
+        }
+      >
+        <div
+          className="mb-3"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
+            gap: "0.75rem",
+            alignItems: "center",
+            position: "sticky",
+            top: 0,
+            zIndex: 1030,
+            backgroundColor: "#fff",
+            paddingTop: "0.5rem",
+            paddingBottom: "0.5rem",
+            marginLeft: "-0.5rem",
+            marginRight: "-0.5rem",
+            paddingLeft: "0.5rem",
+            paddingRight: "0.5rem"
+          }}
+        >
+          <Link to="/practice/lessons" className="text-primary text-decoration-none small">
             ← Back to practice
           </Link>
-          <span
-            className="badge bg-primary rounded-pill px-3 py-2 font-monospace"
-            role="timer"
-            aria-live="polite"
-          >
-            {formatTime(timerSeconds)}
-          </span>
-        </div>
-
-        <div className="mb-3">
-          <h1 className="h4 fw-bold text-dark mb-1">{paragraph.title}</h1>
+          <h1 className="h4 fw-bold text-dark mb-0 text-center">
+            {paragraph.title}
+          </h1>
+          <div className="d-flex justify-content-end">
+            <span
+              className="badge bg-primary rounded-pill px-3 py-2 font-monospace"
+              role="timer"
+              aria-live="polite"
+            >
+              {formatTime(timerSeconds)}
+            </span>
+          </div>
         </div>
 
         <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
@@ -250,7 +278,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
                 whiteSpace: "pre-wrap",
                 minHeight: "140px",
                 maxHeight: "280px",
-                backgroundColor: "#f0f4f8",
+                backgroundColor: "#f8f9fa",
                 fontSize: `${fontSize}px`,
                 lineHeight: 1.6,
                 color: "#1a1a1a"
@@ -266,13 +294,11 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
                       <span
                         key={i}
                         style={{
-                          backgroundColor: wrong
-                            ? "rgba(220, 53, 69, 0.35)"
-                            : "transparent",
+                          
                           color: wrong
                             ? "#b02a37"
                             : correct
-                              ? "#0f5132"
+                              ? "#15803d"
                               : "#495057",
                           fontWeight: correct ? 600 : wrong ? 600 : 400
                         }}
@@ -317,7 +343,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
             />
           </div>
         </div>
-        <div className="d-flex justify-content-center mb-4">
+        <div className="d-flex justify-content-center mt-4 mb-5 py-3">
           <button
             type="button"
             className="btn btn-primary btn-lg px-5"
