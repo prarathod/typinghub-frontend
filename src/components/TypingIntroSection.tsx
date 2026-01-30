@@ -108,11 +108,8 @@ export function TypingIntroSection() {
           </p>
         </div>
         <div
-          className="d-flex align-items-center justify-content-center gap-3 rounded-3 shadow-sm py-3 px-4 mb-4 mx-auto"
-          style={{
-            maxWidth: "520px",
-            backgroundColor: "#cce5ff",
-          }}
+          className="signup-unlock-cta d-flex align-items-center justify-content-center gap-3 rounded-3 shadow-sm py-3 px-4 mb-4 mx-auto"
+          style={{ maxWidth: "520px" }}
         >
           <RocketIcon />
           <p className="mb-0 fw-semibold" style={{ color: "#1e3a5f", fontSize: "1rem" }}>

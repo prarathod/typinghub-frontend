@@ -46,10 +46,10 @@ a {
   text-decoration: none;
 }
 
-/* Hero section: responsive height */
+/* Hero section: responsive height (reduced on mobile to limit top/bottom white space) */
 .hero-section {
-  min-height: 45vh;
-  height: 45vh;
+  min-height: 32vh;
+  height: 32vh;
 }
 @media (min-width: 576px) {
   .hero-section {
@@ -92,5 +92,15 @@ a {
 @media (min-width: 992px) {
   .hero-section-media {
     object-fit: contain;
+  }
+}
+
+/* Typing intro: "Sign up and unlock 5 Additional Passages" card — light green on mobile only (match Marathi typing) */
+.signup-unlock-cta {
+  background-color: #cce5ff;
+}
+@media (max-width: 575.98px) {
+  .signup-unlock-cta {
+    background-color: #e7f7ed;
   }
 }
