@@ -46,6 +46,11 @@ a {
   text-decoration: none;
 }
 
+/* Pricing section: title uses Playfair Display */
+.pricing-title {
+  font-family: "Playfair Display", serif;
+}
+
 /* Hero section: responsive height (reduced on mobile to limit top/bottom white space) */
 .hero-section {
   min-height: 32vh;

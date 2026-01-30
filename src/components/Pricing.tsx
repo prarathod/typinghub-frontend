@@ -168,7 +168,7 @@ export function Pricing() {
     <section id="pricing" className="py-5">
       <div className="container py-5">
         <div className="text-center mb-5">
-          <h2 className="display-6 fw-bold mb-2">Pricing</h2>
+          <h2 className="pricing-title display-6 fw-bold mb-2">Pricing</h2>
           <p className="text-muted">
             Choose the plan that fits your typing practice goals.
           </p>
@@ -242,7 +242,7 @@ export function Pricing() {
                         </div>
                         <button
                           type="button"
-                          className="btn btn-link btn-sm p-0 text-decoration-none small text-muted mt-1"
+                          className="btn btn-link btn-sm p-0 text-decoration-none small text-primary mt-1"
                           onClick={(e) => {
                             e.stopPropagation();
                             setExpandedProduct(expandedProduct === p.productId ? null : p.productId);
@@ -252,8 +252,8 @@ export function Pricing() {
                           {expandedProduct === p.productId ? "Hide details" : "View more"}
                         </button>
                         {expandedProduct === p.productId && (
-                          <p className="small text-muted mb-0 mt-1" style={{ lineHeight: 1.4 }}>
-                            Full access to all passages in this course. Practice and track progress.
+                          <p className="small text-muted mb-0 mt-1 text-primary" style={{ lineHeight: 1.4 }}>
+                            Full access to all passages in this course. Practice and track progress + All Lessons Included.
                           </p>
                         )}
                       </div>
