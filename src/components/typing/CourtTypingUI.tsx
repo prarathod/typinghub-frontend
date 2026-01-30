@@ -197,14 +197,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
           alignItems: "center"
         }}
       >
-        <button
-          type="button"
-          className="text-primary text-decoration-none small border-0 bg-transparent p-0"
-          onClick={() => navigate(-1)}
-          style={{ cursor: "pointer" }}
-        >
-          ← Back to practice
-        </button>
+        <div />
         <h1 className="h4 fw-bold text-dark mb-0 text-center">
           {paragraph.title}
         </h1>

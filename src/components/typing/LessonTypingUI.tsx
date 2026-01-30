@@ -162,7 +162,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           className="mb-3"
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr auto 1fr",
+            gridTemplateColumns: "auto 1fr auto",
             gap: "0.75rem",
             alignItems: "center",
             position: "sticky",
@@ -177,15 +177,19 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
             paddingRight: "0.5rem"
           }}
         >
-          <button
-            type="button"
-            className="text-primary text-decoration-none small border-0 bg-transparent p-0"
-            onClick={() => navigate(-1)}
-            style={{ cursor: "pointer" }}
-          >
-            ← Back to practice
-          </button>
-          <h1 className="h4 fw-bold text-dark mb-0 text-center">
+          <div className="d-flex justify-content-start">
+            {isFullScreen && (
+              <button
+                type="button"
+                className="text-primary text-decoration-none small border-0 bg-transparent p-0"
+                onClick={() => navigate(-1)}
+                style={{ cursor: "pointer" }}
+              >
+                ← Back to practice
+              </button>
+            )}
+          </div>
+          <h1 className="h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>
             {paragraph.title}
           </h1>
           <div className="d-flex justify-content-end">
