@@ -72,7 +72,7 @@ const features = [
       {
         icon: "⏰",
         title: "Auto-Submit Timer",
-        description: "Set automatic submission at 5, 10, or 15 minutes. Simulate real exam conditions with time-bound practice."
+        description: "Set automatic submission at 10, 15, or 20 minutes. Simulate real exam conditions with time-bound practice."
       },
       {
         icon: "👁️",

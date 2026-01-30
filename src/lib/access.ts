@@ -5,14 +5,13 @@ export type ProductId =
   | "english-court"
   | "english-mpsc"
   | "marathi-court"
-  | "marathi-mpsc"
-  | "lessons";
+  | "marathi-mpsc";
 
 export function getProductIdForParagraph(
   language: Language,
   category: Category
 ): ProductId | null {
-  if (category === "lessons") return "lessons";
+  if (category === "lessons") return null;
   const key = `${language}-${category}` as const;
   const map: Record<string, ProductId> = {
     "english-court-exam": "english-court",
@@ -36,7 +35,7 @@ export function hasAccessToParagraph(
   if (paragraph.isFree) return true;
   if (!user) return false;
   const productId = getProductIdForParagraph(paragraph.language, paragraph.category);
-  if (!productId) return false;
+  if (!productId) return true;
   const subs = user.subscriptions ?? [];
   return subs.includes(productId);
 }

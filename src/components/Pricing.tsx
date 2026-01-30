@@ -16,14 +16,12 @@ const FALLBACK_PRODUCTS: Product[] = [
   { productId: "english-mpsc", name: "English MPSC Typing Exam", amountPaise: 8000 },
   { productId: "marathi-court", name: "Marathi Court Exam", amountPaise: 7000 },
   { productId: "marathi-mpsc", name: "Marathi MPSC Typing Exam", amountPaise: 6000 },
-  { productId: "lessons", name: "Typing Lessons", amountPaise: 7900 },
 ];
 
 const FALLBACK_BUNDLE_RULES = [
   { count: 2, amountPaise: 15000 },
   { count: 3, amountPaise: 22000 },
   { count: 4, amountPaise: 28000 },
-  { count: 5, amountPaise: 33000 },
 ];
 
 function BulletFilledIcon() {
@@ -44,6 +42,22 @@ function BulletOutlineIcon() {
 
 function formatPrice(paise: number): string {
   return `₹${paise / 100}`;
+}
+
+/** Split product title: first part (e.g. "English Typing") in default color, second part (e.g. "for Court Exam") in accent color. */
+function getProductTitleParts(p: Product): { first: string; second: string } {
+  switch (p.productId) {
+    case "english-court":
+      return { first: "English Typing", second: " for Court Exam" };
+    case "english-mpsc":
+      return { first: "English Typing", second: " for MPSC Exam" };
+    case "marathi-court":
+      return { first: "Marathi Typing", second: " for Court Exam" };
+    case "marathi-mpsc":
+      return { first: "Marathi Typing", second: " for MPSC Exam" };
+    default:
+      return { first: p.name, second: "" };
+  }
 }
 
 const FREE_FEATURES = [
@@ -217,7 +231,9 @@ export function Pricing() {
                   <div className="small text-muted">Loading…</div>
                 ) : (
                   <div className="d-flex flex-column gap-2 mb-3">
-                    {products.map((p) => (
+                    {products.map((p) => {
+                      const titleParts = getProductTitleParts(p);
+                      return (
                       <div
                         key={p.productId}
                         role="button"
@@ -237,7 +253,12 @@ export function Pricing() {
                         style={{ cursor: "pointer", transition: "border-color 0.2s, background-color 0.2s" }}
                       >
                         <div className="d-flex align-items-center justify-content-between flex-wrap gap-1">
-                          <span className="small fw-semibold text-dark">{p.name}</span>
+                          <>
+                            <span className="small fw-semibold text-dark">{titleParts.first}</span>
+                            {titleParts.second && (
+                              <span className="small fw-semibold" style={{ color: "#56B9D7" }}>{titleParts.second}</span>
+                            )}
+                          </>
                           <span className="small fw-bold text-primary">{formatPrice(p.amountPaise)}</span>
                         </div>
                         <button
@@ -257,7 +278,8 @@ export function Pricing() {
                           </p>
                         )}
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )}
                 {paymentError && (
@@ -291,7 +313,9 @@ export function Pricing() {
                   <div className="small text-muted">Loading…</div>
                 ) : (
                   <div className="d-flex flex-column gap-2 mb-3">
-                    {products.map((p) => (
+                    {products.map((p) => {
+                      const titleParts = getProductTitleParts(p);
+                      return (
                       <div
                         key={p.productId}
                         role="button"
@@ -320,14 +344,18 @@ export function Pricing() {
                               onChange={() => toggleCustom(p.productId)}
                               onClick={(e) => e.stopPropagation()}
                             />
-                            <label htmlFor={`custom-${p.productId}`} className="form-check-label small fw-semibold text-dark">
-                              {p.name}
+                            <label htmlFor={`custom-${p.productId}`} className="form-check-label small fw-semibold">
+                              <span className="text-dark">{titleParts.first}</span>
+                              {titleParts.second && (
+                                <span style={{ color: "#56B9D7" }}>{titleParts.second}</span>
+                              )}
                             </label>
                           </div>
                           <span className="small fw-bold text-primary">{formatPrice(p.amountPaise)}</span>
                         </div>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )}
                 {customCount > 0 && (

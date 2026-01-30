@@ -16,9 +16,9 @@ function formatTime(seconds: number): string {
 
 const AUTO_SUBMIT_OPTIONS = [
   { value: 0, label: "Off" },
-  { value: 5 * 60, label: "5 minutes" },
   { value: 10 * 60, label: "10 minutes" },
-  { value: 15 * 60, label: "15 minutes" }
+  { value: 15 * 60, label: "15 minutes" },
+  { value: 20 * 60, label: "20 minutes" }
 ] as const;
 
 type CourtTypingUIProps = {
