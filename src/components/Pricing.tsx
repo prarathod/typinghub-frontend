@@ -274,9 +274,16 @@ export function Pricing() {
                           {expandedProduct === p.productId ? "Hide details" : "View more"}
                         </button>
                         {expandedProduct === p.productId && (
-                          <p className="small text-muted mb-0 mt-1 text-primary" style={{ lineHeight: 1.4 }}>
-                            All passages, full lessons access, and progress tracking tools included.
-                          </p>
+                          <div className="small mt-1 text-dark" style={{ lineHeight: 1.5 }}>
+                            <ul className="list-unstyled mb-0 ps-0">
+                              <li className="mb-1">▪️ Unlimited Typing Practice</li>
+                              <li className="mb-1">▫️ All Passages Access available.</li>
+                              <li className="mb-1">▪️ Full lessons access</li>
+                              <li className="mb-1">▫️ Progress tracking</li>
+                              <li className="mb-1">▪️ Exam-ready practice</li>
+                              <li className="mb-1">▫️ Result Oriented Passege</li>
+                            </ul>
+                          </div>
                         )}
                       </div>
                     );
