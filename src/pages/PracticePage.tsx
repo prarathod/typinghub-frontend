@@ -40,9 +40,9 @@ export function PracticePage() {
         className="mb-4"
         style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "0.75rem", alignItems: "center" }}
       >
-        <Link to="/" className="text-primary text-decoration-none small">
+        {/* <Link to="/" className="text-primary text-decoration-none small">
           ← Back to home
-        </Link>
+        </Link> */}
         <h1 className="display-6 fw-bold text-dark mb-0 text-center">
           English Typing Practice
         </h1>
@@ -60,7 +60,7 @@ export function PracticePage() {
           <Link
             to="/practice/lessons"
             className={`${CARD_CLASS} ${CARD_ACTIVE}`}
-            style={CARD_HOVER.style}
+            style={{ ...CARD_HOVER.style, backgroundColor: '#90ceaa' }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
           >
@@ -79,7 +79,7 @@ export function PracticePage() {
           <Link
             to="/practice/court-exam"
             className={`${CARD_CLASS} ${CARD_ACTIVE}`}
-            style={CARD_HOVER.style}
+            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
           >
@@ -91,7 +91,7 @@ export function PracticePage() {
           <Link
             to="/practice/mpsc"
             className={`${CARD_CLASS} ${CARD_ACTIVE}`}
-            style={CARD_HOVER.style}
+            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
           >

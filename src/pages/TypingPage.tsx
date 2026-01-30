@@ -5,6 +5,7 @@ import axios from "axios";
 
 import { PricingDialog } from "@/components/PricingDialog";
 import { CourtTypingUI } from "@/components/typing/CourtTypingUI";
+import { LessonTypingUI } from "@/components/typing/LessonTypingUI";
 import { MPSCTypingUI } from "@/components/typing/MPSCTypingUI";
 import { fetchParagraphById } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
@@ -12,12 +13,13 @@ import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
 function renderTypingUI(paragraph: ParagraphDetail) {
   switch (paragraph.category) {
     case "lessons":
+      return <LessonTypingUI paragraph={paragraph} />;
     case "court-exam":
       return <CourtTypingUI paragraph={paragraph} />;
     case "mpsc":
       return <MPSCTypingUI paragraph={paragraph} />;
     default:
-      return <CourtTypingUI paragraph={paragraph} />;
+      return <LessonTypingUI paragraph={paragraph} />;
   }
 }
 

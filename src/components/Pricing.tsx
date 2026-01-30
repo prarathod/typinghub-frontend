@@ -12,16 +12,16 @@ import { useAuthStore } from "@/stores/authStore";
 import { getApiBaseUrl } from "@/lib/api";
 
 const FALLBACK_PRODUCTS: Product[] = [
-  { productId: "english-court", name: "English Court Typing", amountPaise: 9900 },
-  { productId: "english-mpsc", name: "English MPSC Typing Exam", amountPaise: 8000 },
-  { productId: "marathi-court", name: "Marathi Court Exam", amountPaise: 7000 },
-  { productId: "marathi-mpsc", name: "Marathi MPSC Typing Exam", amountPaise: 6000 },
+  { productId: "english-court", name: "English Court Typing", amountPaise: 4900 },
+  { productId: "english-mpsc", name: "English MPSC Typing Exam", amountPaise: 4900 },
+  { productId: "marathi-court", name: "Marathi Court Exam", amountPaise: 4900 },
+  { productId: "marathi-mpsc", name: "Marathi MPSC Typing Exam", amountPaise: 4900 },
 ];
 
 const FALLBACK_BUNDLE_RULES = [
-  { count: 2, amountPaise: 15000 },
-  { count: 3, amountPaise: 22000 },
-  { count: 4, amountPaise: 28000 },
+  { count: 2, amountPaise: 8900 },
+  { count: 3, amountPaise: 12900 },
+  { count: 4, amountPaise: 14900 },
 ];
 
 function BulletFilledIcon() {
@@ -45,18 +45,18 @@ function formatPrice(paise: number): string {
 }
 
 /** Split product title: first part (e.g. "English Typing") in default color, second part (e.g. "for Court Exam") in accent color. */
-function getProductTitleParts(p: Product): { first: string; second: string } {
+function getProductTitleParts(p: Product): { first: string; second: string; color: string } {
   switch (p.productId) {
     case "english-court":
-      return { first: "English Typing", second: " for Court Exam" };
+      return { first: "English Typing", second: " for Court Exam", color: "#0d6dfc" };
     case "english-mpsc":
-      return { first: "English Typing", second: " for MPSC Exam" };
+      return { first: "English Typing", second: " for MPSC Exam", color: "#56B9D7" };
     case "marathi-court":
-      return { first: "Marathi Typing", second: " for Court Exam" };
+      return { first: "Marathi Typing", second: " for Court Exam", color: "#0d6dfc" };
     case "marathi-mpsc":
-      return { first: "Marathi Typing", second: " for MPSC Exam" };
+      return { first: "Marathi Typing", second: " for MPSC Exam", color: "#56B9D7" };
     default:
-      return { first: p.name, second: "" };
+      return { first: p.name, second: "", color: "#56B9D7" };
   }
 }
 
@@ -254,10 +254,11 @@ export function Pricing() {
                       >
                         <div className="d-flex align-items-center justify-content-between flex-wrap gap-1">
                           <>
-                            <span className="small fw-semibold text-dark">{titleParts.first}</span>
+                            <span className="small fw-semibold text-dark">{titleParts.first}{" "}
                             {titleParts.second && (
-                              <span className="small fw-semibold" style={{ color: "#56B9D7" }}>{titleParts.second}</span>
+                              <span className="small fw-semibold" style={{ color: titleParts.color }}>{titleParts.second}</span>
                             )}
+                            </span>
                           </>
                           <span className="small fw-bold text-primary">{formatPrice(p.amountPaise)}</span>
                         </div>
@@ -330,7 +331,7 @@ export function Pricing() {
                         className={`rounded-2 border p-2 text-start ${
                           customSelected.has(p.productId)
                             ? "border-primary bg-primary bg-opacity-10"
-                            : "border-secondary border-opacity-25 bg-light bg-opacity-50"
+                            : "border-secondary border-opacity-50 bg-light bg-opacity-50"
                         }`}
                         style={{ cursor: "pointer", transition: "border-color 0.2s, background-color 0.2s" }}
                       >
@@ -347,7 +348,7 @@ export function Pricing() {
                             <label htmlFor={`custom-${p.productId}`} className="form-check-label small fw-semibold">
                               <span className="text-dark">{titleParts.first}</span>
                               {titleParts.second && (
-                                <span style={{ color: "#56B9D7" }}>{titleParts.second}</span>
+                                <span style={{ color: titleParts.color }}>{titleParts.second}</span>
                               )}
                             </label>
                           </div>

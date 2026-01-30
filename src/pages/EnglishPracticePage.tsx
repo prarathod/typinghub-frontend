@@ -162,10 +162,13 @@ export function EnglishPracticePage() {
         className="mb-4"
         style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "0.75rem", alignItems: "center" }}
       >
-        <Link to="/practice" className="text-primary text-decoration-none small">
+        {/* <Link to="/practice" className="text-primary text-decoration-none small">
           ← Back to practice
-        </Link>
-        <h1 className="display-6 fw-bold text-dark mb-0 text-center">
+        </Link> */}
+        <h1
+          className="display-6 fw-bold text-dark mb-0 text-center"
+          style={{ gridColumn: "1 / -1" }}
+        >
           {categoryTitle}
         </h1>
         <div />
