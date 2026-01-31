@@ -28,7 +28,7 @@ export function computeTypingMetrics(
   timeTakenSeconds: number,
   totalKeystrokes: number,
   backspaceCount: number,
-  language: "english" | "marathi"
+  _language: "english" | "marathi"
 ): TypingMetrics {
   const passageWords = splitWords(passage);
   const userWords = splitWords(userInput.trim());
@@ -45,7 +45,7 @@ export function computeTypingMetrics(
         correctWordsCount++;
         break;
       case "incorrect":
-        incorrectWords.push(a.text);
+        incorrectWords.push(a.typedWord ?? a.text);
         break;
       case "omitted":
         omittedWords.push(a.text);

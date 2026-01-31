@@ -54,15 +54,23 @@ function wordsMatch(a: string, b: string, caseSensitive: boolean): boolean {
 /**
  * Aligns target words with typed words using sequential matching.
  * Detects omitted words (skipped) vs incorrect (wrong substitution).
- * If typed word matches a later target, intervening targets are omitted.
+ *
+ * Logic:
+ * - Match target[ti] with typed[ty] in order.
+ * - If match: correct, advance both.
+ * - If no match: search if typed[ty] appears later in target.
+ *   - If found at j>ti: target[ti..j-1] are OMITTED (user skipped them),
+ *     target[j] is correct. Advance to j+1, ty+1. No chain reaction.
+ *   - If not found: target[ti] is INCORRECT (wrong word typed), advance both.
+ * - If we run out of typed words: remaining target words are OMITTED.
  */
 export function alignWords(
   targetWords: string[],
   typedWords: string[],
   options?: { caseSensitive?: boolean }
-): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number }> {
+): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> {
   const caseSensitive = options?.caseSensitive ?? false;
-  const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number }> = [];
+  const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> = [];
   let ti = 0;
   let ty = 0;
 
@@ -91,7 +99,7 @@ export function alignWords(
       ti = found + 1;
       ty++;
     } else {
-      result.push({ text: tw, status: "incorrect", wordIndex: ti });
+      result.push({ text: tw, status: "incorrect", wordIndex: ti, typedWord: uw });
       ti++;
       ty++;
     }
