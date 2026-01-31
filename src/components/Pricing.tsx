@@ -20,8 +20,8 @@ const FALLBACK_PRODUCTS: Product[] = [
 
 const FALLBACK_BUNDLE_RULES = [
   { count: 2, amountPaise: 8900 },
-  { count: 3, amountPaise: 12900 },
-  { count: 4, amountPaise: 14900 },
+  { count: 3, amountPaise: 13200 },
+  { count: 4, amountPaise: 17500 },
 ];
 
 /** Right-pointing arrow icon for free features list — alternating black and teal. */
