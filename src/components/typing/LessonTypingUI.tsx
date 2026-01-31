@@ -191,12 +191,14 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         return { color: "#15803d", fontWeight: 600 };
       case "incorrect":
         return { color: "#b02a37", fontWeight: 600 };
+      case "omitted":
+        return { color: "#000000", fontWeight: 600 };
       case "active":
-        return { color: "#1a1a1a", fontWeight: 500 };
+        return { color: "#000000", fontWeight: 500 };
       case "pending":
       case "space":
       default:
-        return { color: "#495057", fontWeight: 400 };
+        return { color: "#000000", fontWeight: 400 };
     }
   }
 
@@ -362,7 +364,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
                 backgroundColor: "#f8f9fa",
                 fontSize: `${fontSize}px`,
                 lineHeight: 1.6,
-                color: "#1a1a1a"
+                color: "#000000"
               }}
             >
               {enableHighlight ? (

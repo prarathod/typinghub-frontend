@@ -174,6 +174,9 @@ export function TestResultsModal({
                   <strong>Incorrect Words:</strong> {metrics.incorrectWordsCount}
                 </li>
                 <li className="mb-3">
+                  <strong>Omitted Words:</strong> {metrics.omittedWordsCount}
+                </li>
+                <li className="mb-3">
                   <strong>Keystrokes Per Minute:</strong> {metrics.kpm}
                 </li>
                 <li className="mb-3">

@@ -1,16 +1,10 @@
 /**
  * Typing test metrics and error counting.
- * Rules: word omitted, substitution, extra word, spelling (repetition/inclusion/
- * alteration/omission of letters), incorrect capitalization (English) = 1 error each.
+ * Uses word-level alignment to detect correct, incorrect, and omitted words.
+ * Omitted = target word was skipped (no chain reaction for following words).
  */
 
-function splitWords(s: string): string[] {
-  return s.split(/\s+/).filter(Boolean);
-}
-
-function isCapitalizationError(a: string, b: string): boolean {
-  return a.toLowerCase() === b.toLowerCase() && a !== b;
-}
+import { alignWords, splitWords } from "./wordHighlighting";
 
 export type TypingMetrics = {
   timeTakenSeconds: number;
@@ -22,6 +16,8 @@ export type TypingMetrics = {
   kpm: number;
   incorrectWordsCount: number;
   incorrectWords: string[];
+  omittedWordsCount: number;
+  omittedWords: string[];
   correctWordsCount: number;
   userInput: string;
 };
@@ -35,37 +31,34 @@ export function computeTypingMetrics(
   language: "english" | "marathi"
 ): TypingMetrics {
   const passageWords = splitWords(passage);
-  const userWords = splitWords(userInput);
+  const userWords = splitWords(userInput.trim());
+  const caseSensitive = false;
+  const aligned = alignWords(passageWords, userWords, { caseSensitive });
+
   let correctWordsCount = 0;
   const incorrectWords: string[] = [];
-  const totalWords = passageWords.length;
-  const safeSeconds = Math.max(1, timeTakenSeconds);
-  const timeMinutes = safeSeconds / 60;
+  const omittedWords: string[] = [];
 
-  for (let i = 0; i < Math.max(passageWords.length, userWords.length); i++) {
-    const pw = passageWords[i];
-    const uw = userWords[i];
-
-    if (!pw) {
-      incorrectWords.push(uw ?? "");
-      continue;
-    }
-    if (!uw) {
-      incorrectWords.push(`[omitted: ${pw}]`);
-      continue;
-    }
-
-    if (pw === uw) {
-      correctWordsCount++;
-    } else if (language === "english" && isCapitalizationError(pw, uw)) {
-      incorrectWords.push(uw);
-    } else {
-      incorrectWords.push(uw);
+  for (const a of aligned) {
+    switch (a.status) {
+      case "correct":
+        correctWordsCount++;
+        break;
+      case "incorrect":
+        incorrectWords.push(a.text);
+        break;
+      case "omitted":
+        omittedWords.push(a.text);
+        break;
     }
   }
 
+  const totalWords = passageWords.length;
   const incorrectWordsCount = incorrectWords.length;
+  const omittedWordsCount = omittedWords.length;
   const wordsTyped = userWords.length;
+  const safeSeconds = Math.max(1, timeTakenSeconds);
+  const timeMinutes = safeSeconds / 60;
   const accuracy =
     totalWords === 0 ? 100 : Math.round((correctWordsCount / totalWords) * 100);
   const wpm = Math.round(correctWordsCount / timeMinutes);
@@ -81,6 +74,8 @@ export function computeTypingMetrics(
     kpm,
     incorrectWordsCount,
     incorrectWords,
+    omittedWordsCount,
+    omittedWords,
     correctWordsCount,
     userInput
   };
