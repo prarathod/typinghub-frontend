@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -38,6 +38,13 @@ function ClockIcon() {
 const FONT_SIZES = [14, 16, 18, 20, 22] as const;
 const DEFAULT_FONT_INDEX = 1;
 
+const AUTO_SUBMIT_OPTIONS = [
+  { value: 10 * 60, label: "10 minutes" },
+  { value: 15 * 60, label: "15 minutes" },
+  { value: 30 * 60, label: "30 minutes" },
+  { value: 0, label: "Off" }
+] as const;
+
 type MPSCTypingUIProps = {
   paragraph: ParagraphDetail;
 };
@@ -53,6 +60,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const [enableBackspace, setEnableBackspace] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX);
+  const [autoSubmitSeconds, setAutoSubmitSeconds] = useState(10 * 60);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [backspaceCount, setBackspaceCount] = useState(0);
   const [resultsOpen, setResultsOpen] = useState(false);
@@ -60,12 +68,93 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentCharRef = useRef<HTMLSpanElement>(null);
+  const autoSubmitTriggeredRef = useRef(false);
+  const inputRef = useRef(input);
+  const totalKeystrokesRef = useRef(totalKeystrokes);
+  const backspaceCountRef = useRef(backspaceCount);
+  const timerSecondsRef = useRef(timerSeconds);
 
   useEffect(() => {
-    if (!timerStarted || hasSubmitted) return;
-    const id = setInterval(() => setTimerSeconds((s) => s + 1), 1000);
+    inputRef.current = input;
+    totalKeystrokesRef.current = totalKeystrokes;
+    backspaceCountRef.current = backspaceCount;
+    timerSecondsRef.current = timerSeconds;
+  }, [input, totalKeystrokes, backspaceCount, timerSeconds]);
+
+  const submitCurrentAttempt = useCallback(async () => {
+    if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    autoSubmitTriggeredRef.current = true;
+    setHasSubmitted(true);
+    setTimerStarted(false);
+    const currentInput = inputRef.current;
+    const currentKeystrokes = totalKeystrokesRef.current;
+    const currentBackspace = backspaceCountRef.current;
+    const currentTime = timerSecondsRef.current;
+    const timeTaken =
+      autoSubmitSeconds > 0 ? autoSubmitSeconds - currentTime : currentTime;
+    const metrics = computeTypingMetrics(
+      paragraph.text,
+      currentInput,
+      timeTaken,
+      currentKeystrokes,
+      currentBackspace,
+      paragraph.language
+    );
+    setResultsMetrics(metrics);
+    setResultsOpen(true);
+    try {
+      await submitTypingResult(paragraph._id, {
+        timeTakenSeconds: metrics.timeTakenSeconds,
+        accuracy: metrics.accuracy,
+        totalKeystrokes: metrics.totalKeystrokes,
+        backspaceCount: metrics.backspaceCount,
+        wordsTyped: metrics.wordsTyped,
+        wpm: metrics.wpm,
+        kpm: metrics.kpm,
+        incorrectWordsCount: metrics.incorrectWordsCount,
+        incorrectWords: metrics.incorrectWords,
+        correctWordsCount: metrics.correctWordsCount,
+        userInput: metrics.userInput
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
+        queryClient.invalidateQueries({ queryKey: ["history", paragraph._id] }),
+        queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
+      ]);
+    } catch (err) {
+      console.error("Failed to store submission:", err);
+    }
+  }, [
+    hasSubmitted,
+    autoSubmitSeconds,
+    paragraph.text,
+    paragraph._id,
+    paragraph.language,
+    queryClient
+  ]);
+
+  useEffect(() => {
+    if (timerStarted && !hasSubmitted && autoSubmitSeconds > 0 && timerSeconds === 0) {
+      setTimerSeconds(autoSubmitSeconds);
+    }
+  }, [timerStarted, hasSubmitted, autoSubmitSeconds, timerSeconds]);
+
+  useEffect(() => {
+    if (!timerStarted || hasSubmitted || autoSubmitTriggeredRef.current) return;
+    const id = setInterval(() => {
+      setTimerSeconds((s) => {
+        if (autoSubmitSeconds > 0) {
+          const next = s - 1;
+          if (next <= 0 && !autoSubmitTriggeredRef.current) {
+            submitCurrentAttempt();
+          }
+          return Math.max(0, next);
+        }
+        return s + 1;
+      });
+    }, 1000);
     return () => clearInterval(id);
-  }, [timerStarted, hasSubmitted]);
+  }, [timerStarted, hasSubmitted, autoSubmitSeconds, submitCurrentAttempt]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
@@ -107,15 +196,19 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     setBackspaceCount(0);
     setResultsOpen(false);
     setResultsMetrics(null);
+    autoSubmitTriggeredRef.current = false;
     textareaRef.current?.focus();
   };
 
   const handleSubmit = async () => {
+    if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    const timeTaken =
+      autoSubmitSeconds > 0 ? autoSubmitSeconds - timerSeconds : timerSeconds;
     setHasSubmitted(true);
     const metrics = computeTypingMetrics(
       paragraph.text,
       input,
-      timerSeconds,
+      timeTaken,
       totalKeystrokes,
       backspaceCount,
       paragraph.language
@@ -299,6 +392,22 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
             <span>Enable Backspace</span>
           </label>
           <div className="d-flex align-items-center gap-2">
+            <label className="small mb-0">Auto submit:</label>
+            <select
+              className="form-select form-select-sm"
+              style={{ width: "auto" }}
+              value={autoSubmitSeconds}
+              onChange={(e) => setAutoSubmitSeconds(Number(e.target.value))}
+              disabled={hasSubmitted || timerStarted}
+            >
+              {AUTO_SUBMIT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="d-flex align-items-center gap-2">
             <span className="small text-muted">Font size:</span>
             <div className="btn-group btn-group-sm">
               <button
@@ -402,9 +511,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-2">
               <h2 className="h6 fw-semibold mb-0">Your typing</h2>
-              {hasSubmitted && (
+              {hasSubmitted && resultsMetrics && (
                 <span className="badge bg-success">
-                  Done · {formatTime(timerSeconds)}
+                  Done · {formatTime(resultsMetrics.timeTakenSeconds)}
                 </span>
               )}
             </div>

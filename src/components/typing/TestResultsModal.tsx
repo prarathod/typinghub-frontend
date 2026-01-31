@@ -212,6 +212,9 @@ export function TestResultsModal({
                 <li className="mb-3">
                   <strong>Accuracy:</strong> {metrics.accuracy}%
                 </li>
+                <li className="mb-3">
+                  <strong>Backspace Count:</strong> {metrics.backspaceCount}
+                </li>
               </ul>
             </div>
             <div className="col-6">

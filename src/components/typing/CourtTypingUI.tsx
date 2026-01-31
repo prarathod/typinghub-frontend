@@ -138,7 +138,10 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted || !isStarted) return;
-    if (e.key === "Backspace") setBackspaceCount((c) => c + 1);
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      setBackspaceCount((c) => c + 1);
+    }
   };
 
   const handleStart = () => {
