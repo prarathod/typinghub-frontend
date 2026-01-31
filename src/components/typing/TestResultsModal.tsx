@@ -17,10 +17,6 @@ function formatTimeLong(seconds: number): string {
   return parts.join(" ");
 }
 
-function isOmitted(word: string): boolean {
-  return /^\[omitted:/.test(word);
-}
-
 function splitWords(s: string): string[] {
   return s.split(/\s+/).filter(Boolean);
 }
@@ -95,8 +91,6 @@ export function TestResultsModal({
   }, [open]);
   if (!metrics) return null;
 
-  const incorrectWordsOnly = metrics.incorrectWords.filter((w) => !isOmitted(w));
-
   const handleRetry = () => {
     onRetry?.();
     onOpenChange(false);
@@ -122,16 +116,24 @@ export function TestResultsModal({
         }}
         aria-describedby="test-results-description"
       >
-        <DialogHeader className="d-flex flex-row justify-content-between align-items-start border-bottom border-secondary pb-3 mb-4">
-          <DialogTitle
-            className="text-xl fw-bold mb-0"
-            style={{ color: "#8b1538" }}
+        <DialogHeader className="position-relative mb-4 pb-0">
+          <div
+            className="text-center py-3 px-4 rounded-3 mx-auto"
+            style={{
+              border: "2px solid #0d9488",
+              maxWidth: "fit-content"
+            }}
           >
-            TEST RESULTS
-          </DialogTitle>
+            <DialogTitle
+              className="text-xl fw-bold mb-0"
+              style={{ color: "#8b1538" }}
+            >
+              TEST RESULTS
+            </DialogTitle>
+          </div>
           <button
             type="button"
-            className="btn btn-link p-0 ms-2 text-secondary text-decoration-none align-self-center"
+            className="btn btn-link p-0 position-absolute top-0 end-0 text-secondary text-decoration-none"
             onClick={handleClose}
             aria-label="Close"
             style={{ fontSize: "1.5rem", lineHeight: 1 }}
@@ -141,57 +143,51 @@ export function TestResultsModal({
         </DialogHeader>
         <div
           id="test-results-description"
-          className="small text-dark px-1"
+          className="small text-dark"
           style={{ paddingTop: "0.25rem", paddingBottom: "0.5rem" }}
         >
-          <ul className="list-unstyled mb-0">
-            <li className="mb-3">
-              <strong>Time Taken:</strong>{" "}
-              {formatTimeLong(metrics.timeTakenSeconds)}
-            </li>
-            <li className="mb-3">
-              <strong>Accuracy:</strong> {metrics.accuracy}%
-            </li>
-            <li className="mb-3">
-              <strong>Total Keystrokes:</strong> {metrics.totalKeystrokes}
-            </li>
-            <li className="mb-3">
-              <strong>Backspace Count:</strong> {metrics.backspaceCount}
-            </li>
-            <li className="mb-3">
-              <strong>Number of Words Typed:</strong> {metrics.wordsTyped}
-            </li>
-            <li className="mb-3">
-              <strong>Words Per Minute:</strong> {metrics.wpm}
-            </li>
-            <li className="mb-3">
-              <strong>Keystrokes Per Minute:</strong> {metrics.kpm}
-            </li>
-            <li className="mb-3">
-              <strong>No. Of Incorrect Words:</strong>{" "}
-              {metrics.incorrectWordsCount}
-            </li>
-            {incorrectWordsOnly.length > 0 && (
-              <li className="mb-3">
-                <strong>Incorrect Words:</strong>{" "}
-                <span className="text-danger">
-                  {incorrectWordsOnly.join(", ")}
-                </span>
-              </li>
-            )}
-            <li className="mb-3">
-              <strong>Total Correct Words Typed:</strong>{" "}
-              {metrics.correctWordsCount}
-            </li>
-          </ul>
+          <div className="row g-4 mb-4">
+            <div className="col-6">
+              <ul className="list-unstyled mb-0">
+                <li className="mb-3">
+                  <strong>Time Taken:</strong>{" "}
+                  {formatTimeLong(metrics.timeTakenSeconds)}
+                </li>
+                <li className="mb-3">
+                  <strong>Total Typed words:</strong> {metrics.wordsTyped}
+                </li>
+                <li className="mb-3">
+                  <strong>Correct Words:</strong> {metrics.correctWordsCount}
+                </li>
+                <li className="mb-3">
+                  <strong>Accuracy:</strong> {metrics.accuracy}%
+                </li>
+              </ul>
+            </div>
+            <div className="col-6">
+              <ul className="list-unstyled mb-0">
+                <li className="mb-3">
+                  <strong>Incorrect Words:</strong> {metrics.incorrectWordsCount}
+                </li>
+                <li className="mb-3">
+                  <strong>Keystrokes Per Minute:</strong> {metrics.kpm}
+                </li>
+                <li className="mb-3">
+                  <strong>Words Per Minute:</strong> {metrics.wpm}
+                </li>
+              </ul>
+            </div>
+          </div>
           <div className="mt-4 mb-3">
-            <strong>User Input:</strong>
+            <strong className="text-dark">User Input:</strong>
             <div
-              className="mt-2 p-3 rounded border bg-light font-monospace small text-break"
+              className="mt-2 p-3 rounded font-monospace small text-break"
               style={{
                 whiteSpace: "pre-wrap",
                 maxHeight: "160px",
-                overflowY: "auto"
+                overflowY: "auto",
+                backgroundColor: "#f8f9fa",
+                border: "1px solid #dee2e6"
               }}
             >
               {expectedText && metrics.userInput ? (

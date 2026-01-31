@@ -51,27 +51,38 @@ a {
   font-family: "Playfair Display", serif;
 }
 
-/* Hero section: responsive height (reduced on mobile to limit top/bottom white space) */
+/* Typing intro: title and subtitle use Tinos Bold (700) — override Bootstrap/global */
+.typing-intro-title {
+  font-family: "Tinos", Georgia, "Times New Roman", serif !important;
+  font-weight: 700 !important;
+}
+.typing-intro-subtitle {
+  font-family: "Tinos", Georgia, "Times New Roman", serif !important;
+  font-weight: 700 !important;
+  font-style: italic !important;
+}
+
+/* Hero section: responsive height (reduced vertical height for logo block) */
 .hero-section {
-  min-height: 32vh;
-  height: 32vh;
+  min-height: 24vh;
+  height: 24vh;
 }
 @media (min-width: 576px) {
   .hero-section {
-    min-height: 50vh;
-    height: 50vh;
+    min-height: 38vh;
+    height: 38vh;
   }
 }
 @media (min-width: 768px) {
   .hero-section {
-    min-height: 55vh;
-    height: 55vh;
+    min-height: 42vh;
+    height: 42vh;
   }
 }
 @media (min-width: 992px) {
   .hero-section {
-    min-height: 60vh;
-    height: 60vh;
+    min-height: 48vh;
+    height: 48vh;
   }
 }
 
@@ -98,6 +109,11 @@ a {
   .hero-section-media {
     object-fit: contain;
   }
+}
+
+/* Lesson typing: card borders — bold red */
+.typing-lesson-root .lesson-typing-card {
+  border: 2px solid #ff3131 !important;
 }
 
 /* Typing intro: "Sign up and unlock 5 Additional Passages" card — light green on mobile only (match Marathi typing) */

@@ -21,9 +21,14 @@ export function AdminLoginPage() {
       setStoreUsername(adminUsername);
       navigate("/admin/dashboard", { replace: true });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Invalid username or password"
-      );
+      const apiMessage =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : null;
+      const message =
+        apiMessage ||
+        (err instanceof Error ? err.message : "Invalid username or password");
+      setError(message);
     } finally {
       setLoading(false);
     }

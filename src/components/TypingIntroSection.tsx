@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
 
+import englishLogo from "@/assets/englishLogo.jpeg";
+import marathiLogo from "@/assets/marathiLogo.jpeg";
+
 function GiftIcon() {
   return (
     <svg
@@ -39,41 +42,20 @@ function RocketIcon() {
   );
 }
 
-function KeyboardIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="40"
-      height="40"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <rect x="2" y="6" width="20" height="12" rx="1.5" />
-      <path d="M6 10h1.5M9.5 10h1.5M13 10h1.5M16.5 10H18M5 14h4M11 14h2M17 14h2" />
-    </svg>
-  );
-}
-
 const cards = [
   {
     title: "English Typing",
     subtitle: "For all typing exams",
     to: "/practice",
     bgClass: "bg-primary bg-opacity-10 border border-primary border-opacity-25",
-    circleBg: "#1F67FF",
+    logoSrc: englishLogo,
   },
   {
     title: "Marathi Typing",
     subtitle: "For all typing exams",
     to: "/practice/marathi",
     bgClass: "bg-success bg-opacity-10 border border-success border-opacity-25",
-    circleBg: "#2F885B",
+    logoSrc: marathiLogo,
   },
 ];
 
@@ -86,12 +68,26 @@ export function TypingIntroSection() {
       }}
     >
       <div className="container py-4">
-        {/* Main heading */}
-        <h1 className="text-center fw-bold mb-3 mx-auto" style={{ maxWidth: "720px", fontSize: "clamp(1.5rem, 4vw, 2.25rem)", color: "#1e3a5f" }}>
+        {/* Main heading — Tinos Bold 700 */}
+        <h1
+          className="typing-intro-title text-center fw-bold mb-3 mx-auto"
+          style={{
+            maxWidth: "720px",
+            fontSize: "clamp(1.65rem, 4.5vw, 2.5rem)",
+            color: "#000"
+          }}
+        >
           Typing Practice for All Competitive & Professional Exams
         </h1>
-        {/* Subtitle */}
-        <p className="text-center text-secondary mb-4 mx-auto" style={{ maxWidth: "560px", fontSize: "1.1rem" }}>
+        {/* Subtitle — Tinos Bold 700 Italic */}
+        <p
+          className="typing-intro-subtitle text-center mb-4 mx-auto"
+          style={{
+            maxWidth: "560px",
+            fontSize: "clamp(1.1rem, 2vw, 1.25rem)",
+            color: "#000"
+          }}
+        >
           Improve typing speed & accuracy with real exam-level passages
         </p>
         {/* CTA banner */}
@@ -122,7 +118,7 @@ export function TypingIntroSection() {
             <div key={card.title} className="col-12 col-sm-6 col-lg-5">
               <Link
                 to={card.to}
-                className={`text-decoration-none d-flex align-items-center gap-3 rounded-3 p-4 h-100 shadow-sm ${card.bgClass}`}
+                className={`text-decoration-none d-flex flex-column align-items-center justify-content-center gap-3 rounded-3 p-4 h-100 shadow-sm text-center ${card.bgClass}`}
                 style={{ transition: "transform 0.2s, box-shadow 0.2s" }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "translateY(-2px)";
@@ -134,18 +130,19 @@ export function TypingIntroSection() {
                 }}
               >
                 <div
-                  className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                  style={{
-                    width: "56px",
-                    height: "56px",
-                    backgroundColor: card.circleBg,
-                  }}
+                  className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
+                  style={{ width: "56px", height: "56px" }}
                 >
-                  <KeyboardIcon className="text-white" />
+                  <img
+                    src={card.logoSrc}
+                    alt=""
+                    className="w-100 h-100"
+                    style={{ objectFit: "cover" }}
+                  />
                 </div>
                 <div>
-                  <h3 className="h5 fw-bold text-dark mb-1">{card.title}</h3>
-                  <p className="mb-0 small text-secondary">{card.subtitle}</p>
+                  <h3 className="fw-bold text-dark mb-1" style={{ fontSize: "1.35rem" }}>{card.title}</h3>
+                  <p className="mb-0 text-secondary" style={{ fontSize: "1rem" }}>{card.subtitle}</p>
                 </div>
               </Link>
             </div>

@@ -151,32 +151,19 @@ export function EnglishPracticePage() {
       : data?.items ?? [];
 
   return (
-    <main className="container py-5">
+    <main className="container pt-3 pb-5">
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
       <PricingDialog
         open={pricingOpen}
         onOpenChange={setPricingOpen}
         productId={pricingProductId}
       />
-      <div
-        className="mb-4"
-        style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "0.75rem", alignItems: "center" }}
-      >
-        {/* <Link to="/practice" className="text-primary text-decoration-none small">
-          ← Back to practice
-        </Link> */}
-        <h1
-          className="display-6 fw-bold text-dark mb-0 text-center"
-          style={{ gridColumn: "1 / -1" }}
-        >
+      <div className="text-center mb-5">
+        <h1 className="pricing-title display-6 fw-bold text-dark mb-2">
           {categoryTitle}
         </h1>
-        <div />
-      </div>
-      <div className="mb-5 text-center">
         <p className="text-muted mb-0">
-          Start a focused session with English typing passages. Track your
-          progress in real time.
+          Start a focused session with English typing passages. Track your progress in real time.
         </p>
       </div>
 

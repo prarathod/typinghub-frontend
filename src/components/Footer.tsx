@@ -4,9 +4,9 @@ const FOOTER_BG = "#1e3a5f";
 
 export function Footer() {
   return (
-    <footer className="rounded-0 shadow py-4 py-lg-5" style={{ backgroundColor: FOOTER_BG }}>
+    <footer className="rounded-0 shadow py-0" style={{ backgroundColor: FOOTER_BG }}>
       <div className="container">
-        <div className="row align-items-start justify-content-between mb-4 mb-lg-0">
+        <div className="row align-items-start justify-content-between mb-4 mb-lg-0 pt-3">
           <div className="col-12 col-lg-auto mb-4 mb-lg-0">
             <Link to="/" className="d-flex align-items-center text-decoration-none">
               <img
@@ -18,7 +18,7 @@ export function Footer() {
               <span className="fs-5 fw-semibold text-white">Typing Practice Hub</span>
             </Link>
           </div>
-          <div className="col-12 col-lg-auto">
+          <div className="col-12 col-lg-auto ps-0">
             <div className="row g-4 g-lg-5">
               <div className="col-6 col-sm-4">
                 <h6 className="text-uppercase fw-semibold text-white mb-3">Follow us</h6>

@@ -14,11 +14,28 @@ function formatTime(seconds: number): string {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+function ClockIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      fill="currentColor"
+      viewBox="0 0 16 16"
+      className="flex-shrink-0"
+      aria-hidden
+    >
+      <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+      <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+    </svg>
+  );
+}
+
 const AUTO_SUBMIT_OPTIONS = [
-  { value: 0, label: "Off" },
   { value: 10 * 60, label: "10 minutes" },
   { value: 15 * 60, label: "15 minutes" },
-  { value: 20 * 60, label: "20 minutes" }
+  { value: 30 * 60, label: "30 minutes" },
+  { value: 0, label: "Off" }
 ] as const;
 
 type CourtTypingUIProps = {
@@ -33,7 +50,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const [timerStarted, setTimerStarted] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [showTimer, setShowTimer] = useState(true);
-  const [autoSubmitSeconds, setAutoSubmitSeconds] = useState(0);
+  const [autoSubmitSeconds, setAutoSubmitSeconds] = useState(10 * 60);
   const [isStarted, setIsStarted] = useState(false);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [backspaceCount, setBackspaceCount] = useState(0);
@@ -188,62 +205,45 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         onRetry={handleRestart}
         onNext={() => navigate(`/practice/${paragraph.category}`)}
       />
-      <div
-        className="mb-3"
-        style={{
-          display: "grid",
-          gridTemplateColumns: isStarted ? "auto 1fr auto" : "1fr auto 1fr",
-          gap: "0.75rem",
-          alignItems: "center"
-        }}
-      >
-        <div />
-        <h1
-          className="h4 fw-bold text-dark mb-0 text-center"
-          style={isStarted ? { justifySelf: "center" } : undefined}
-        >
-          {paragraph.title}
-        </h1>
-        <div />
-      </div>
+      {!isStarted ? (
+        <>
+          <div
+            className="mb-3"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto 1fr",
+              gap: "0.75rem",
+              alignItems: "center"
+            }}
+          >
+            <div />
+            <h1 className="h4 fw-bold text-dark mb-0 text-center">
+              {paragraph.title}
+            </h1>
+            <div />
+          </div>
 
-      {!isStarted && (
-        <div className="card border shadow-sm mb-3">
-          <div className="card-body">
-            <h2 className="h6 fw-semibold mb-3">Paragraph to type</h2>
-            <div
-              className="font-monospace overflow-auto rounded-3 p-4 mb-0"
-              style={{
-                whiteSpace: "pre-wrap",
-                minHeight: "200px",
-                maxHeight: "400px",
-                backgroundColor: "#f8f9fa",
-                fontSize: "16px",
-                lineHeight: 1.6,
-                color: "#1a1a1a"
-              }}
-            >
-              {paragraph.text}
+          <div className="card border shadow-sm mb-3">
+            <div className="card-body">
+              <h2 className="h6 fw-semibold mb-3">Paragraph to type</h2>
+              <div
+                className="font-monospace overflow-auto rounded-3 p-4 mb-0"
+                style={{
+                  whiteSpace: "pre-wrap",
+                  minHeight: "200px",
+                  maxHeight: "400px",
+                  backgroundColor: "#f8f9fa",
+                  fontSize: "16px",
+                  lineHeight: 1.6,
+                  color: "#1a1a1a"
+                }}
+              >
+                {paragraph.text}
+              </div>
             </div>
           </div>
-        </div>
-      )}
 
-      <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
-        {showTimer && isStarted && (
-          <div className="d-flex align-items-center gap-2">
-            <span className="small fw-semibold">Timer:</span>
-            <span
-              className="badge bg-primary rounded-pill px-3 py-2 font-monospace"
-              role="timer"
-              aria-live="polite"
-            >
-              {formatTime(timerSeconds)}
-            </span>
-          </div>
-        )}
-        {!isStarted && (
-          <>
+          <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
             <label className="d-flex align-items-center gap-2 small mb-0">
               <input
                 type="checkbox"
@@ -284,10 +284,19 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             >
               Download Paragraph PDF
             </button>
-          </>
-        )}
-        {isStarted && (
-          <>
+          </div>
+        </>
+      ) : (
+        <div
+          className="mb-3"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
+            gap: "0.75rem",
+            alignItems: "center"
+          }}
+        >
+          <div className="d-flex align-items-center gap-2">
             <label className="d-flex align-items-center gap-2 small mb-0">
               <input
                 type="checkbox"
@@ -304,16 +313,32 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             >
               Restart
             </button>
-          </>
-        )}
-      </div>
+          </div>
+          <h1 className="h4 fw-bold text-dark mb-0 text-center">
+            {paragraph.title}
+          </h1>
+          <div className="d-flex justify-content-end">
+            {showTimer && (
+              <span
+                className="d-inline-flex align-items-center gap-2 rounded-3 px-3 py-2 font-monospace"
+                role="timer"
+                aria-live="polite"
+                style={{ backgroundColor: "#fae8e8", color: "#ff3131" }}
+              >
+                <ClockIcon />
+                {formatTime(timerSeconds)}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {isStarted && (
         <div style={{ width: "70%", maxWidth: "70%", marginLeft: "auto", marginRight: "auto" }}>
           <div
             className="card border"
             style={{
-              boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.1)"
+              boxShadow: "0 0.5rem 1rem rgba(0,0,0,0.15)"
             }}
           >
             <div className="card-body p-0">

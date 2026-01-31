@@ -24,18 +24,18 @@ const FALLBACK_BUNDLE_RULES = [
   { count: 4, amountPaise: 14900 },
 ];
 
-function BulletFilledIcon() {
+/** Right-pointing arrow icon for free features list — alternating black and teal. */
+function ArrowIconBlack() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className="flex-shrink-0 mt-1 me-2 text-primary" aria-hidden>
-      <circle cx="8" cy="8" r="4" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-1 me-2" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }} aria-hidden>
+      <path d="M9 6l6 6-6 6" stroke="#212529" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
-
-function BulletOutlineIcon() {
+function ArrowIconTeal() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 16 16" className="flex-shrink-0 mt-1 me-2 text-secondary" aria-hidden>
-      <circle cx="8" cy="8" r="4" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-1 me-2" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }} aria-hidden>
+      <path d="M9 6l6 6-6 6" stroke="#189fa8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -179,33 +179,33 @@ export function Pricing() {
   };
 
   return (
-    <section id="pricing" className="py-5">
-      <div className="container py-5">
+    <section id="pricing" className="py-4">
+      <div className="container py-4">
         <div className="text-center mb-5">
-          <h2 className="pricing-title display-6 fw-bold mb-2">Pricing</h2>
-          <p className="text-muted">
+          <h2 className="pricing-title display-6 fw-bold mb-2" style={{ fontFamily: '"Playfair Display", serif' }}>Pricing</h2>
+          <p className="mb-0" style={{ fontSize: "1.2rem", color: "#000" }}>
             Choose the plan that fits your typing practice goals.
           </p>
         </div>
-        <div className="row justify-content-center g-4">
+        <div className="row justify-content-center g-4 mb-3">
           {/* Card 1: Free (compact) */}
           <div className="col-lg-4">
-            <div className="card h-100 shadow-sm">
+            <div className="card h-100 shadow-sm border-2 border-dark">
               <div className="card-body d-flex flex-column p-3">
-                <h5 className="text-muted text-uppercase small fw-semibold mb-1">
+                <h5 className="text-muted text-uppercase fw-semibold mb-1" style={{ fontSize: "0.95rem" }}>
                   For Free User
                 </h5>
                 <div className="mb-1">
-                  <span className="display-6 fw-bold">Free</span>
+                  <span className="fw-bold" style={{ fontSize: "2rem" }}>Free</span>
                 </div>
-                <p className="text-body small mb-2 fw-medium">
+                <p className="text-body mb-2 fw-medium" style={{ fontSize: "1.05rem" }}>
                   Start practicing instantly — no account needed.
                 </p>
-                <p className="text-muted small mb-2">Perfect for beginners and casual practice.</p>
+                <p className="mb-2" style={{ fontSize: "1rem", color: "#000" }}>Perfect for beginners and casual practice.</p>
                 <ul className="list-unstyled mb-0">
                   {FREE_FEATURES.map((feature, i) => (
-                    <li key={i} className="mb-1 d-flex align-items-start small">
-                      {i % 2 === 0 ? <BulletFilledIcon /> : <BulletOutlineIcon />}
+                    <li key={i} className="mb-1 d-flex align-items-start" style={{ fontSize: "1.05rem" }}>
+                      {i % 2 === 0 ? <ArrowIconBlack /> : <ArrowIconTeal />}
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -216,15 +216,16 @@ export function Pricing() {
 
           {/* Card 2: Premium – one course (stacked mini-cards) */}
           <div className="col-lg-4">
-            <div className="card h-100 shadow-sm border-primary">
-              <div className="card-header bg-primary text-white text-center py-2">
-                <span className="small fw-semibold">Most popular</span>
+            <div className="card h-100 shadow-sm border-2 border-primary position-relative overflow-visible">
+              <div className="card-header text-white text-center py-2" style={{ backgroundColor: "#189fa8" }}>
+                <span className="fw-bold" style={{ fontSize: "1.1rem" }}>Most popular</span>
               </div>
-              <div className="card-body d-flex flex-column p-3">
-                <h5 className="text-muted text-uppercase small fw-semibold mb-1">
-                  Premium – One course
+              <div className="card-body d-flex flex-column p-3" style={{ paddingBottom: "3.25rem" }}>
+                <h5 className="text-uppercase fw-bold mb-1 text-center" style={{ fontSize: "1.2rem", fontFamily: "inherit" }}>
+                  <span style={{ color: "#0d6efd", fontFamily: '"Playfair Display", serif' }}>PREMIUM</span>
+                  <span style={{ color: "#198754" }}> - 49 ₹/Plan</span>
                 </h5>
-                <p className="text-body small mb-2 text-muted">
+                <p className="text-body mb-2 fw-medium text-center" style={{ fontSize: "1.05rem", color: "#000" }}>
                   Pick any one course.
                 </p>
                 {productsLoading && products.length === 0 ? (
@@ -245,34 +246,40 @@ export function Pricing() {
                             setPremiumSelected(p.productId);
                           }
                         }}
-                        className={`rounded-2 border p-2 text-start text-decoration-none ${
+                        className={`rounded-2 border border-2 border-dark p-2 text-start text-decoration-none ${
                           premiumSelected === p.productId
-                            ? "border-primary bg-primary bg-opacity-10"
-                            : "border-secondary border-opacity-25 bg-light bg-opacity-50"
+                            ? "bg-primary bg-opacity-10"
+                            : "bg-light bg-opacity-50"
                         }`}
                         style={{ cursor: "pointer", transition: "border-color 0.2s, background-color 0.2s" }}
                       >
-                        <div className="d-flex align-items-center justify-content-between flex-wrap gap-1">
-                          <>
+                        <div className="d-flex align-items-center justify-content-between gap-2">
+                          <div className="flex-grow-1 min-w-0">
                             <span className="small fw-semibold text-dark">{titleParts.first}{" "}
                             {titleParts.second && (
                               <span className="small fw-semibold" style={{ color: titleParts.color }}>{titleParts.second}</span>
                             )}
                             </span>
-                          </>
-                          <span className="small fw-bold text-primary">{formatPrice(p.amountPaise)}</span>
+                            <button
+                              type="button"
+                              className="btn btn-link btn-sm p-0 text-decoration-none small mt-1 d-block"
+                              style={{ color: "#189fa8" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedProduct(expandedProduct === p.productId ? null : p.productId);
+                              }}
+                              aria-expanded={expandedProduct === p.productId}
+                            >
+                              {expandedProduct === p.productId ? "Hide details" : "View more"}
+                            </button>
+                          </div>
+                          <span
+                            className="fw-bold flex-shrink-0 d-flex align-items-center"
+                            style={{ color: "#189fa8", fontSize: "1.1rem" }}
+                          >
+                            {formatPrice(p.amountPaise)}/month
+                          </span>
                         </div>
-                        <button
-                          type="button"
-                          className="btn btn-link btn-sm p-0 text-decoration-none small text-primary mt-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedProduct(expandedProduct === p.productId ? null : p.productId);
-                          }}
-                          aria-expanded={expandedProduct === p.productId}
-                        >
-                          {expandedProduct === p.productId ? "Hide details" : "View more"}
-                        </button>
                         {expandedProduct === p.productId && (
                           <div className="small mt-1 text-dark" style={{ lineHeight: 1.5 }}>
                             <ul className="list-unstyled mb-0 ps-0">
@@ -295,9 +302,17 @@ export function Pricing() {
                     {paymentError}
                   </div>
                 )}
+                
                 <button
                   type="button"
-                  className="btn btn-primary btn-sm w-100 rounded-pill mt-auto"
+                  className="btn btn-sm rounded-3 py-2 fw-bold text-center text-white border-0 position-absolute"
+                  style={{
+                    backgroundColor: "#1CA0AE",
+                    opacity: 1,
+                    bottom: "-1rem",
+                    left: "0.75rem",
+                    right: "0.75rem",
+                  }}
                   onClick={handlePremiumContinue}
                   disabled={paymentLoading || !premiumSelected}
                 >
@@ -309,12 +324,15 @@ export function Pricing() {
 
           {/* Card 3: Custom bundle (stacked mini-cards) */}
           <div className="col-lg-4">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body d-flex flex-column p-3">
-                <h5 className="text-muted text-uppercase small fw-semibold mb-1">
-                  Custom – Bundle & save
+            <div className="card h-100 shadow-sm border-2 border-dark">
+              <div className="card-body d-flex flex-column p-3 text-center" style={{ fontSize: "1.05rem" }}>
+                <h5
+                  className="text-uppercase mb-1"
+                  style={{ fontFamily: '"Playfair Display", serif', color: "#000", fontSize: "1.15rem", fontWeight: 800 }}
+                >
+                  Custom – Bundle <span style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>{'&'}</span> Save
                 </h5>
-                <p className="text-body small mb-2 text-muted">
+                <p className="text-body mb-2 fw-medium" style={{ fontSize: "1.05rem", color: "#000" }}>
                   Select one or more. Discount on multiple.
                 </p>
                 {productsLoading && products.length === 0 ? (
@@ -335,14 +353,14 @@ export function Pricing() {
                             toggleCustom(p.productId);
                           }
                         }}
-                        className={`rounded-2 border p-2 text-start ${
+                        className={`rounded-2 border border-2 border-dark p-2 text-start ${
                           customSelected.has(p.productId)
-                            ? "border-primary bg-primary bg-opacity-10"
-                            : "border-secondary border-opacity-50 bg-light bg-opacity-50"
+                            ? "bg-primary bg-opacity-10"
+                            : "bg-light bg-opacity-50"
                         }`}
                         style={{ cursor: "pointer", transition: "border-color 0.2s, background-color 0.2s" }}
                       >
-                        <div className="d-flex align-items-center justify-content-between gap-2">
+                        <div className="d-flex align-items-center justify-content-between gap-2 text-start">
                           <div className="form-check mb-0 flex-grow-1">
                             <input
                               type="checkbox"
@@ -359,7 +377,12 @@ export function Pricing() {
                               )}
                             </label>
                           </div>
-                          <span className="small fw-bold text-primary">{formatPrice(p.amountPaise)}</span>
+                          <span
+                            className="fw-bold flex-shrink-0 d-flex align-items-center"
+                            style={{ color: "#189fa8", fontSize: "1.1rem" }}
+                          >
+                            {formatPrice(p.amountPaise)}
+                          </span>
                         </div>
                       </div>
                     );
@@ -374,6 +397,7 @@ export function Pricing() {
                     <span className="fw-semibold">Total: {formatPrice(customAmountPaise)}</span>
                   </div>
                 )}
+                
                 {paymentError && (
                   <div className="alert alert-danger py-2 small mb-2" role="alert">
                     {paymentError}
@@ -381,7 +405,8 @@ export function Pricing() {
                 )}
                 <button
                   type="button"
-                  className="btn btn-outline-primary btn-sm w-100 rounded-pill mt-auto"
+                  className="btn btn-sm w-100 rounded-3 mt-auto py-3 fw-bold text-center text-white border-0"
+                  style={{ backgroundColor: "#1CA0AE" }}
                   onClick={handleCustomContinue}
                   disabled={paymentLoading || customCount === 0}
                 >

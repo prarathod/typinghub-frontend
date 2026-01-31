@@ -36,19 +36,10 @@ const CARD_HOVER = {
 export function PracticePage() {
   return (
     <main className="container py-5">
-      <div
-        className="mb-4"
-        style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "0.75rem", alignItems: "center" }}
-      >
-        {/* <Link to="/" className="text-primary text-decoration-none small">
-          ← Back to home
-        </Link> */}
-        <h1 className="display-6 fw-bold text-dark mb-0 text-center">
+      <div className="text-center mb-5">
+        <h1 className="pricing-title display-6 fw-bold text-dark mb-2">
           English Typing Practice
         </h1>
-        <div />
-      </div>
-      <div className="mb-5 text-center">
         <p className="text-muted mb-0">
           Choose a category to start practicing with English typing passages.
         </p>
@@ -59,13 +50,13 @@ export function PracticePage() {
         <div className="col-12 col-md-4 col-lg-4 col-xl-4">
           <Link
             to="/practice/lessons"
-            className={`${CARD_CLASS} ${CARD_ACTIVE}`}
+            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
             style={{ ...CARD_HOVER.style, backgroundColor: '#90ceaa' }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
           >
             <h3 className="h5 fw-bold text-dark mb-2">Typing Lessons</h3>
-            <p className="mb-0 small text-secondary d-flex align-items-center gap-1 flex-wrap">
+            <p className="mb-0 small text-secondary d-flex align-items-center justify-content-center gap-1 flex-wrap">
               <SparkleIcon />
               <span>Power Up Your Day with Typing Lessons</span>
             </p>
@@ -74,11 +65,11 @@ export function PracticePage() {
       </div>
 
       {/* Middle row: Court Exam and MPSC side by side */}
-      <div className="row g-4 mb-4">
+      <div className="row g-4 mb-4 justify-content-center">
         <div className="col-12 col-md-4">
           <Link
             to="/practice/court-exam"
-            className={`${CARD_CLASS} ${CARD_ACTIVE}`}
+            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
             style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
@@ -90,7 +81,7 @@ export function PracticePage() {
         <div className="col-12 col-md-4">
           <Link
             to="/practice/mpsc"
-            className={`${CARD_CLASS} ${CARD_ACTIVE}`}
+            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
             style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
@@ -101,7 +92,7 @@ export function PracticePage() {
         </div>
         <div className="col-12 col-md-4">
           <div
-            className={`${CARD_CLASS} ${CARD_DISABLED}`}
+            className={`${CARD_CLASS} ${CARD_DISABLED} text-center`}
             style={{ cursor: "default", ...CARD_HOVER.style }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}

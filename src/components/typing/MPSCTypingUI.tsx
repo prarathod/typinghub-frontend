@@ -13,6 +13,23 @@ function formatTime(seconds: number): string {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+function ClockIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      fill="currentColor"
+      viewBox="0 0 16 16"
+      className="flex-shrink-0"
+      aria-hidden
+    >
+      <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+      <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+    </svg>
+  );
+}
+
 const FONT_SIZES = [14, 16, 18, 20, 22] as const;
 const DEFAULT_FONT_INDEX = 1;
 
@@ -37,6 +54,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const [resultsMetrics, setResultsMetrics] = useState<TypingMetrics | null>(null);
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const currentCharRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (!timerStarted || hasSubmitted) return;
@@ -55,12 +73,24 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+      e.preventDefault();
+      return;
+    }
     if (!enableBackspace && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
       return;
     }
     if (enableBackspace && e.key === "Backspace")
       setBackspaceCount((c) => c + 1);
+  };
+
+  const handleCopyPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
   };
 
   const handleRestart = () => {
@@ -134,6 +164,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     return () => document.removeEventListener("fullscreenchange", onFullScreenChange);
   }, []);
 
+  useEffect(() => {
+    currentCharRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [input]);
+
   const fontSize = FONT_SIZES[fontSizeIndex];
   const text = paragraph.text;
   const chars = [...text];
@@ -162,7 +196,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           className="mb-3"
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr auto 1fr",
+            gridTemplateColumns: "auto 1fr auto",
             gap: "0.75rem",
             alignItems: "center",
             position: "sticky",
@@ -177,25 +211,29 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
             paddingRight: "0.5rem"
           }}
         >
-          {isFullScreen && (
-            <button
-              type="button"
-              className="text-primary text-decoration-none small border-0 bg-transparent p-0"
-              onClick={() => navigate(-1)}
-              style={{ cursor: "pointer" }}
-            >
-              ← Back to practice
-            </button>
-          )}
-          <h1 className="h4 fw-bold text-dark mb-0 text-center">
+          <div className="d-flex justify-content-start">
+            {isFullScreen && (
+              <button
+                type="button"
+                className="text-primary text-decoration-none small border-0 bg-transparent p-0"
+                onClick={() => navigate(-1)}
+                style={{ cursor: "pointer" }}
+              >
+                ← Back to practice
+              </button>
+            )}
+          </div>
+          <h1 className="h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>
             {paragraph.title}
           </h1>
           <div className="d-flex justify-content-end">
             <span
-              className="badge bg-primary rounded-pill px-3 py-2 font-monospace"
+              className="d-inline-flex align-items-center gap-2 rounded-3 px-3 py-2 font-monospace"
               role="timer"
               aria-live="polite"
+              style={{ backgroundColor: "#fae8e8", color: "#ff3131" }}
             >
+              <ClockIcon />
               {formatTime(timerSeconds)}
             </span>
           </div>
@@ -276,7 +314,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </button>
         </div>
 
-        <div className="card border shadow-sm mb-3">
+        <div className="card border shadow-sm mb-3 lesson-typing-card">
           <div className="card-body">
             <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
             <div
@@ -297,9 +335,11 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                     const isPast = i < input.length;
                     const correct = isPast && input[i] === c;
                     const wrong = isPast && input[i] !== c;
+                    const isCurrent = i === input.length;
                     return (
                       <span
                         key={i}
+                        ref={isCurrent ? currentCharRef : undefined}
                         style={{
                           color: wrong
                             ? "#b02a37"
@@ -321,7 +361,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
         </div>
 
-        <div className="card border shadow-sm">
+        <div className="card border shadow-sm lesson-typing-card">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-2">
               <h2 className="h6 fw-semibold mb-0">Your typing</h2>
@@ -335,10 +375,13 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
               ref={textareaRef}
               className="form-control font-monospace"
               rows={8}
-              placeholder="Start typing the paragraph above... Timer starts on first keystroke."
+              placeholder="Start your practice here..."
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              onCopy={handleCopyPaste}
+              onPaste={handleCopyPaste}
+              onCut={handleCopyPaste}
               spellCheck={false}
               disabled={hasSubmitted}
               autoFocus
