@@ -182,6 +182,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         expectedText={paragraph.text}
         onRetry={handleRestart}
         onNext={() => navigate(`/practice/${paragraph.category}`)}
+        portalContainer={isFullScreen ? fullscreenRef.current : undefined}
       />
       <div
         ref={fullscreenRef}

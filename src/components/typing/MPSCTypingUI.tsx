@@ -182,6 +182,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         expectedText={paragraph.text}
         onRetry={handleRestart}
         onNext={() => navigate("/practice/mpsc")}
+        portalContainer={isFullScreen ? fullscreenRef.current : undefined}
       />
       <div
         ref={fullscreenRef}

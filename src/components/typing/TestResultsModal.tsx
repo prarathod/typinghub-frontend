@@ -65,6 +65,8 @@ type TestResultsModalProps = {
   expectedText?: string;
   onRetry?: () => void;
   onNext?: () => void;
+  /** Portal container - use fullscreen element when in fullscreen so modal displays correctly */
+  portalContainer?: HTMLElement | null;
 };
 
 export function TestResultsModal({
@@ -74,7 +76,8 @@ export function TestResultsModal({
   paragraphId,
   expectedText,
   onRetry,
-  onNext
+  onNext,
+  portalContainer
 }: TestResultsModalProps) {
   const [showViewDetails, setShowViewDetails] = useState(false);
   useEffect(() => {
@@ -106,6 +109,7 @@ export function TestResultsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        container={portalContainer}
         className="max-w-[90vw] max-h-[90vh] overflow-y-auto border-2 border-dark box-border"
         style={{
           margin: "1.5rem",
