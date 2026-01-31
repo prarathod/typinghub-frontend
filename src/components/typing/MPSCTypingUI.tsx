@@ -6,6 +6,11 @@ import { TestResultsModal } from "@/components/typing/TestResultsModal";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
+import {
+  getWordSegments,
+  evaluateWords,
+  type WordStatus
+} from "@/lib/wordHighlighting";
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -170,7 +175,37 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const fontSize = FONT_SIZES[fontSizeIndex];
   const text = paragraph.text;
-  const chars = [...text];
+  const segments = getWordSegments(text);
+  const evaluations = evaluateWords(text, input, { caseSensitive: false });
+  const targetWordCount = text.trim().split(/\s+/).filter(Boolean).length;
+
+  function getSegmentStatus(seg: { text: string; wordIndex: number; isWord: boolean }): WordStatus | "space" {
+    if (!seg.isWord) return "space";
+    const eval_ = evaluations[seg.wordIndex];
+    return eval_?.status ?? "pending";
+  }
+
+  function getStatusStyles(status: WordStatus | "space"): React.CSSProperties {
+    switch (status) {
+      case "correct":
+        return { color: "#15803d", fontWeight: 600 };
+      case "incorrect":
+        return { color: "#b02a37", fontWeight: 600 };
+      case "active":
+        return { color: "#1a1a1a", fontWeight: 500 };
+      case "pending":
+      case "space":
+      default:
+        return { color: "#495057", fontWeight: 400 };
+    }
+  }
+
+  let charOffset = 0;
+  const segmentWithCursor = segments.find((seg) => {
+    const start = charOffset;
+    charOffset += seg.text.length;
+    return input.length >= start && input.length < charOffset;
+  });
 
   return (
     <main className="container py-4">
@@ -332,28 +367,27 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
             >
               {enableHighlight ? (
                 <>
-                  {chars.map((c, i) => {
-                    const isPast = i < input.length;
-                    const correct = isPast && input[i] === c;
-                    const wrong = isPast && input[i] !== c;
-                    const isCurrent = i === input.length;
+                  {segments.map((seg, segIdx) => {
+                    const status = getSegmentStatus(seg);
+                    const isCurrentSegment = seg === segmentWithCursor;
                     return (
                       <span
-                        key={i}
-                        ref={isCurrent ? currentCharRef : undefined}
-                        style={{
-                          color: wrong
-                            ? "#b02a37"
-                            : correct
-                              ? "#15803d"
-                              : "#495057",
-                          fontWeight: correct ? 600 : wrong ? 600 : 400
-                        }}
+                        key={segIdx}
+                        ref={isCurrentSegment ? currentCharRef : undefined}
+                        style={getStatusStyles(status)}
                       >
-                        {c === "\n" ? "\n" : c}
+                        {seg.text}
                       </span>
                     );
                   })}
+                  {evaluations.slice(targetWordCount).map((eval_, idx) => (
+                    <span
+                      key={`extra-${idx}`}
+                      style={getStatusStyles("incorrect")}
+                    >
+                      {" "}{eval_.text}
+                    </span>
+                  ))}
                 </>
               ) : (
                 <span style={{ color: "#1a1a1a" }}>{text}</span>
