@@ -192,7 +192,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
       case "incorrect":
         return { color: "#b02a37", fontWeight: 600 };
       case "omitted":
-        return { color: "#000000", fontWeight: 600 };
+        return { color: "#000000", fontWeight: 500 };
       case "active":
         return { color: "#000000", fontWeight: 500 };
       case "pending":
