@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import type { TypingMetrics } from "@/lib/typingMetrics";
 import { ViewDetailsSection } from "@/components/typing/ViewDetailsSection";
+import { alignWords, getWordSegments, splitWords as splitWordsUtil } from "@/lib/wordHighlighting";
 
 function formatTimeLong(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -49,6 +50,51 @@ function UserInputHighlighted({
             }}
           >
             {t}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
+/** Renders expected paragraph with correct (green), incorrect (red), omitted (orange + strikethrough). */
+function ExpectedParagraphHighlighted({
+  expectedText,
+  userInput
+}: {
+  expectedText: string;
+  userInput: string;
+}) {
+  const targetWords = splitWordsUtil(expectedText);
+  const typedWords = splitWordsUtil(userInput.trim());
+  const aligned = alignWords(targetWords, typedWords, { caseSensitive: false });
+  const statusByIndex = new Map(aligned.map((a) => [a.wordIndex, a.status]));
+  const segments = getWordSegments(expectedText);
+
+  return (
+    <>
+      {segments.map((seg, i) => {
+        if (!seg.isWord) return <span key={i}>{seg.text}</span>;
+        const status = statusByIndex.get(seg.wordIndex);
+        const color =
+          status === "correct"
+            ? "#15803d"
+            : status === "incorrect"
+              ? "#b91c1c"
+              : status === "omitted"
+                ? "#c2410c"
+                : "#374151";
+        return (
+          <span
+            key={i}
+            style={{
+              color,
+              textDecoration: status === "omitted" ? "line-through" : undefined,
+              padding: "0 1px",
+              borderRadius: "2px"
+            }}
+          >
+            {seg.text}
           </span>
         );
       })}
@@ -207,6 +253,26 @@ export function TestResultsModal({
               )}
             </div>
           </div>
+          {expectedText && (
+            <div className="mt-4 mb-3">
+              <strong className="text-dark">User Paragraph:</strong>
+              <div
+                className="mt-2 p-3 rounded font-monospace small text-break"
+                style={{
+                  whiteSpace: "pre-wrap",
+                  maxHeight: "160px",
+                  overflowY: "auto",
+                  backgroundColor: "#f8f9fa",
+                  border: "1px solid #dee2e6"
+                }}
+              >
+                <ExpectedParagraphHighlighted
+                  expectedText={expectedText}
+                  userInput={metrics.userInput}
+                />
+              </div>
+            </div>
+          )}
         </div>
         <div className="d-flex flex-wrap justify-content-center pt-3 pb-1" style={{ gap: "0.75rem" }}>
           <button
