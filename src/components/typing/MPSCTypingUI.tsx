@@ -36,7 +36,7 @@ function ClockIcon() {
 }
 
 const FONT_SIZES = [14, 16, 18, 20, 22] as const;
-const DEFAULT_FONT_INDEX = 1;
+const DEFAULT_FONT_INDEX = 2;
 
 const AUTO_SUBMIT_OPTIONS = [
   { value: 10 * 60, label: "10 minutes" },
@@ -167,7 +167,8 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
-    if (e.key === "Enter") {
+    // MPSC: allow Enter only; block Tab
+    if (e.key === "Tab") {
       e.preventDefault();
       return;
     }

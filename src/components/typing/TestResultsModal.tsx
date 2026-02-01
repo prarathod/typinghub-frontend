@@ -22,6 +22,15 @@ function splitWords(s: string): string[] {
   return s.split(/\s+/).filter(Boolean);
 }
 
+/** Small teal right-pointing triangular arrow before each metric. */
+function MetricArrow() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="#0d9488" className="flex-shrink-0 me-2" style={{ marginTop: "2px" }} aria-hidden>
+      <path d="M8 4l12 8-12 8V4z" />
+    </svg>
+  );
+}
+
 /** Renders user input with correct (green) and incorrect (red) word highlighting when expectedText is provided. */
 function UserInputHighlighted({
   userInput,
@@ -196,40 +205,52 @@ export function TestResultsModal({
           className="small text-dark"
           style={{ paddingTop: "0.25rem", paddingBottom: "0.5rem" }}
         >
-          <div className="row g-4 mb-4">
-            <div className="col-6">
+          <div
+            className="row g-0 mb-4"
+            style={{
+              border: "1px solid #212529",
+              borderRadius: "0.5rem",
+              overflow: "hidden"
+            }}
+          >
+            <div
+              className="col-6 p-3"
+              style={{
+                borderRight: "1px solid #212529"
+              }}
+            >
               <ul className="list-unstyled mb-0">
-                <li className="mb-3">
-                  <strong>Time Taken:</strong>{" "}
-                  {formatTimeLong(metrics.timeTakenSeconds)}
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Time Taken :</strong> {formatTimeLong(metrics.timeTakenSeconds)}</span>
                 </li>
-                <li className="mb-3">
-                  <strong>Total Typed words:</strong> {metrics.wordsTyped}
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Total Typed words :</strong> {metrics.wordsTyped}</span>
                 </li>
-                <li className="mb-3">
-                  <strong>Correct Words:</strong> {metrics.correctWordsCount}
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Correct Words :</strong> {metrics.correctWordsCount}</span>
                 </li>
-                <li className="mb-3">
-                  <strong>Accuracy:</strong> {metrics.accuracy}%
-                </li>
-                <li className="mb-3">
-                  <strong>Backspace Count:</strong> {metrics.backspaceCount}
+                <li className="d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Accuracy :</strong> {metrics.accuracy}%</span>
                 </li>
               </ul>
             </div>
-            <div className="col-6">
+            <div className="col-6 p-3">
               <ul className="list-unstyled mb-0">
-                <li className="mb-3">
-                  <strong>Incorrect Words:</strong> {metrics.incorrectWordsCount}
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
                 </li>
-                <li className="mb-3">
-                  <strong>Omitted Words:</strong> {metrics.omittedWordsCount}
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Keystrokes Per Minute :</strong> {metrics.kpm}</span>
                 </li>
-                <li className="mb-3">
-                  <strong>Keystrokes Per Minute:</strong> {metrics.kpm}
-                </li>
-                <li className="mb-3">
-                  <strong>Words Per Minute:</strong> {metrics.wpm}
+                <li className="d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Words Per Minute :</strong> {metrics.wpm}</span>
                 </li>
               </ul>
             </div>

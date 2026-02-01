@@ -36,7 +36,7 @@ function ClockIcon() {
 }
 
 const FONT_SIZES = [14, 16, 18, 20, 22] as const;
-const DEFAULT_FONT_INDEX = 1;
+const DEFAULT_FONT_INDEX = 2;
 
 type LessonTypingUIProps = {
   paragraph: ParagraphDetail;
@@ -60,6 +60,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentCharRef = useRef<HTMLSpanElement>(null);
+  const paragraphScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!timerStarted || hasSubmitted) return;
@@ -169,11 +170,22 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     return () => document.removeEventListener("fullscreenchange", onFullScreenChange);
   }, []);
 
-  useEffect(() => {
-    currentCharRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [input]);
-
   const fontSize = FONT_SIZES[fontSizeIndex];
+
+  useEffect(() => {
+    const el = currentCharRef.current;
+    const container = paragraphScrollRef.current;
+    if (!el || !container) return;
+    const lineHeightPx = fontSize * 1.6;
+    const targetOffsetFromBottom = 1 * lineHeightPx;
+    const scrollTop =
+      el.offsetTop - container.clientHeight + targetOffsetFromBottom;
+    const maxScroll = container.scrollHeight - container.clientHeight;
+    container.scrollTo({
+      top: Math.max(0, Math.min(scrollTop, maxScroll)),
+      behavior: "smooth"
+    });
+  }, [input, fontSize]);
   const text = paragraph.text;
   const segments = getWordSegments(text);
   const evaluations = evaluateWords(text, input, { caseSensitive: false });
@@ -356,6 +368,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           <div className="card-body">
             <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
             <div
+              ref={paragraphScrollRef}
               className="font-monospace overflow-auto rounded-3 p-4 mb-0"
               style={{
                 whiteSpace: "pre-wrap",
@@ -414,7 +427,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
               ref={textareaRef}
               className="form-control font-monospace"
               rows={8}
-              placeholder="Start typing the paragraph above... Timer starts on first keystroke."
+              placeholder="Start your practice here..."
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}

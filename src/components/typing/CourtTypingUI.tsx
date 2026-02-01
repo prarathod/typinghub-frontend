@@ -138,6 +138,21 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted || !isStarted) return;
+    // Court: allow Enter and Tab; insert tab in textarea instead of moving focus
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const ta = e.currentTarget;
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const tabSpaces = "    ";
+      const next = input.slice(0, start) + tabSpaces + input.slice(end);
+      setInput(next);
+      setTotalKeystrokes((k) => k + 4);
+      setTimeout(() => {
+        ta.selectionStart = ta.selectionEnd = start + tabSpaces.length;
+      }, 0);
+      return;
+    }
     if (e.key === "Backspace") {
       e.preventDefault();
       setBackspaceCount((c) => c + 1);
@@ -230,13 +245,14 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             <div className="card-body">
               <h2 className="h6 fw-semibold mb-3">Paragraph to type</h2>
               <div
-                className="font-monospace overflow-auto rounded-3 p-4 mb-0"
+                className="overflow-auto rounded-3 p-4 mb-0"
                 style={{
                   whiteSpace: "pre-wrap",
                   minHeight: "200px",
                   maxHeight: "400px",
                   backgroundColor: "#f8f9fa",
-                  fontSize: "16px",
+                  fontSize: "18px",
+                  fontFamily: "inherit",
                   lineHeight: 1.6,
                   color: "#1a1a1a"
                 }}
@@ -364,7 +380,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
                 disabled={hasSubmitted}
                 autoFocus
                 aria-label="Typing input"
-                style={{ fontSize: "16px", lineHeight: 1.6, padding: 4, minHeight: "80vh" }}
+                style={{ fontSize: "18px", lineHeight: 1.6, padding: 4, minHeight: "80vh" }}
               />
             </div>
           </div>

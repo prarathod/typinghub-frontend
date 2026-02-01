@@ -9,13 +9,19 @@ import { AdminLoginPage } from "@/pages/admin/AdminLoginPage";
 import { AdminParagraphsPage } from "@/pages/admin/AdminParagraphsPage";
 import { AdminSubmissionsPage } from "@/pages/admin/AdminSubmissionsPage";
 import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
+import { AboutPage } from "@/pages/AboutPage";
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
+import { ContactPage } from "@/pages/ContactPage";
+import { DisclaimerPage } from "@/pages/DisclaimerPage";
 import { EnglishPracticePage } from "@/pages/EnglishPracticePage";
 import { FeaturesPage } from "@/pages/FeaturesPage";
 import { LandingPage } from "@/pages/LandingPage";
 import { MarathiPracticePage } from "@/pages/MarathiPracticePage";
 import { PracticePage } from "@/pages/PracticePage";
+import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { RefundPolicyPage } from "@/pages/RefundPolicyPage";
+import { TermsPage } from "@/pages/TermsPage";
 import { TypingPage } from "@/pages/TypingPage";
 
 function AppContent() {
@@ -29,7 +35,7 @@ function AppContent() {
       style={{ minHeight: "100vh" }}
     >
       {!isAdminRoute && !isTypingPage && <Navbar />}
-      <div>
+      <div className="flex-grow-1 d-flex flex-column">
         <Routes>
           <Route path="/admin" element={<AdminLoginPage />} />
           <Route
@@ -73,10 +79,16 @@ function AppContent() {
             }
           />
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/practice" element={<PracticePage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/disclaimer" element={<DisclaimerPage />} />
+          <Route path="/refund-policy" element={<RefundPolicyPage />} />
           <Route path="/practice/lessons" element={<EnglishPracticePage />} />
           <Route path="/practice/court-exam" element={<EnglishPracticePage />} />
           <Route path="/practice/mpsc" element={<EnglishPracticePage />} />

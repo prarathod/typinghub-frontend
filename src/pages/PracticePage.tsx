@@ -40,8 +40,8 @@ export function PracticePage() {
         <h1 className="pricing-title display-6 fw-bold text-dark mb-2">
           English Typing Practice
         </h1>
-        <p className="text-muted mb-0">
-          Choose a category to start practicing with English typing passages.
+        <p className="text-dark mb-0">
+          Select a category to practice English typing based on exam patterns.
         </p>
       </div>
 

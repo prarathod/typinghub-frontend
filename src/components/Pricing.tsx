@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import blueIcon from "@/assets/blueIcon.png";
+import blackIcon from "@/assets/blackIcon.png";
 import {
   createOrder,
   fetchProducts,
@@ -24,19 +26,31 @@ const FALLBACK_BUNDLE_RULES = [
   { count: 4, amountPaise: 17500 },
 ];
 
-/** Right-pointing arrow icon for free features list — alternating black and teal. */
+/** Right-pointing arrow icon for free features list — alternating black and blue. */
 function ArrowIconBlack() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-1 me-2" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }} aria-hidden>
-      <path d="M9 6l6 6-6 6" stroke="#212529" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img
+      src={blackIcon}
+      alt=""
+      width={18}
+      height={18}
+      className="flex-shrink-0 mt-1 me-2"
+      // style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }}
+      aria-hidden
+    />
   );
 }
 function ArrowIconTeal() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-1 me-2" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }} aria-hidden>
-      <path d="M9 6l6 6-6 6" stroke="#189fa8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img
+      src={blueIcon}
+      alt=""
+      width={18}
+      height={18}
+      className="flex-shrink-0 mt-1 me-2"
+      // style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }}
+      aria-hidden
+    />
   );
 }
 
@@ -215,7 +229,7 @@ export function Pricing() {
           </div>
 
           {/* Card 2: Premium – one course (stacked mini-cards) */}
-          <div className="col-lg-4">
+          <div className="col-lg-4" id="most-popular">
             <div className="card h-100 shadow-sm border-2 border-primary position-relative overflow-visible">
               <div className="card-header text-white text-center py-2" style={{ backgroundColor: "#189fa8" }}>
                 <span className="fw-bold" style={{ fontSize: "1.1rem" }}>Most popular</span>

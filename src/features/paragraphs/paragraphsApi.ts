@@ -35,7 +35,7 @@ export type FetchParagraphsParams = {
 export async function fetchParagraphs(
   params: FetchParagraphsParams
 ): Promise<ParagraphsResponse> {
-  const { language, category, price, page = 1, limit = 12 } = params;
+  const { language, category, price, page = 1, limit = 24 } = params;
   const queryParams: Record<string, string | number> = {
     language,
     page,

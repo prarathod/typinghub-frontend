@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
@@ -104,7 +104,7 @@ export function EnglishPracticePage() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingProductId, setPricingProductId] = useState<string | null>(null);
-  const limit = 12;
+  const limit = 48;
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
@@ -132,6 +132,19 @@ export function EnglishPracticePage() {
     }
     navigate(`/practice/english/${p._id}`);
   };
+
+  // When redirected from TypingPage (no access), open the appropriate popup and clear state
+  useEffect(() => {
+    const state = location.state as { openLogin?: boolean; openPricing?: boolean; productId?: string } | null;
+    if (state?.openLogin) {
+      setLoginOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    } else if (state?.openPricing) {
+      setPricingOpen(true);
+      if (state.productId) setPricingProductId(state.productId);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["paragraphs", "english", category, price, page],
@@ -162,8 +175,8 @@ export function EnglishPracticePage() {
         <h1 className="pricing-title display-6 fw-bold text-dark mb-2">
           {categoryTitle}
         </h1>
-        <p className="text-muted mb-0">
-          Start a focused session with English typing passages. Track your progress in real time.
+        <p className="text-dark mb-0">
+          Learn typing basics before starting practice.
         </p>
       </div>
 

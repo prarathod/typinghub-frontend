@@ -3,56 +3,54 @@ export const TermsPage = () => {
     <div className="mx-auto max-w-4xl px-4 py-12">
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-500">
-          Terms of service
+          Terms &amp; Conditions
         </p>
         <h1 className="text-3xl font-semibold text-slate-900">
-          Terms and conditions
+          Terms &amp; Conditions
         </h1>
         <p className="text-sm text-slate-600">
-          Please read these terms carefully before using Typing Practice Hub.
+          By accessing or using TypingPracticeHub, you agree to comply with these Terms and Conditions.
         </p>
       </div>
       <div className="mt-8 space-y-8 text-sm text-slate-700">
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">
-            Account access
+            Services
           </h2>
           <p>
-            You are responsible for maintaining the confidentiality of your
-            account and for all activities that occur under your account.
-          </p>
-        </section>
-        <section className="space-y-2">
-          <h2 className="text-lg font-semibold text-slate-900">Acceptable use</h2>
-          <p>
-            You agree not to misuse the platform, attempt unauthorized access,
-            or disrupt other users. Content should be used for lawful typing
-            practice only.
-          </p>
-        </section>
-        <section className="space-y-2">
-          <h2 className="text-lg font-semibold text-slate-900">Payments</h2>
-          <p>
-            Paid plans, if offered, provide access to premium features and
-            rankings. Payments are non-refundable unless required by law.
+            TypingPracticeHub provides online typing practice passages, lessons, and performance analysis tools for educational and practice purposes only.
           </p>
         </section>
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">
-            Limitation of liability
+            User Responsibility
           </h2>
           <p>
-            Typing Practice Hub is provided on an “as is” basis. We are not liable for any
-            indirect or incidental damages arising from use of the platform.
+            Users are responsible for maintaining the confidentiality of their login credentials. Any activity performed using the account is the user&apos;s responsibility.
           </p>
         </section>
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">
-            Changes to terms
+            Subscription &amp; Payments
           </h2>
           <p>
-            We may update these terms from time to time. Continued use of the
-            service indicates acceptance of the updated terms.
+            Paid plans provide access to premium typing content for the selected duration. Fees once paid are non-refundable unless stated otherwise.
+          </p>
+        </section>
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Prohibited Use
+          </h2>
+          <p>
+            Users must not misuse the platform, attempt unauthorized access, or use automated tools.
+          </p>
+        </section>
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Modification of Services
+          </h2>
+          <p>
+            TypingPracticeHub reserves the right to modify or discontinue any service without prior notice.
           </p>
         </section>
       </div>

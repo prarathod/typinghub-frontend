@@ -6,59 +6,51 @@ export const PrivacyPolicyPage = () => {
           Privacy policy
         </p>
         <h1 className="text-3xl font-semibold text-slate-900">
-          Your data, protected
+          Privacy Policy
         </h1>
         <p className="text-sm text-slate-600">
           Last updated: {new Date().toLocaleDateString()}
         </p>
       </div>
       <div className="mt-8 space-y-8 text-sm text-slate-700">
+        <p>
+          TypingPracticeHub respects the privacy of its users. This Privacy Policy describes how we collect, use, and protect your information.
+        </p>
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">
-            Information we collect
+            Information We Collect
           </h2>
           <p>
-            We collect your name, email address, and profile photo when you sign
-            in with Google. We also collect typing practice metrics such as WPM,
-            accuracy, and session history to help you track progress.
-          </p>
-        </section>
-        <section className="space-y-2">
-          <h2 className="text-lg font-semibold text-slate-900">
-            How we use your information
-          </h2>
-          <p>
-            We use your information to create your account, personalize your
-            practice experience, and show your progress on dashboards and
-            leaderboards (if you opt in or subscribe to paid plans).
-          </p>
-        </section>
-        <section className="space-y-2">
-          <h2 className="text-lg font-semibold text-slate-900">Cookies</h2>
-          <p>
-            We use cookies for authentication and to keep you signed in. You can
-            disable cookies in your browser, but some features may not work.
+            We may collect basic user information such as name, email address, and login details during registration. Payment-related information is processed securely through third-party payment gateways and is not stored by us.
           </p>
         </section>
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">
-            Third-party services
+            Use of Information
           </h2>
           <p>
-            Google OAuth is used for authentication. Google may provide us basic
-            profile information as part of the login process.
+            Collected information is used only to provide access to typing practice services, improve user experience, and communicate important updates.
           </p>
         </section>
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">
-            Contact and updates
+            Data Security
           </h2>
           <p>
-            If you have any questions about this policy, email us at
-            help@typingpracticehub.in. We may update this policy periodically, and the
-            latest version will always be available on this page.
+            We implement reasonable security measures to protect user data. However, no method of online transmission is 100% secure.
           </p>
         </section>
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Third-Party Services
+          </h2>
+          <p>
+            We may use trusted third-party services for hosting, analytics, and payment processing.
+          </p>
+        </section>
+        <p className="font-medium text-slate-900">
+          By using TypingPracticeHub, you agree to this Privacy Policy.
+        </p>
       </div>
     </div>
   );

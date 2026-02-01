@@ -111,9 +111,10 @@ a {
   }
 }
 
-/* Lesson typing: card borders — bold red */
+/* Lesson typing: card borders and text color */
 .typing-lesson-root .lesson-typing-card {
-  border: 2px solid #ff3131 !important;
+  color: rgba(33, 37, 41, 1);
+  border: 2px solid rgba(151, 72, 72, 1) !important;
 }
 
 /* Typing intro: "Sign up and unlock 5 Additional Passages" card — light green on mobile only (match Marathi typing) */

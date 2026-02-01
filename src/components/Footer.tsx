@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+import shortLogo from "@/assets/shortLogo.jpg";
+
 const FOOTER_BG = "#1e3a5f";
 
 export function Footer() {
@@ -10,22 +12,22 @@ export function Footer() {
           <div className="col-12 col-lg-auto mb-4 mb-lg-0">
             <Link to="/" className="d-flex align-items-center text-decoration-none">
               <img
-                src="https://flowbite.com/docs/images/logo.svg"
+                src={shortLogo}
                 className="me-3"
-                alt="TypingHub Logo"
-                style={{ height: "2rem", filter: "brightness(0) invert(1)" }}
+                alt="Typing Practice Hub"
+                style={{ height: "2rem", width: "auto" }}
               />
               <span className="fs-5 fw-semibold text-white">Typing Practice Hub</span>
             </Link>
           </div>
           <div className="col-12 col-lg-auto ps-0">
-            <div className="row g-4 g-lg-5">
-              <div className="col-6 col-sm-4">
-                <h6 className="text-uppercase fw-semibold text-white mb-3">Follow us</h6>
+            <div className="row g-3 g-lg-4 text-start">
+              <div className="col-4">
+                <h6 className="text-uppercase fw-semibold text-white mb-2 small">Follow us</h6>
                 <ul className="list-unstyled small mb-0">
-                  <li className="mb-2">
+                  <li className="mb-1">
                     <a
-                      href="https://t.me"
+                      href="https://t.me/TypingPracticeHub"
                       target="_blank"
                       rel="noreferrer"
                       className="text-white text-opacity-75 text-decoration-none"
@@ -47,17 +49,42 @@ export function Footer() {
                   </li>
                 </ul>
               </div>
-              <div className="col-6 col-sm-4">
-                <h6 className="text-uppercase fw-semibold text-white mb-3">Legal</h6>
+              <div className="col-4">
+                <h6 className="text-uppercase fw-semibold text-white mb-2 small">Company</h6>
                 <ul className="list-unstyled small mb-0">
-                  <li className="mb-2">
+                  <li className="mb-1">
+                    <Link to="/about" className="text-white text-opacity-75 text-decoration-none" style={{ opacity: 0.9 }}>
+                      About Us
+                    </Link>
+                  </li>
+                  <li className="mb-1">
+                    <Link to="/contact" className="text-white text-opacity-75 text-decoration-none" style={{ opacity: 0.9 }}>
+                      Contact Us
+                    </Link>
+                  </li>
+                  <li>
                     <Link to="/privacy-policy" className="text-white text-opacity-75 text-decoration-none" style={{ opacity: 0.9 }}>
                       Privacy Policy
                     </Link>
                   </li>
-                  <li>
+                </ul>
+              </div>
+              <div className="col-4">
+                <h6 className="text-uppercase fw-semibold text-white mb-2 small">Legal</h6>
+                <ul className="list-unstyled small mb-0">
+                  <li className="mb-1">
                     <Link to="/terms" className="text-white text-opacity-75 text-decoration-none" style={{ opacity: 0.9 }}>
                       Terms &amp; Conditions
+                    </Link>
+                  </li>
+                  <li className="mb-1">
+                    <Link to="/disclaimer" className="text-white text-opacity-75 text-decoration-none" style={{ opacity: 0.9 }}>
+                      Disclaimer
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/refund-policy" className="text-white text-opacity-75 text-decoration-none" style={{ opacity: 0.9 }}>
+                      Refund Policy
                     </Link>
                   </li>
                 </ul>
@@ -76,7 +103,7 @@ export function Footer() {
           </span>
           <div className="d-flex gap-3">
             <a
-              href="https://t.me"
+              href="https://t.me/TypingPracticeHub"
               target="_blank"
               rel="noreferrer"
               className="text-white text-opacity-75 text-decoration-none"

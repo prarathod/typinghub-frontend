@@ -18,13 +18,15 @@ type PricingDialogProps = {
   onOpenChange: (open: boolean) => void;
   /** When set, show single-product unlock for this course. */
   productId?: string | null;
+  /** When set, "View pricing" uses this callback; otherwise redirects to homepage #most-popular section. */
+  onViewPricingRedirect?: () => void;
 };
 
 function formatPrice(paise: number): string {
   return `₹${paise / 100}`;
 }
 
-export function PricingDialog({ open, onOpenChange, productId }: PricingDialogProps) {
+export function PricingDialog({ open, onOpenChange, productId, onViewPricingRedirect }: PricingDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setUser = useAuthStore((s) => s.setUser);
@@ -132,7 +134,7 @@ export function PricingDialog({ open, onOpenChange, productId }: PricingDialogPr
                 Choose a plan
               </h5>
               <p className="text-muted small mb-4">
-                Visit the pricing section below to pick a single course or a custom bundle.
+                Visit the pricing section below to pick a single course or a custom bundle. 
               </p>
             </>
           )}
@@ -149,7 +151,11 @@ export function PricingDialog({ open, onOpenChange, productId }: PricingDialogPr
                 ? handleGetStarted
                 : () => {
                     onOpenChange(false);
-                    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
+                    if (onViewPricingRedirect) {
+                      onViewPricingRedirect();
+                    } else {
+                      window.location.href = "/#most-popular";
+                    }
                   }
             }
             disabled={loading || (Boolean(productId) && !product)}
