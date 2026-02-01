@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
@@ -68,6 +68,11 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     return () => clearInterval(id);
   }, [timerStarted, hasSubmitted]);
 
+  // Focus textarea after mount (avoids focus-related throws during first paint)
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
     const next = e.target.value;
@@ -112,6 +117,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   };
 
   const handleSubmit = async () => {
+    if (typeof paragraph?.text !== "string") return;
     setHasSubmitted(true);
     const metrics = computeTypingMetrics(
       paragraph.text,
@@ -186,10 +192,24 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
       behavior: "smooth"
     });
   }, [input, fontSize]);
-  const text = paragraph.text;
+  // Ensure text is always a string so getWordSegments/evaluateWords never throw (e.g. if API returns non-string)
+  const text = typeof paragraph?.text === "string" ? paragraph.text : "";
   const segments = getWordSegments(text);
   const evaluations = evaluateWords(text, input, { caseSensitive: false });
   const targetWordCount = text.trim().split(/\s+/).filter(Boolean).length;
+
+  if (!text.trim()) {
+    return (
+      <main className="container py-5" style={{ backgroundColor: "#fff", minHeight: "80vh" }}>
+        <div className="alert alert-warning">
+          This lesson has no content yet. Please try another lesson.
+        </div>
+        <Link to="/practice/lessons" className="btn btn-outline-primary mt-2">
+          ← Back to lessons
+        </Link>
+      </main>
+    );
+  }
 
   function getSegmentStatus(seg: { text: string; wordIndex: number; isWord: boolean }): WordStatus | "space" {
     if (!seg.isWord) return "space";
@@ -223,16 +243,18 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
   return (
     <main className="container py-4">
-      <TestResultsModal
-        open={resultsOpen}
-        onOpenChange={setResultsOpen}
-        metrics={resultsMetrics}
-        paragraphId={paragraph._id}
-        expectedText={paragraph.text}
-        onRetry={handleRestart}
-        onNext={() => navigate(`/practice/${paragraph.category}`)}
-        portalContainer={isFullScreen ? fullscreenRef.current : undefined}
-      />
+      {resultsOpen && (
+        <TestResultsModal
+          open={resultsOpen}
+          onOpenChange={setResultsOpen}
+          metrics={resultsMetrics}
+          paragraphId={paragraph?._id ?? ""}
+          expectedText={typeof paragraph?.text === "string" ? paragraph.text : undefined}
+          onRetry={handleRestart}
+          onNext={() => navigate(`/practice/${paragraph?.category ?? "lessons"}`)}
+          portalContainer={isFullScreen ? fullscreenRef.current : undefined}
+        />
+      )}
       <div
         ref={fullscreenRef}
         className="typing-lesson-root"
@@ -274,7 +296,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
             )}
           </div>
           <h1 className="h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>
-            {paragraph.title}
+            {paragraph?.title ?? "Lesson"}
           </h1>
           <div className="d-flex justify-content-end">
             <span
@@ -436,7 +458,6 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
               onCut={handleCopyPaste}
               spellCheck={false}
               disabled={hasSubmitted}
-              autoFocus
               aria-label="Typing input"
               style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}
             />

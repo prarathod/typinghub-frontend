@@ -39,6 +39,7 @@ function UserInputHighlighted({
   userInput: string;
   expectedText: string;
 }) {
+  if (typeof expectedText !== "string") return <>{userInput}</>;
   const expectedWords = splitWords(expectedText);
   const tokens = userInput.split(/(\s+)/);
   let wordIndex = 0;
@@ -74,6 +75,7 @@ function ExpectedParagraphHighlighted({
   expectedText: string;
   userInput: string;
 }) {
+  if (typeof expectedText !== "string") return null;
   const targetWords = splitWordsUtil(expectedText);
   const typedWords = splitWordsUtil(userInput.trim());
   const aligned = alignWords(targetWords, typedWords, { caseSensitive: false });

@@ -22,6 +22,7 @@ import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { RefundPolicyPage } from "@/pages/RefundPolicyPage";
 import { TermsPage } from "@/pages/TermsPage";
+import { TypingPageErrorBoundary } from "@/components/TypingPageErrorBoundary";
 import { TypingPage } from "@/pages/TypingPage";
 
 function AppContent() {
@@ -37,7 +38,7 @@ function AppContent() {
       {!isAdminRoute && !isTypingPage && <Navbar />}
       <div
         className="flex-grow-1 d-flex flex-column"
-        style={isTypingPage ? { backgroundColor: "#f6f9fb", minHeight: "100vh" } : undefined}
+        style={isTypingPage ? { backgroundColor: "#f6f9fb", minHeight: "100vh", width: "100%" } : undefined}
       >
         <Routes>
           <Route path="/admin" element={<AdminLoginPage />} />
@@ -95,7 +96,7 @@ function AppContent() {
           <Route path="/practice/lessons" element={<EnglishPracticePage />} />
           <Route path="/practice/court-exam" element={<EnglishPracticePage />} />
           <Route path="/practice/mpsc" element={<EnglishPracticePage />} />
-          <Route path="/practice/english/:id" element={<TypingPage />} />
+          <Route path="/practice/english/:id" element={<TypingPageErrorBoundary><TypingPage /></TypingPageErrorBoundary>} />
           <Route path="/practice/marathi" element={<MarathiPracticePage />} />
         </Routes>
       </div>

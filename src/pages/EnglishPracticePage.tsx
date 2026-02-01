@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { LoginDialog } from "@/components/LoginDialog";
 import { PricingDialog } from "@/components/PricingDialog";
 import {
+  fetchParagraphById,
   fetchParagraphs,
   type ParagraphListItem,
   type PriceFilter,
@@ -15,48 +16,82 @@ import { useAuthStore } from "@/stores/authStore";
 
 type ParagraphCardProps = {
   p: ParagraphListItem;
-  onClick: (p: ParagraphListItem) => void;
+  /** For free lessons: navigate via Link. */
+  to?: string;
+  /** For paid lessons: show login/pricing dialog on click. */
+  onClick?: (p: ParagraphListItem) => void;
+  /** Prefetch paragraph when hovering over a lesson link (avoids first-click error). */
+  onPrefetch?: () => void;
 };
 
 const PARAGRAPH_CARD_CLASS =
   "bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 p-4 shadow-sm h-100 d-flex flex-column";
 
-function ParagraphCard({ p, onClick }: ParagraphCardProps) {
+const cardContent = (p: ParagraphListItem) => (
+  <>
+    <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+      <span className={`badge rounded-pill ${p.isFree ? "bg-success" : "bg-dark"}`}>
+        {p.isFree ? "Free" : "Paid"}
+      </span>
+      <span
+        className={`badge rounded-pill ${p.solvedByUser ? "bg-success" : "bg-secondary bg-opacity-50"}`}
+        title={p.solvedByUser ? "You've solved this paragraph" : "Not solved by you yet"}
+      >
+        {p.solvedByUser ? "solved" : ""}
+      </span>
+    </div>
+    <h3 className="h5 fw-bold text-dark mb-2">{p.title}</h3>
+  </>
+);
+
+const cardStyle = { cursor: "pointer" as const, transition: "box-shadow 0.2s, transform 0.2s" };
+const cardHandlers = (_unused?: () => void) => ({
+  onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+    e.currentTarget.style.boxShadow = "0 0.5rem 1rem rgba(0,0,0,0.1)";
+    e.currentTarget.style.transform = "translateY(-2px)";
+  },
+  onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+    e.currentTarget.style.boxShadow = "";
+    e.currentTarget.style.transform = "translateY(0)";
+  },
+});
+
+function ParagraphCard(props: ParagraphCardProps) {
+  const { p, to, onPrefetch } = props;
+  if (to) {
+    const handlers = cardHandlers();
+    return (
+      <Link
+        to={to}
+        className={PARAGRAPH_CARD_CLASS}
+        style={{ ...cardStyle, textDecoration: "none", color: "inherit" }}
+        onMouseEnter={(e) => {
+          handlers.onMouseEnter?.(e);
+          onPrefetch?.();
+        }}
+        onMouseLeave={handlers.onMouseLeave}
+      >
+        {cardContent(p)}
+      </Link>
+    );
+  }
+  const handleClick = props.onClick!;
   return (
     <div
       role="button"
       tabIndex={0}
       className={PARAGRAPH_CARD_CLASS}
-      style={{ cursor: "pointer", transition: "box-shadow 0.2s, transform 0.2s" }}
-      onClick={() => onClick(p)}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = "0 0.5rem 1rem rgba(0,0,0,0.1)";
-        e.currentTarget.style.transform = "translateY(-2px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = "";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
+      style={cardStyle}
+      onClick={() => handleClick(p)}
+      {...cardHandlers()}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onClick(p);
+          handleClick(p);
         }
       }}
     >
-      <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <span className={`badge rounded-pill ${p.isFree ? "bg-success" : "bg-dark"}`}>
-          {p.isFree ? "Free" : "Paid"}
-        </span>
-        <span
-          className={`badge rounded-pill ${p.solvedByUser ? "bg-success" : "bg-secondary bg-opacity-50"}`}
-          title={p.solvedByUser ? "You've solved this paragraph" : "Not solved by you yet"}
-        >
-          {p.solvedByUser ? "solved" : ""}
-        </span>
-      </div>
-      <h3 className="h5 fw-bold text-dark mb-2">{p.title}</h3>
-
+      {cardContent(p)}
     </div>
   );
 }
@@ -108,6 +143,7 @@ export function EnglishPracticePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
   const categoryTitle = CATEGORY_TITLES[location.pathname] ?? "English Typing Practice";
   const category = PATH_TO_CATEGORY[location.pathname];
 
@@ -226,7 +262,20 @@ export function EnglishPracticePage() {
             <div className="row g-4 mb-4">
               {displayItems.map((p) => (
                 <div key={p._id} className="col-6 col-sm-4 col-lg-2">
-                  <ParagraphCard p={p} onClick={handleCardClick} />
+                  {p.isFree ? (
+                    <ParagraphCard
+                      p={p}
+                      to={`/practice/english/${p._id}`}
+                      onPrefetch={() =>
+                        queryClient.prefetchQuery({
+                          queryKey: ["paragraph", p._id],
+                          queryFn: () => fetchParagraphById(p._id),
+                        })
+                      }
+                    />
+                  ) : (
+                    <ParagraphCard p={p} onClick={handleCardClick} />
+                  )}
                 </div>
               ))}
             </div>

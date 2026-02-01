@@ -16,6 +16,12 @@ body {
   color: #111827;
 }
 
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Navbar: larger text and background */
 .typinghub-navbar {
   --navbar-bg: #189fa8;
