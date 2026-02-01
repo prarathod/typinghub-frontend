@@ -14,6 +14,7 @@ import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { DisclaimerPage } from "@/pages/DisclaimerPage";
 import { EnglishPracticePage } from "@/pages/EnglishPracticePage";
+import { FAQsPage } from "@/pages/FAQsPage";
 import { FeaturesPage } from "@/pages/FeaturesPage";
 import { LandingPage } from "@/pages/LandingPage";
 import { MarathiPracticePage } from "@/pages/MarathiPracticePage";
@@ -86,6 +87,7 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/faqs" element={<FAQsPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/profile" element={<ProfilePage />} />

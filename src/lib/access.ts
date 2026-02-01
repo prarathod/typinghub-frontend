@@ -35,7 +35,8 @@ export function hasAccessToParagraph(
   if (paragraph.isFree) return true;
   if (!user) return false;
   const productId = getProductIdForParagraph(paragraph.language, paragraph.category);
-  if (!productId) return true;
+  // Paid content with no productId (e.g. lessons) = no access until we have a product for it
+  if (!productId) return false;
   const subs = user.subscriptions ?? [];
   return subs.includes(productId);
 }
