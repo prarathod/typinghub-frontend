@@ -18,6 +18,7 @@ import { FeaturesPage } from "@/pages/FeaturesPage";
 import { LandingPage } from "@/pages/LandingPage";
 import { MarathiPracticePage } from "@/pages/MarathiPracticePage";
 import { PracticePage } from "@/pages/PracticePage";
+import { PricingPage } from "@/pages/PricingPage";
 import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { RefundPolicyPage } from "@/pages/RefundPolicyPage";
@@ -89,6 +90,7 @@ function AppContent() {
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/practice" element={<PracticePage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/disclaimer" element={<DisclaimerPage />} />
