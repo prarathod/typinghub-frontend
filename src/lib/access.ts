@@ -7,6 +7,12 @@ export type ProductId =
   | "marathi-court"
   | "marathi-mpsc";
 
+/** Product IDs that unlock paid content for each language (e.g. paid lessons). */
+const PRODUCT_IDS_BY_LANGUAGE: Record<Language, ProductId[]> = {
+  english: ["english-court", "english-mpsc"],
+  marathi: ["marathi-court", "marathi-mpsc"]
+};
+
 export function getProductIdForParagraph(
   language: Language,
   category: Category
@@ -22,6 +28,12 @@ export function getProductIdForParagraph(
   return map[key] ?? null;
 }
 
+/** Default productId to show in pricing when paragraph has no direct product (e.g. paid lessons). */
+export function getDefaultProductIdForLanguage(language: Language): ProductId | null {
+  const ids = PRODUCT_IDS_BY_LANGUAGE[language];
+  return ids?.[0] ?? null;
+}
+
 export type ParagraphForAccess = {
   isFree: boolean;
   language: Language;
@@ -35,8 +47,12 @@ export function hasAccessToParagraph(
   if (paragraph.isFree) return true;
   if (!user) return false;
   const productId = getProductIdForParagraph(paragraph.language, paragraph.category);
-  // Paid content with no productId (e.g. lessons) = no access until we have a product for it
-  if (!productId) return false;
   const subs = user.subscriptions ?? [];
-  return subs.includes(productId);
+  if (productId) return subs.includes(productId);
+  // Paid lesson (category "lessons"): grant access if user has any product for this language
+  if (paragraph.category === "lessons") {
+    const allowed = PRODUCT_IDS_BY_LANGUAGE[paragraph.language] ?? [];
+    return allowed.some((id) => subs.includes(id));
+  }
+  return false;
 }

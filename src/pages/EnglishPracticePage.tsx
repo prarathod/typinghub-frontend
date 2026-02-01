@@ -10,8 +10,7 @@ import {
   type ParagraphListItem,
   type PriceFilter,
 } from "@/features/paragraphs/paragraphsApi";
-import { hasAccessToParagraph } from "@/lib/access";
-import { getProductIdForParagraph } from "@/lib/access";
+import { getDefaultProductIdForLanguage, getProductIdForParagraph, hasAccessToParagraph } from "@/lib/access";
 import { useAuthStore } from "@/stores/authStore";
 
 type ParagraphCardProps = {
@@ -155,7 +154,10 @@ export function EnglishPracticePage() {
       return;
     }
     if (!hasAccessToParagraph(user, p)) {
-      setPricingProductId(getProductIdForParagraph(p.language, p.category));
+      const productId =
+        getProductIdForParagraph(p.language, p.category) ??
+        getDefaultProductIdForLanguage(p.language);
+      setPricingProductId(productId);
       setPricingOpen(true);
       return;
     }

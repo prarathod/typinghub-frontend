@@ -9,7 +9,7 @@ import { LessonTypingUI } from "@/components/typing/LessonTypingUI";
 import { MPSCTypingUI } from "@/components/typing/MPSCTypingUI";
 import { fetchParagraphById } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
-import { getProductIdForParagraph, hasAccessToParagraph } from "@/lib/access";
+import { getDefaultProductIdForLanguage, getProductIdForParagraph, hasAccessToParagraph } from "@/lib/access";
 import { useAuthStore } from "@/stores/authStore";
 
 function renderTypingUI(paragraph: ParagraphDetail) {
@@ -118,7 +118,9 @@ export function TypingPage() {
 
   // Paid passage: 1) not logged in → LoginDialog; 2) logged in but no subscription → Get Access (PricingDialog)
   const hasAccess = hasAccessToParagraph(user, paragraph);
-  const paidProductId = getProductIdForParagraph(paragraph.language, paragraph.category);
+  const paidProductId =
+    getProductIdForParagraph(paragraph.language, paragraph.category) ??
+    getDefaultProductIdForLanguage(paragraph.language);
   const notLoggedIn = !user;
 
   useEffect(() => {
