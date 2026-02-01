@@ -138,6 +138,23 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted || !isStarted) return;
+    // Disable Ctrl+A / Cmd+A (select all)
+    if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+      e.preventDefault();
+      return;
+    }
+    // Prevent Space from replacing a selection (e.g. after Ctrl+A, space would wipe all text)
+    const ta = e.currentTarget;
+    if (e.key === " " && ta.selectionStart !== ta.selectionEnd) {
+      e.preventDefault();
+      return;
+    }
+    // Disable Delete and Backspace
+    if (e.key === "Delete" || e.key === "Backspace") {
+      e.preventDefault();
+      if (e.key === "Backspace") setBackspaceCount((c) => c + 1);
+      return;
+    }
     // Court: allow Enter and Tab; insert tab in textarea instead of moving focus
     if (e.key === "Tab") {
       e.preventDefault();
@@ -152,10 +169,6 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         ta.selectionStart = ta.selectionEnd = start + tabSpaces.length;
       }, 0);
       return;
-    }
-    if (e.key === "Backspace") {
-      e.preventDefault();
-      setBackspaceCount((c) => c + 1);
     }
   };
 
@@ -353,16 +366,22 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       )}
 
       {isStarted && (
-        <div style={{ width: "70%", maxWidth: "70%", marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ width: "100%", maxWidth: "min(210mm, 90vw)", marginLeft: "auto", marginRight: "auto" }}>
+          {/* A4 portrait ratio: 210mm × 297mm */}
           <div
             className="card border"
             style={{
-              boxShadow: "0 0.5rem 1rem rgba(0,0,0,0.15)"
+              boxShadow: "0 0.5rem 1rem rgba(0,0,0,0.15)",
+              aspectRatio: "210 / 297",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden"
             }}
           >
-            <div className="card-body p-0">
+            <div className="card-body p-0 d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
               {hasSubmitted && (
-                <div className="d-flex justify-content-end p-2 border-bottom">
+                <div className="d-flex justify-content-end p-2 border-bottom flex-shrink-0">
                   <span className="badge bg-success">
                     Done · {formatTime(timerSeconds)}
                   </span>
@@ -370,7 +389,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
               )}
               <textarea
                 ref={textareaRef}
-                className="form-control font-monospace border-0"
+                className="form-control font-monospace border-0 flex-grow-1"
                 rows={12}
                 placeholder="Start typing the paragraph..."
                 value={input}
@@ -380,7 +399,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
                 disabled={hasSubmitted}
                 autoFocus
                 aria-label="Typing input"
-                style={{ fontSize: "18px", lineHeight: 1.6, padding: 4, minHeight: "80vh" }}
+                style={{ fontSize: "18px", lineHeight: 1.6, padding: 4, minHeight: 0, resize: "none" }}
               />
             </div>
           </div>

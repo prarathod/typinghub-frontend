@@ -176,6 +176,12 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
       e.preventDefault();
       return;
     }
+    // Prevent Space from replacing a selection (e.g. after Ctrl+A, space would wipe all text)
+    const ta = e.currentTarget;
+    if (e.key === " " && ta.selectionStart !== ta.selectionEnd) {
+      e.preventDefault();
+      return;
+    }
     if (!enableBackspace && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
       return;
