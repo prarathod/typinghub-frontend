@@ -81,7 +81,13 @@ export function TypingPage() {
 
   if (isError || !paragraph) {
     // 403: redirect to practice list; popup opens there (handled by EnglishPracticePage)
-    if (is403) return null;
+    if (is403) {
+      return (
+        <main className="container py-5 d-flex align-items-center justify-content-center" style={{ minHeight: "60vh" }}>
+          <div className="text-center text-muted small">Redirecting…</div>
+        </main>
+      );
+    }
     // Other errors: minimal message + back link
     return (
       <main className="container py-5">
@@ -112,7 +118,13 @@ export function TypingPage() {
     }
   }, [hasAccess, paragraph, notLoggedIn, paidProductId, navigate]);
 
-  if (!hasAccess) return null;
+  if (!hasAccess) {
+    return (
+      <main className="container py-5 d-flex align-items-center justify-content-center" style={{ minHeight: "60vh" }}>
+        <div className="text-center text-muted small">Redirecting…</div>
+      </main>
+    );
+  }
 
   return <>{renderTypingUI(paragraph)}</>;
 }

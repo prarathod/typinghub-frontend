@@ -213,7 +213,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   };
 
   return (
-    <main className="container py-4">
+    <main className="container py-4" style={{ backgroundColor: "#fff", minHeight: "100vh" }}>
       <TestResultsModal
         open={resultsOpen}
         onOpenChange={setResultsOpen}

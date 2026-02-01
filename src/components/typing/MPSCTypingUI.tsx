@@ -321,7 +321,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         style={
           isFullScreen
             ? { minHeight: "100vh", backgroundColor: "#fff", padding: "1rem" }
-            : undefined
+            : { backgroundColor: "#fff", minHeight: "100vh" }
         }
       >
         <div

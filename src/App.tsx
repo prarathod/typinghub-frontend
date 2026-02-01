@@ -35,7 +35,10 @@ function AppContent() {
       style={{ minHeight: "100vh" }}
     >
       {!isAdminRoute && !isTypingPage && <Navbar />}
-      <div className="flex-grow-1 d-flex flex-column">
+      <div
+        className="flex-grow-1 d-flex flex-column"
+        style={isTypingPage ? { backgroundColor: "#f6f9fb", minHeight: "100vh" } : undefined}
+      >
         <Routes>
           <Route path="/admin" element={<AdminLoginPage />} />
           <Route
