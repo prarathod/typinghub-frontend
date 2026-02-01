@@ -20,8 +20,6 @@ type ParagraphCardProps = {
   to?: string;
   /** For paid lessons: show login/pricing dialog on click. */
   onClick?: (p: ParagraphListItem) => void;
-  /** Prefetch paragraph when hovering over a lesson link (avoids first-click error). */
-  onPrefetch?: () => void;
 };
 
 const PARAGRAPH_CARD_CLASS =
@@ -57,19 +55,14 @@ const cardHandlers = (_unused?: () => void) => ({
 });
 
 function ParagraphCard(props: ParagraphCardProps) {
-  const { p, to, onPrefetch } = props;
+  const { p, to } = props;
   if (to) {
-    const handlers = cardHandlers();
     return (
       <Link
         to={to}
         className={PARAGRAPH_CARD_CLASS}
         style={{ ...cardStyle, textDecoration: "none", color: "inherit" }}
-        onMouseEnter={(e) => {
-          handlers.onMouseEnter?.(e);
-          onPrefetch?.();
-        }}
-        onMouseLeave={handlers.onMouseLeave}
+        {...cardHandlers()}
       >
         {cardContent(p)}
       </Link>
@@ -139,7 +132,7 @@ export function EnglishPracticePage() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingProductId, setPricingProductId] = useState<string | null>(null);
-  const limit = 48;
+  const limit = 24;
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
@@ -193,6 +186,17 @@ export function EnglishPracticePage() {
         limit
       })
   });
+
+  // After list API returns, prefetch each paragraph detail so first click loads instantly
+  useEffect(() => {
+    if (!data?.items?.length) return;
+    data.items.forEach((item) => {
+      queryClient.prefetchQuery({
+        queryKey: ["paragraph", item._id],
+        queryFn: () => fetchParagraphById(item._id),
+      });
+    });
+  }, [data?.items, queryClient]);
 
   const displayItems =
     data?.items && category === "lessons"
@@ -263,16 +267,7 @@ export function EnglishPracticePage() {
               {displayItems.map((p) => (
                 <div key={p._id} className="col-6 col-sm-4 col-lg-2">
                   {p.isFree ? (
-                    <ParagraphCard
-                      p={p}
-                      to={`/practice/english/${p._id}`}
-                      onPrefetch={() =>
-                        queryClient.prefetchQuery({
-                          queryKey: ["paragraph", p._id],
-                          queryFn: () => fetchParagraphById(p._id),
-                        })
-                      }
-                    />
+                    <ParagraphCard p={p} to={`/practice/english/${p._id}`} />
                   ) : (
                     <ParagraphCard p={p} onClick={handleCardClick} />
                   )}
