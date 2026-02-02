@@ -397,7 +397,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
             <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
             <div
               ref={paragraphScrollRef}
-              className="font-monospace overflow-auto rounded-3 p-4 mb-0"
+              className="overflow-auto rounded-3 p-4 mb-0"
               style={{
                 whiteSpace: "pre-wrap",
                 minHeight: "140px",
@@ -453,7 +453,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
             </div>
             <textarea
               ref={textareaRef}
-              className="form-control font-monospace"
+              className="form-control"
               rows={8}
               placeholder="Start your practice here..."
               value={input}

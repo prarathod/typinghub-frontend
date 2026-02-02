@@ -389,9 +389,8 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
               )}
               <textarea
                 ref={textareaRef}
-                className="form-control font-monospace border-0 flex-grow-1"
+                className="form-control border-0 flex-grow-1"
                 rows={12}
-                placeholder="Start typing the paragraph..."
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}

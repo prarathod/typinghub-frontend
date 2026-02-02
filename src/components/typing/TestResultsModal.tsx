@@ -204,8 +204,8 @@ export function TestResultsModal({
         </DialogHeader>
         <div
           id="test-results-description"
-          className="small text-dark"
-          style={{ paddingTop: "0.25rem", paddingBottom: "0.5rem" }}
+          className="text-dark"
+          style={{ paddingTop: "0.25rem", paddingBottom: "0.5rem", fontSize: "1.0625rem" }}
         >
           <div
             className="row g-0 mb-4"
@@ -218,7 +218,8 @@ export function TestResultsModal({
             <div
               className="col-6 p-3"
               style={{
-                borderRight: "1px solid #212529"
+                borderRight: "1px solid #212529",
+                fontSize: "1.0625rem"
               }}
             >
               <ul className="list-unstyled mb-0">
@@ -240,11 +241,15 @@ export function TestResultsModal({
                 </li>
               </ul>
             </div>
-            <div className="col-6 p-3">
+            <div className="col-6 p-3" style={{ fontSize: "1.0625rem" }}>
               <ul className="list-unstyled mb-0">
                 <li className="mb-2 d-flex align-items-start">
                   <MetricArrow />
                   <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
+                </li>
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
                 </li>
                 <li className="mb-2 d-flex align-items-start">
                   <MetricArrow />
