@@ -74,6 +74,20 @@ export type PaginatedResponse<T> = {
   totalPages: number;
 };
 
+export type AdminProduct = {
+  productId: string;
+  name: string;
+  amountPaise: number;
+  language?: string;
+  category?: string;
+};
+
+export type UserSubscriptionsResponse = {
+  productIds: string[];
+  adminGrantedProductIds: string[];
+  products: AdminProduct[];
+};
+
 adminApi.interceptors.request.use((config) => {
   const token = useAdminAuthStore.getState().token;
   if (token) {
@@ -139,6 +153,26 @@ export async function updateUser(
 
 export async function deleteUser(id: string): Promise<void> {
   await adminApi.delete(`/admin/users/${id}`);
+}
+
+export async function fetchUserSubscriptions(
+  userId: string
+): Promise<UserSubscriptionsResponse> {
+  const { data } = await adminApi.get<UserSubscriptionsResponse>(
+    `/admin/users/${userId}/subscriptions`
+  );
+  return data;
+}
+
+export async function updateUserSubscriptions(
+  userId: string,
+  productIds: string[]
+): Promise<{ productIds: string[] }> {
+  const { data } = await adminApi.put<{ productIds: string[] }>(
+    `/admin/users/${userId}/subscriptions`,
+    { productIds }
+  );
+  return data;
 }
 
 export async function fetchParagraphs(params?: {

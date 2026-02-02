@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteUser,
+  fetchUserSubscriptions,
   fetchUsers,
   updateUser,
+  updateUserSubscriptions,
   type AdminUser
 } from "@/features/admin/adminApi";
 
@@ -27,9 +29,24 @@ export function AdminUsersPage() {
       })
   });
 
+  const [adminGrantedProductIds, setAdminGrantedProductIds] = useState<string[]>([]);
+
   const handleEdit = (user: AdminUser) => {
     setEditingUser({ ...user });
+    setAdminGrantedProductIds([]);
   };
+
+  const { data: subscriptionsData } = useQuery({
+    queryKey: ["admin-user-subscriptions", editingUser?._id],
+    queryFn: () => fetchUserSubscriptions(editingUser!._id),
+    enabled: !!editingUser?._id
+  });
+
+  useEffect(() => {
+    if (subscriptionsData?.adminGrantedProductIds) {
+      setAdminGrantedProductIds([...subscriptionsData.adminGrantedProductIds]);
+    }
+  }, [editingUser?._id, subscriptionsData?.adminGrantedProductIds]);
 
   const handleSave = async () => {
     if (!editingUser) return;
@@ -39,10 +56,20 @@ export function AdminUsersPage() {
         email: editingUser.email,
         isPaid: editingUser.isPaid
       });
+      await updateUserSubscriptions(editingUser._id, adminGrantedProductIds);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setEditingUser(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to update user");
+    }
+  };
+
+  const handleCourseAccessToggle = (productId: string, hasAccess: boolean, isAdminGranted: boolean) => {
+    if (hasAccess && !isAdminGranted) return;
+    if (hasAccess && isAdminGranted) {
+      setAdminGrantedProductIds((prev) => prev.filter((id) => id !== productId));
+    } else {
+      setAdminGrantedProductIds((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
     }
   };
 
@@ -263,6 +290,57 @@ export function AdminUsersPage() {
                     <option value="false">Free</option>
                     <option value="true">Paid</option>
                   </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label d-block">Course access</label>
+                  <small className="text-muted d-block mb-2">
+                    Grant or revoke access to paid courses. Access from payment cannot be revoked here.
+                  </small>
+                  {subscriptionsData?.products?.length ? (
+                    <div className="d-flex flex-column gap-2">
+                      {subscriptionsData.products.map((product) => {
+                        const productIds = subscriptionsData.productIds ?? [];
+                        const initialAdminGranted = subscriptionsData.adminGrantedProductIds ?? [];
+                        const paymentOnly =
+                          productIds.includes(product.productId) &&
+                          !initialAdminGranted.includes(product.productId);
+                        const hasAccess =
+                          paymentOnly || adminGrantedProductIds.includes(product.productId);
+                        const disabled = paymentOnly;
+                        return (
+                          <div key={product.productId} className="form-check">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              id={`course-${product.productId}`}
+                              checked={hasAccess}
+                              disabled={disabled}
+                              onChange={() =>
+                                handleCourseAccessToggle(
+                                  product.productId,
+                                  hasAccess,
+                                  adminGrantedProductIds.includes(product.productId)
+                                )
+                              }
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor={`course-${product.productId}`}
+                            >
+                              {product.name}
+                              {disabled && (
+                                <span className="text-muted small ms-1">(from payment)</span>
+                              )}
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : subscriptionsData ? (
+                    <span className="text-muted small">No courses configured.</span>
+                  ) : (
+                    <span className="text-muted small">Loading…</span>
+                  )}
                 </div>
               </div>
               <div className="modal-footer">
