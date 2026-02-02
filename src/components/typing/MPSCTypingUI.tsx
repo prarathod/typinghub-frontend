@@ -167,8 +167,8 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
-    // MPSC: allow Enter only; block Tab
-    if (e.key === "Tab") {
+    // MPSC: block Tab and Enter
+    if (e.key === "Tab" || e.key === "Enter") {
       e.preventDefault();
       return;
     }
