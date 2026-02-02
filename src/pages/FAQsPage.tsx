@@ -9,7 +9,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Do I need to sign up to practice?",
     answer:
-      "No. You can practice 5 typing passages and 5 free lessons without creating an account. Sign up to unlock 5 bonus passages and to save your progress, leaderboard standing, and submission history."
+      "No. You can practice 3 typing passages and 3 free lessons without creating an account. Sign up to unlock 3 bonus passages and to save your progress, leaderboard standing, and submission history."
   },
   {
     question: "What are the Premium and Custom plans?",
