@@ -266,7 +266,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         className="typing-lesson-root"
         style={
           isFullScreen
-            ? { minHeight: "100vh", backgroundColor: "#fff", padding: "1rem" }
+            ? { minHeight: "100vh", maxHeight: "100vh", overflow: "auto", backgroundColor: "#fff", padding: "1rem" }
             : { backgroundColor: "#fff", minHeight: "100vh" }
         }
       >
