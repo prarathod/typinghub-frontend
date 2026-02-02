@@ -14,6 +14,7 @@ const EMPTY_PARAGRAPH: Omit<AdminParagraph, "_id" | "solvedCount" | "createdAt">
   isFree: true,
   language: "english",
   category: "lessons",
+  order: 0,
   text: "",
   published: false
 };
@@ -42,7 +43,13 @@ export function AdminParagraphsPage() {
 
   const handleCreate = () => {
     setCreatingParagraph(true);
-    setEditingParagraph({ ...EMPTY_PARAGRAPH, _id: "", solvedCount: 0, createdAt: "" } as AdminParagraph);
+    setEditingParagraph({
+      ...EMPTY_PARAGRAPH,
+      _id: "",
+      solvedCount: 0,
+      createdAt: "",
+      order: typeof EMPTY_PARAGRAPH.order === "number" ? EMPTY_PARAGRAPH.order : 0
+    } as AdminParagraph);
   };
 
   const handleTogglePublished = async (para: AdminParagraph) => {
@@ -58,7 +65,8 @@ export function AdminParagraphsPage() {
   const handleEdit = (para: AdminParagraph) => {
     setEditingParagraph({
       ...para,
-      published: para.published ?? false
+      published: para.published ?? false,
+      order: typeof para.order === "number" ? para.order : 0
     });
     setCreatingParagraph(false);
   };
@@ -154,6 +162,7 @@ export function AdminParagraphsPage() {
                 <table className="table table-hover mb-0">
                   <thead className="table-light">
                     <tr>
+                      <th>Order</th>
                       <th>Title</th>
                       <th>Language</th>
                       <th>Category</th>
@@ -167,6 +176,7 @@ export function AdminParagraphsPage() {
                   <tbody>
                     {data.items.map((para) => (
                       <tr key={para._id}>
+                        <td>{typeof para.order === "number" ? para.order : 0}</td>
                         <td>{para.title}</td>
                         <td>
                           <span className="badge bg-info">{para.language}</span>
@@ -317,6 +327,29 @@ export function AdminParagraphsPage() {
                         })
                       }
                     />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Order</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      min={0}
+                      value={
+                        typeof editingParagraph.order === "number" && Number.isFinite(editingParagraph.order)
+                          ? editingParagraph.order
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const num = v === "" ? 0 : parseInt(v, 10);
+                        setEditingParagraph({
+                          ...editingParagraph,
+                          order: v === "" ? 0 : (Number.isFinite(num) ? num : 0)
+                        });
+                      }}
+                      placeholder="0"
+                    />
+                    <small className="text-muted">Display order (lower = first). Used for Court Exam, MPSC, Lessons.</small>
                   </div>
                   <div className="col-md-6">
                     <label className="form-label">Language</label>

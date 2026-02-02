@@ -25,6 +25,7 @@ export type AdminParagraph = {
   isFree: boolean;
   language: "english" | "marathi";
   category: "lessons" | "court-exam" | "mpsc";
+  order: number;
   solvedCount: number;
   text: string;
   published: boolean;
