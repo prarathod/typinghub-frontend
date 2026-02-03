@@ -19,10 +19,13 @@ export type AdminUser = {
   submissionCount?: number;
 };
 
+export type AdminAccessType = "free" | "free-after-login" | "paid";
+
 export type AdminParagraph = {
   _id: string;
   title: string;
   isFree: boolean;
+  accessType?: AdminAccessType;
   language: "english" | "marathi";
   category: "lessons" | "court-exam" | "mpsc";
   order: number;

@@ -12,6 +12,7 @@ import {
 const EMPTY_PARAGRAPH: Omit<AdminParagraph, "_id" | "solvedCount" | "createdAt"> = {
   title: "",
   isFree: true,
+  accessType: "free",
   language: "english",
   category: "lessons",
   order: 0,
@@ -66,7 +67,8 @@ export function AdminParagraphsPage() {
     setEditingParagraph({
       ...para,
       published: para.published ?? false,
-      order: typeof para.order === "number" ? para.order : 0
+      order: typeof para.order === "number" ? para.order : 0,
+      accessType: para.accessType ?? (para.isFree ? "free" : "paid")
     });
     setCreatingParagraph(false);
   };
@@ -188,9 +190,21 @@ export function AdminParagraphsPage() {
                         </td>
                         <td>
                           <span
-                            className={`badge ${para.isFree ? "bg-info" : "bg-dark"}`}
+                            className={`badge ${
+                              (para.accessType ?? (para.isFree ? "free" : "paid")) === "free"
+                                ? "bg-success"
+                                : (para.accessType ?? "") === "free-after-login"
+                                  ? "bg-info"
+                                  : "bg-dark"
+                            }`}
                           >
-                            {para.isFree ? "Free" : "Paid"}
+                            {para.accessType === "free-after-login"
+                              ? "Free after login"
+                              : para.accessType === "paid"
+                                ? "Paid"
+                                : para.isFree
+                                  ? "Free"
+                                  : "Paid"}
                           </span>
                         </td>
                         <td>
@@ -385,19 +399,22 @@ export function AdminParagraphsPage() {
                     </select>
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Free/Paid</label>
+                    <label className="form-label">Access</label>
                     <select
                       className="form-select"
-                      value={editingParagraph.isFree ? "true" : "false"}
-                      onChange={(e) =>
+                      value={editingParagraph.accessType ?? (editingParagraph.isFree ? "free" : "paid")}
+                      onChange={(e) => {
+                        const at = e.target.value as "free" | "free-after-login" | "paid";
                         setEditingParagraph({
                           ...editingParagraph,
-                          isFree: e.target.value === "true"
-                        })
-                      }
+                          accessType: at,
+                          isFree: at !== "paid"
+                        });
+                      }}
                     >
-                      <option value="true">Free</option>
-                      <option value="false">Paid</option>
+                      <option value="free">Free</option>
+                      <option value="free-after-login">Free after login</option>
+                      <option value="paid">Paid</option>
                     </select>
                   </div>
                   <div className="col-12">

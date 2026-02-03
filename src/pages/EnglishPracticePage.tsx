@@ -7,6 +7,7 @@ import { PricingDialog } from "@/components/PricingDialog";
 import {
   fetchParagraphById,
   fetchParagraphs,
+  type AccessType,
   type ParagraphListItem,
   type PriceFilter,
 } from "@/features/paragraphs/paragraphsApi";
@@ -24,11 +25,24 @@ type ParagraphCardProps = {
 const PARAGRAPH_CARD_CLASS =
   "bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 p-4 shadow-sm h-100 d-flex flex-column";
 
+function getAccessTypeLabel(accessType: AccessType | undefined, isFree: boolean): string {
+  if (accessType === "free-after-login") return "Free after login";
+  if (accessType === "paid") return "Paid";
+  return isFree ? "Free" : "Paid";
+}
+
+function getAccessTypeBadgeClass(accessType: AccessType | undefined, isFree: boolean): string {
+  const at = accessType ?? (isFree ? "free" : "paid");
+  if (at === "free") return "bg-success";
+  if (at === "free-after-login") return "bg-info";
+  return "bg-dark";
+}
+
 const cardContent = (p: ParagraphListItem) => (
   <>
     <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-      <span className={`badge rounded-pill ${p.isFree ? "bg-success" : "bg-dark"}`}>
-        {p.isFree ? "Free" : "Paid"}
+      <span className={`badge rounded-pill ${getAccessTypeBadgeClass(p.accessType, p.isFree)}`}>
+        {getAccessTypeLabel(p.accessType, p.isFree)}
       </span>
       <span
         className={`badge rounded-pill ${p.solvedByUser ? "bg-success" : "bg-secondary bg-opacity-50"}`}
@@ -268,7 +282,7 @@ export function EnglishPracticePage() {
             <div className="row g-4 mb-4">
               {displayItems.map((p) => (
                 <div key={p._id} className="col-6 col-sm-4 col-lg-2">
-                  {p.isFree ? (
+                  {hasAccessToParagraph(user, p) ? (
                     <ParagraphCard p={p} to={`/practice/english/${p._id}`} />
                   ) : (
                     <ParagraphCard p={p} onClick={handleCardClick} />

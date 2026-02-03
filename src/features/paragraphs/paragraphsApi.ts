@@ -3,10 +3,13 @@ import { api } from "@/lib/api";
 export type Language = "english" | "marathi";
 export type Category = "lessons" | "court-exam" | "mpsc";
 
+export type AccessType = "free" | "free-after-login" | "paid";
+
 export type ParagraphListItem = {
   _id: string;
   title: string;
   isFree: boolean;
+  accessType?: AccessType;
   language: Language;
   category: Category;
   solvedCount: number;

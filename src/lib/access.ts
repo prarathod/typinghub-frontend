@@ -1,5 +1,5 @@
 import type { User } from "@/types/auth";
-import type { Category, Language } from "@/features/paragraphs/paragraphsApi";
+import type { AccessType, Category, Language } from "@/features/paragraphs/paragraphsApi";
 
 export type ProductId =
   | "english-court"
@@ -35,16 +35,24 @@ export function getDefaultProductIdForLanguage(language: Language): ProductId | 
 }
 
 export type ParagraphForAccess = {
-  isFree: boolean;
+  isFree?: boolean;
+  accessType?: AccessType;
   language: Language;
   category: Category;
 };
+
+function getEffectiveAccessType(p: ParagraphForAccess): AccessType {
+  if (p.accessType) return p.accessType;
+  return p.isFree !== false ? "free" : "paid";
+}
 
 export function hasAccessToParagraph(
   user: User | null,
   paragraph: ParagraphForAccess
 ): boolean {
-  if (paragraph.isFree) return true;
+  const accessType = getEffectiveAccessType(paragraph);
+  if (accessType === "free") return true;
+  if (accessType === "free-after-login") return user != null;
   if (!user) return false;
   const productId = getProductIdForParagraph(paragraph.language, paragraph.category);
   const subs = user.subscriptions ?? [];
