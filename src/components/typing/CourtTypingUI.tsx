@@ -62,13 +62,15 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const totalKeystrokesRef = useRef(totalKeystrokes);
   const backspaceCountRef = useRef(backspaceCount);
   const timerSecondsRef = useRef(timerSeconds);
+  const autoSubmitSecondsRef = useRef(autoSubmitSeconds);
 
   useEffect(() => {
     inputRef.current = input;
     totalKeystrokesRef.current = totalKeystrokes;
     backspaceCountRef.current = backspaceCount;
     timerSecondsRef.current = timerSeconds;
-  }, [input, totalKeystrokes, backspaceCount, timerSeconds]);
+    autoSubmitSecondsRef.current = autoSubmitSeconds;
+  }, [input, totalKeystrokes, backspaceCount, timerSeconds, autoSubmitSeconds]);
 
   const submitCurrentAttempt = useCallback(async () => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
@@ -78,7 +80,10 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     const currentInput = inputRef.current;
     const currentKeystrokes = totalKeystrokesRef.current;
     const currentBackspace = backspaceCountRef.current;
-    const currentTime = timerSecondsRef.current;
+    const timerVal = timerSecondsRef.current;
+    const autoSubmitVal = autoSubmitSecondsRef.current;
+    const currentTime =
+      autoSubmitVal > 0 ? Math.max(0, autoSubmitVal - timerVal) : timerVal;
     const metrics = computeTypingMetrics(
       paragraph.text,
       currentInput,
@@ -116,13 +121,17 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   useEffect(() => {
     if (!timerStarted || hasSubmitted || autoSubmitTriggeredRef.current) return;
     const id = setInterval(() => {
-      setTimerSeconds((s) => {
-        const next = s + 1;
-        if (autoSubmitSeconds > 0 && next >= autoSubmitSeconds && !autoSubmitTriggeredRef.current) {
-          submitCurrentAttempt();
-        }
-        return next;
-      });
+      if (autoSubmitSeconds > 0) {
+        setTimerSeconds((s) => {
+          const next = s - 1;
+          if (next <= 0 && !autoSubmitTriggeredRef.current) {
+            submitCurrentAttempt();
+          }
+          return Math.max(0, next);
+        });
+      } else {
+        setTimerSeconds((s) => s + 1);
+      }
     }, 1000);
     return () => clearInterval(id);
   }, [timerStarted, hasSubmitted, autoSubmitSeconds, submitCurrentAttempt]);
@@ -175,6 +184,11 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const handleStart = () => {
     setIsStarted(true);
     setTimerStarted(true);
+    if (autoSubmitSeconds > 0) {
+      setTimerSeconds(autoSubmitSeconds);
+    } else {
+      setTimerSeconds(0);
+    }
     textareaRef.current?.focus();
   };
 
@@ -185,7 +199,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
 
   const handleRestart = () => {
     setInput("");
-    setTimerSeconds(0);
+    setTimerSeconds(autoSubmitSeconds > 0 ? autoSubmitSeconds : 0);
     setTimerStarted(false);
     setHasSubmitted(false);
     setIsStarted(false);
@@ -383,7 +397,12 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
               {hasSubmitted && (
                 <div className="d-flex justify-content-end p-2 border-bottom flex-shrink-0">
                   <span className="badge bg-success">
-                    Done · {formatTime(timerSeconds)}
+                    Done ·{" "}
+                    {formatTime(
+                      autoSubmitSeconds > 0
+                        ? Math.max(0, autoSubmitSeconds - timerSeconds)
+                        : timerSeconds
+                    )}
                   </span>
                 </div>
               )}
@@ -394,6 +413,9 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
+                onCopy={(e) => e.preventDefault()}
+                onPaste={(e) => e.preventDefault()}
+                onCut={(e) => e.preventDefault()}
                 spellCheck={false}
                 disabled={hasSubmitted}
                 autoFocus

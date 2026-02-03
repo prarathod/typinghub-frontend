@@ -60,7 +60,7 @@ export function computeTypingMetrics(
   const safeSeconds = Math.max(1, timeTakenSeconds);
   const timeMinutes = safeSeconds / 60;
   const accuracy =
-    totalWords === 0 ? 100 : Math.round((correctWordsCount / totalWords) * 100);
+    wordsTyped === 0 ? 100 : Math.round((correctWordsCount / wordsTyped) * 100);
   const wpm = Math.round(correctWordsCount / timeMinutes);
   const kpm = Math.round(totalKeystrokes / timeMinutes);
 

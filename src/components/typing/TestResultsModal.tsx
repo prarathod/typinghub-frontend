@@ -262,6 +262,9 @@ export function TestResultsModal({
               </ul>
             </div>
           </div>
+          <p className="small mb-0 mt-2" style={{ fontStyle: "italic", color: "#b02a37" }}>
+            Note: In examinations, omitted words are also calculated as incorrect words.
+          </p>
           <div className="mt-4 mb-3">
             <strong className="text-dark">User Input:</strong>
             <div

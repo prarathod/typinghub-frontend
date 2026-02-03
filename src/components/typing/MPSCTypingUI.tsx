@@ -288,13 +288,13 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   function getStatusStyles(status: WordStatus | "space"): React.CSSProperties {
     switch (status) {
       case "correct":
-        return { color: "#15803d", fontWeight: 600 };
+        return { color: "#15803d", fontWeight: 400 };
       case "incorrect":
-        return { color: "#b02a37", fontWeight: 600 };
+        return { color: "#b02a37", fontWeight: 400 };
       case "omitted":
-        return { color: "#000000", fontWeight: 500 };
+        return { color: "#000000", fontWeight: 400 };
       case "active":
-        return { color: "#000000", fontWeight: 500 };
+        return { color: "#000000", fontWeight: 400 };
       case "pending":
       case "space":
       default:
