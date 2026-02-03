@@ -53,7 +53,6 @@ export function computeTypingMetrics(
     }
   }
 
-  const totalWords = passageWords.length;
   const incorrectWordsCount = incorrectWords.length;
   const omittedWordsCount = omittedWords.length;
   const wordsTyped = userWords.length;
