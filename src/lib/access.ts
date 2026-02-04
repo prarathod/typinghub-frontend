@@ -61,7 +61,7 @@ export function hasAccessToParagraph(
     user.activeProductIds ??
     (subs.length > 0 && typeof subs[0] === "object" && subs[0] !== null && "productId" in subs[0]
       ? (subs as SubscriptionItem[]).filter((s) => !s.validUntil || new Date(s.validUntil) > now).map((s) => s.productId)
-      : (subs as string[]));
+      : (subs as unknown as string[]));
   if (productId) return activeIds.includes(productId);
   // Paid lesson (category "lessons"): grant access if user has any product for this language
   if (paragraph.category === "lessons") {
