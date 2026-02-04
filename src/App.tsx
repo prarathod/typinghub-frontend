@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -37,6 +38,7 @@ function AppContent() {
       className="d-flex flex-column"
       style={{ minHeight: "100vh" }}
     >
+      <Analytics />
       {!isAdminRoute && !isTypingPage && <Navbar />}
       <div
         className="flex-grow-1 d-flex flex-column"

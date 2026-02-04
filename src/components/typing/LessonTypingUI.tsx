@@ -201,7 +201,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   // Ensure text is always a string so getWordSegments/evaluateWords never throw (e.g. if API returns non-string)
   const text = typeof paragraph?.text === "string" ? paragraph.text : "";
   const segments = getWordSegments(text);
-  const evaluations = evaluateWords(text, input, { caseSensitive: false });
+  const evaluations = evaluateWords(text, input, { caseSensitive: true });
   const targetWordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
   if (!text.trim()) {

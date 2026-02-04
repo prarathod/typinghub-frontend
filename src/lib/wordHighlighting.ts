@@ -69,7 +69,7 @@ export function alignWords(
   typedWords: string[],
   options?: { caseSensitive?: boolean }
 ): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> {
-  const caseSensitive = options?.caseSensitive ?? false;
+  const caseSensitive = options?.caseSensitive ?? true;
   const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> = [];
   let ti = 0;
   let ty = 0;
@@ -84,6 +84,13 @@ export function alignWords(
     const uw = typedWords[ty];
     if (wordsMatch(tw, uw, caseSensitive)) {
       result.push({ text: tw, status: "correct", wordIndex: ti });
+      ti++;
+      ty++;
+      continue;
+    }
+    // Same word but wrong case (e.g. "the" for "The") -> mark incorrect, don't match to a later occurrence
+    if (caseSensitive && tw.toLowerCase() === uw.toLowerCase()) {
+      result.push({ text: tw, status: "incorrect", wordIndex: ti, typedWord: uw });
       ti++;
       ty++;
       continue;
@@ -120,7 +127,7 @@ export function evaluateWords(
   input: string,
   options?: { caseSensitive?: boolean }
 ): WordEvaluation[] {
-  const caseSensitive = options?.caseSensitive ?? false;
+  const caseSensitive = options?.caseSensitive ?? true;
   const targetWords = splitWords(target);
   const inputTrimmed = input.trimEnd();
   const inputEndsWithSpace = input.length > 0 && /\s$/.test(input);

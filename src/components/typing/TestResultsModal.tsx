@@ -78,7 +78,7 @@ function ExpectedParagraphHighlighted({
   if (typeof expectedText !== "string") return null;
   const targetWords = splitWordsUtil(expectedText);
   const typedWords = splitWordsUtil(userInput.trim());
-  const aligned = alignWords(targetWords, typedWords, { caseSensitive: false });
+  const aligned = alignWords(targetWords, typedWords, { caseSensitive: true });
   const statusByIndex = new Map(aligned.map((a) => [a.wordIndex, a.status]));
   const segments = getWordSegments(expectedText);
 

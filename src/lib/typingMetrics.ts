@@ -32,7 +32,7 @@ export function computeTypingMetrics(
 ): TypingMetrics {
   const passageWords = splitWords(passage);
   const userWords = splitWords(userInput.trim());
-  const caseSensitive = false;
+  const caseSensitive = true;
   const aligned = alignWords(passageWords, userWords, { caseSensitive });
 
   let correctWordsCount = 0;

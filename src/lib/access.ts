@@ -1,4 +1,4 @@
-import type { User } from "@/types/auth";
+import type { SubscriptionItem, User } from "@/types/auth";
 import type { AccessType, Category, Language } from "@/features/paragraphs/paragraphsApi";
 
 export type ProductId =
@@ -56,11 +56,17 @@ export function hasAccessToParagraph(
   if (!user) return false;
   const productId = getProductIdForParagraph(paragraph.language, paragraph.category);
   const subs = user.subscriptions ?? [];
-  if (productId) return subs.includes(productId);
+  const now = new Date();
+  const activeIds =
+    user.activeProductIds ??
+    (subs.length > 0 && typeof subs[0] === "object" && subs[0] !== null && "productId" in subs[0]
+      ? (subs as SubscriptionItem[]).filter((s) => !s.validUntil || new Date(s.validUntil) > now).map((s) => s.productId)
+      : (subs as string[]));
+  if (productId) return activeIds.includes(productId);
   // Paid lesson (category "lessons"): grant access if user has any product for this language
   if (paragraph.category === "lessons") {
     const allowed = PRODUCT_IDS_BY_LANGUAGE[paragraph.language] ?? [];
-    return allowed.some((id) => subs.includes(id));
+    return allowed.some((id) => activeIds.includes(id));
   }
   return false;
 }

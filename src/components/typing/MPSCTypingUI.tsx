@@ -276,7 +276,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const fontSize = FONT_SIZES[fontSizeIndex];
   const text = paragraph.text;
   const segments = getWordSegments(text);
-  const evaluations = evaluateWords(text, input, { caseSensitive: false });
+  const evaluations = evaluateWords(text, input, { caseSensitive: true });
   const targetWordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
   function getSegmentStatus(seg: { text: string; wordIndex: number; isWord: boolean }): WordStatus | "space" {
