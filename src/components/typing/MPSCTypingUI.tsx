@@ -317,6 +317,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         metrics={resultsMetrics}
         paragraphId={paragraph._id}
         expectedText={paragraph.text}
+        showTotalKeystrokes
         onRetry={handleRestart}
         onNext={() => navigate("/practice/mpsc")}
         portalContainer={isFullScreen ? fullscreenRef.current : undefined}

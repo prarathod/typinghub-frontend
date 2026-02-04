@@ -120,6 +120,8 @@ type TestResultsModalProps = {
   paragraphId: string;
   /** When provided, User Input section highlights correct vs incorrect words. */
   expectedText?: string;
+  /** When true, show Total Keystrokes in the results (e.g. for MPSC). */
+  showTotalKeystrokes?: boolean;
   onRetry?: () => void;
   onNext?: () => void;
   /** Portal container - use fullscreen element when in fullscreen so modal displays correctly */
@@ -132,6 +134,7 @@ export function TestResultsModal({
   metrics,
   paragraphId,
   expectedText,
+  showTotalKeystrokes,
   onRetry,
   onNext,
   portalContainer
@@ -251,6 +254,12 @@ export function TestResultsModal({
                   <MetricArrow />
                   <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
                 </li>
+                {showTotalKeystrokes && (
+                  <li className="mb-2 d-flex align-items-start">
+                    <MetricArrow />
+                    <span><strong>Total Keystrokes :</strong> {metrics.totalKeystrokes}</span>
+                  </li>
+                )}
                 <li className="mb-2 d-flex align-items-start">
                   <MetricArrow />
                   <span><strong>Keystrokes Per Minute :</strong> {metrics.kpm}</span>

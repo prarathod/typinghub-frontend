@@ -19,6 +19,24 @@ export const AboutPage = () => {
         <p>
           TypingPracticeHub focuses on smart practice techniques to help users build confidence, accuracy, and speed through regular typing practice in a simple and user-friendly environment.
         </p>
+        <p className="font-medium text-slate-800">
+          This is an independent typing practice platform. Exam categories are provided for practice guidance only. We are not affiliated with any examination authority.
+        </p>
+      </div>
+      <div className="mt-10 space-y-3 border-t border-slate-200 pt-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Contact / About us
+        </p>
+        <p className="text-sm text-slate-700">
+          <a href="mailto:typingpracticehub@gmail.com" className="text-indigo-600 hover:underline">
+            typingpracticehub@gmail.com
+          </a>
+        </p>
+        <p className="text-sm text-slate-700">
+          <a href="https://t.me/Helpdesktph" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+            t.me/Helpdesktph
+          </a>
+        </p>
       </div>
     </div>
   );
