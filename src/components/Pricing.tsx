@@ -59,6 +59,12 @@ function formatPrice(paise: number): string {
 }
 
 /** Split product title: first part (e.g. "English Typing") in default color, second part (e.g. "for Court Exam") in accent color. */
+const COMING_SOON_PRODUCT_IDS = ["marathi-court", "marathi-mpsc"];
+
+function isComingSoon(productId: string): boolean {
+  return COMING_SOON_PRODUCT_IDS.includes(productId);
+}
+
 function getProductTitleParts(p: Product): { first: string; second: string; color: string } {
   switch (p.productId) {
     case "english-court":
@@ -169,7 +175,7 @@ export function Pricing() {
       window.location.href = `${getApiBaseUrl()}/auth/google`;
       return;
     }
-    const ids = [...customSelected];
+    const ids = [...customSelected].filter((id) => !isComingSoon(id));
     if (ids.length === 0) return;
     runPayment(ids);
   };
@@ -184,6 +190,7 @@ export function Pricing() {
   const customDiscount = customFullSum - customAmountPaise;
 
   const toggleCustom = (productId: string) => {
+    if (isComingSoon(productId)) return;
     setCustomSelected((prev) => {
       const next = new Set(prev);
       if (next.has(productId)) next.delete(productId);
@@ -248,24 +255,33 @@ export function Pricing() {
                   <div className="d-flex flex-column gap-2 mb-3">
                     {products.map((p) => {
                       const titleParts = getProductTitleParts(p);
+                      const comingSoon = isComingSoon(p.productId);
                       return (
                       <div
                         key={p.productId}
                         role="button"
-                        tabIndex={0}
-                        onClick={() => setPremiumSelected(p.productId)}
+                        tabIndex={comingSoon ? -1 : 0}
+                        onClick={() => !comingSoon && setPremiumSelected(p.productId)}
                         onKeyDown={(e) => {
+                          if (comingSoon) return;
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
                             setPremiumSelected(p.productId);
                           }
                         }}
                         className={`rounded-2 border border-2 border-dark p-2 text-start text-decoration-none ${
-                          premiumSelected === p.productId
-                            ? "bg-primary bg-opacity-10"
-                            : "bg-light bg-opacity-50"
+                          comingSoon
+                            ? "bg-secondary bg-opacity-25 opacity-75"
+                            : premiumSelected === p.productId
+                              ? "bg-primary bg-opacity-10"
+                              : "bg-light bg-opacity-50"
                         }`}
-                        style={{ cursor: "pointer", transition: "border-color 0.2s, background-color 0.2s" }}
+                        style={{
+                          cursor: comingSoon ? "not-allowed" : "pointer",
+                          transition: "border-color 0.2s, background-color 0.2s",
+                          pointerEvents: comingSoon ? "none" : undefined
+                        }}
+                        aria-disabled={comingSoon}
                       >
                         <div className="d-flex align-items-center justify-content-between gap-2">
                           <div className="flex-grow-1 min-w-0">
@@ -274,27 +290,29 @@ export function Pricing() {
                               <span className="small fw-semibold" style={{ color: titleParts.color }}>{titleParts.second}</span>
                             )}
                             </span>
-                            <button
-                              type="button"
-                              className="btn btn-link btn-sm p-0 text-decoration-none small mt-1 d-block"
-                              style={{ color: "#189fa8" }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedProduct(expandedProduct === p.productId ? null : p.productId);
-                              }}
-                              aria-expanded={expandedProduct === p.productId}
-                            >
-                              {expandedProduct === p.productId ? "Hide details" : "View more"}
-                            </button>
+                            {!comingSoon && (
+                              <button
+                                type="button"
+                                className="btn btn-link btn-sm p-0 text-decoration-none small mt-1 d-block"
+                                style={{ color: "#189fa8" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedProduct(expandedProduct === p.productId ? null : p.productId);
+                                }}
+                                aria-expanded={expandedProduct === p.productId}
+                              >
+                                {expandedProduct === p.productId ? "Hide details" : "View more"}
+                              </button>
+                            )}
                           </div>
                           <span
                             className="fw-bold flex-shrink-0 d-flex align-items-center"
-                            style={{ color: "#189fa8", fontSize: "1.1rem" }}
+                            style={{ color: comingSoon ? "#6c757d" : "#189fa8", fontSize: "1.1rem" }}
                           >
-                            {formatPrice(p.amountPaise)}/month
+                            {comingSoon ? "Coming soon" : `${formatPrice(p.amountPaise)}/month`}
                           </span>
                         </div>
-                        {expandedProduct === p.productId && (
+                        {!comingSoon && expandedProduct === p.productId && (
                           <div className="small mt-1 text-dark" style={{ lineHeight: 1.5 }}>
                             <ul className="list-unstyled mb-0 ps-0">
                               <li className="mb-1">▪️ Unlimited Typing Practice</li>
@@ -355,24 +373,33 @@ export function Pricing() {
                   <div className="d-flex flex-column gap-2 mb-3">
                     {products.map((p) => {
                       const titleParts = getProductTitleParts(p);
+                      const comingSoon = isComingSoon(p.productId);
                       return (
                       <div
                         key={p.productId}
                         role="button"
-                        tabIndex={0}
+                        tabIndex={comingSoon ? -1 : 0}
                         onClick={() => toggleCustom(p.productId)}
                         onKeyDown={(e) => {
+                          if (comingSoon) return;
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
                             toggleCustom(p.productId);
                           }
                         }}
                         className={`rounded-2 border border-2 border-dark p-2 text-start ${
-                          customSelected.has(p.productId)
-                            ? "bg-primary bg-opacity-10"
-                            : "bg-light bg-opacity-50"
+                          comingSoon
+                            ? "bg-secondary bg-opacity-25 opacity-75"
+                            : customSelected.has(p.productId)
+                              ? "bg-primary bg-opacity-10"
+                              : "bg-light bg-opacity-50"
                         }`}
-                        style={{ cursor: "pointer", transition: "border-color 0.2s, background-color 0.2s" }}
+                        style={{
+                          cursor: comingSoon ? "not-allowed" : "pointer",
+                          transition: "border-color 0.2s, background-color 0.2s",
+                          pointerEvents: comingSoon ? "none" : undefined
+                        }}
+                        aria-disabled={comingSoon}
                       >
                         <div className="d-flex align-items-center justify-content-between gap-2 text-start">
                           <div className="form-check mb-0 flex-grow-1">
@@ -381,6 +408,7 @@ export function Pricing() {
                               className="form-check-input"
                               id={`custom-${p.productId}`}
                               checked={customSelected.has(p.productId)}
+                              disabled={comingSoon}
                               onChange={() => toggleCustom(p.productId)}
                               onClick={(e) => e.stopPropagation()}
                             />
@@ -393,9 +421,9 @@ export function Pricing() {
                           </div>
                           <span
                             className="fw-bold flex-shrink-0 d-flex align-items-center"
-                            style={{ color: "#189fa8", fontSize: "1.1rem" }}
+                            style={{ color: comingSoon ? "#6c757d" : "#189fa8", fontSize: "1.1rem" }}
                           >
-                            {formatPrice(p.amountPaise)}
+                            {comingSoon ? "Coming soon" : formatPrice(p.amountPaise)}
                           </span>
                         </div>
                       </div>
