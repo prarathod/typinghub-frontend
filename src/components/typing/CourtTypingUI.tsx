@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import jsPDF from "jspdf";
 
+import shortLogoUrl from "@/assets/shortLogo.jpg";
+import telegramIconUrl from "@/assets/telegram.png";
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
@@ -37,6 +39,17 @@ const AUTO_SUBMIT_OPTIONS = [
   { value: 30 * 60, label: "30 minutes" },
   { value: 0, label: "Off" }
 ] as const;
+
+async function imageUrlToBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 type CourtTypingUIProps = {
   paragraph: ParagraphDetail;
@@ -210,33 +223,83 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     autoSubmitTriggeredRef.current = false;
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
+    const [logoDataUrl, telegramDataUrl] = await Promise.all([
+      imageUrlToBase64(shortLogoUrl),
+      imageUrlToBase64(telegramIconUrl)
+    ]);
+
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const footerHeight = 14;
+    const contentBottom = pageHeight - footerHeight;
+    const margin = 14;
+    const lineHeight = 5;
+    const iconSize = 6;
     let yPos = 20;
-    
-    // Title
+
+    // Title — centered at top
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Title:", 14, yPos);
+    const titleLines = doc.splitTextToSize(paragraph.title, pageWidth - 2 * margin);
+    for (const line of titleLines) {
+      const textWidth = doc.getTextWidth(line);
+      doc.text(line, (pageWidth - textWidth) / 2, yPos);
+      yPos += 6;
+    }
     yPos += 8;
-    doc.setFont("helvetica", "normal");
-    const titleLines = doc.splitTextToSize(paragraph.title, 180);
-    doc.text(titleLines, 14, yPos);
-    yPos += titleLines.length * 6 + 5;
-    
+
     // Instruction
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Start typing from below:", 14, yPos);
+    doc.text("Start typing from below:", margin, yPos);
     yPos += 8;
-    
-    // Paragraph text
+
+    // Paragraph text with pagination
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    const lines = doc.splitTextToSize(paragraph.text, 180);
-    doc.text(lines, 14, yPos);
-    
-    doc.save(`${paragraph.title.replace(/[^a-z0-9]/gi, "_")}.pdf`);
+    const lines = doc.splitTextToSize(paragraph.text, pageWidth - 2 * margin);
+    for (const line of lines) {
+      if (yPos + lineHeight > contentBottom) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.text(line, margin, yPos);
+      yPos += lineHeight;
+    }
+
+    // Footer: background #d6a692, black bold text, left: logo + link, right: telegram icon + link
+    const totalPages = doc.getNumberOfPages();
+    const leftUrl = "https://typingpracticehub.com";
+    const rightUrl = "https://t.me/TypingPracticeHub";
+    const leftText = "www.typingpracticehub.com";
+    const rightText = "@TypingPracticeHub";
+    const footerBgR = 214;
+    const footerBgG = 166;
+    const footerBgB = 146;
+
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      const footerY = pageHeight - footerHeight;
+      doc.setFillColor(footerBgR, footerBgG, footerBgB);
+      doc.rect(0, footerY, pageWidth, footerHeight, "F");
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+
+      // Left: logo + title with link
+      doc.addImage(logoDataUrl, "JPEG", margin, footerY + (footerHeight - iconSize) / 2, iconSize, iconSize);
+      doc.textWithLink(leftText, margin + iconSize + 2, footerY + footerHeight / 2 + 1.5, { url: leftUrl });
+
+      // Right: title with link + telegram icon
+      const rightW = doc.getTextWidth(rightText);
+      const rightTextX = pageWidth - margin - iconSize - 2 - rightW;
+      doc.textWithLink(rightText, rightTextX, footerY + footerHeight / 2 + 1.5, { url: rightUrl });
+      doc.addImage(telegramDataUrl, "PNG", pageWidth - margin - iconSize, footerY + (footerHeight - iconSize) / 2, iconSize, iconSize);
+    }
+
+    doc.save(`tph_${paragraph.title.replace(/[^a-z0-9]/gi, "_")}.pdf`);
   };
 
   return (
