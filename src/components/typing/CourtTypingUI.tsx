@@ -292,11 +292,11 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       doc.addImage(logoDataUrl, "JPEG", margin, footerY + (footerHeight - iconSize) / 2, iconSize, iconSize);
       doc.textWithLink(leftText, margin + iconSize + 2, footerY + footerHeight / 2 + 1.5, { url: leftUrl });
 
-      // Right: title with link + telegram icon
+      // Right: telegram icon first, then title with link
       const rightW = doc.getTextWidth(rightText);
-      const rightTextX = pageWidth - margin - iconSize - 2 - rightW;
-      doc.textWithLink(rightText, rightTextX, footerY + footerHeight / 2 + 1.5, { url: rightUrl });
-      doc.addImage(telegramDataUrl, "PNG", pageWidth - margin - iconSize, footerY + (footerHeight - iconSize) / 2, iconSize, iconSize);
+      const rightIconX = pageWidth - margin - iconSize - 2 - rightW;
+      doc.addImage(telegramDataUrl, "PNG", rightIconX, footerY + (footerHeight - iconSize) / 2, iconSize, iconSize);
+      doc.textWithLink(rightText, rightIconX + iconSize + 2, footerY + footerHeight / 2 + 1.5, { url: rightUrl });
     }
 
     doc.save(`tph_${paragraph.title.replace(/[^a-z0-9]/gi, "_")}.pdf`);
