@@ -31,40 +31,14 @@ function MetricArrow() {
   );
 }
 
-/** Renders user input with correct (green) and incorrect (red) word highlighting when expectedText is provided. */
+/** Renders user input in black (no correct/incorrect coloring). */
 function UserInputHighlighted({
-  userInput,
-  expectedText
+  userInput
 }: {
   userInput: string;
   expectedText: string;
 }) {
-  if (typeof expectedText !== "string") return <>{userInput}</>;
-  const expectedWords = splitWords(expectedText);
-  const tokens = userInput.split(/(\s+)/);
-  let wordIndex = 0;
-  return (
-    <>
-      {tokens.map((t, i) => {
-        if (/^\s+$/.test(t)) return <span key={i}>{t}</span>;
-        const isCorrect =
-          expectedWords[wordIndex] !== undefined && t === expectedWords[wordIndex];
-        wordIndex++;
-        return (
-          <span
-            key={i}
-            style={{
-              color: isCorrect ? "#15803d" : "#b91c1c",
-              padding: "0 1px",
-              borderRadius: "2px"
-            }}
-          >
-            {t}
-          </span>
-        );
-      })}
-    </>
-  );
+  return <>{userInput}</>;
 }
 
 /** Renders expected paragraph with correct (green), incorrect (red), omitted (orange + strikethrough). */

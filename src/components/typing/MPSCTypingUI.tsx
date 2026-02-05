@@ -56,7 +56,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerStarted, setTimerStarted] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [enableHighlight, setEnableHighlight] = useState(true);
+  const [enableHighlight, setEnableHighlight] = useState(false);
   const [enableBackspace, setEnableBackspace] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX);
@@ -167,6 +167,18 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
+    // Disable directional keys and Home/End so cursor cannot be moved
+    if (
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight" ||
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown" ||
+      e.key === "Home" ||
+      e.key === "End"
+    ) {
+      e.preventDefault();
+      return;
+    }
     // MPSC: block Tab and Enter
     if (e.key === "Tab" || e.key === "Enter") {
       e.preventDefault();
@@ -188,6 +200,18 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     }
     if (enableBackspace && e.key === "Backspace")
       setBackspaceCount((c) => c + 1);
+  };
+
+  const handleTextareaMouseDown = () => {
+    if (hasSubmitted) return;
+    // Keep cursor at end after click: run after the browser would have moved the cursor
+    requestAnimationFrame(() => {
+      const ta = textareaRef.current;
+      if (ta) {
+        const len = input.length;
+        ta.setSelectionRange(len, len);
+      }
+    });
   };
 
   const handleCopyPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -533,6 +557,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              onMouseDown={handleTextareaMouseDown}
               onCopy={handleCopyPaste}
               onPaste={handleCopyPaste}
               onCut={handleCopyPaste}

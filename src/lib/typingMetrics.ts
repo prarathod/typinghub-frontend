@@ -61,12 +61,13 @@ export function computeTypingMetrics(
   const accuracy =
     wordsTyped === 0 ? 100 : Math.round((correctWordsCount / wordsTyped) * 100);
   const wpm = Math.round(correctWordsCount / timeMinutes);
-  const kpm = Math.round(totalKeystrokes / timeMinutes);
+  const totalKeystrokesAsChars = userInput.length;
+  const kpm = Math.round(totalKeystrokesAsChars / timeMinutes);
 
   return {
     timeTakenSeconds,
     accuracy,
-    totalKeystrokes,
+    totalKeystrokes: totalKeystrokesAsChars,
     backspaceCount,
     wordsTyped,
     wpm,
