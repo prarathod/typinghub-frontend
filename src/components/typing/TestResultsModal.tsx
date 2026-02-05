@@ -18,10 +18,6 @@ function formatTimeLong(seconds: number): string {
   return parts.join(" ");
 }
 
-function splitWords(s: string): string[] {
-  return s.split(/\s+/).filter(Boolean);
-}
-
 /** Small teal right-pointing triangular arrow before each metric. */
 function MetricArrow() {
   return (

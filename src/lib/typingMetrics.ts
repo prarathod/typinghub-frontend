@@ -26,7 +26,7 @@ export function computeTypingMetrics(
   passage: string,
   userInput: string,
   timeTakenSeconds: number,
-  totalKeystrokes: number,
+  _totalKeystrokes: number,
   backspaceCount: number,
   _language: "english" | "marathi"
 ): TypingMetrics {
