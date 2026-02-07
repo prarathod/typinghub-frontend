@@ -16,8 +16,8 @@ export const ContactPage = () => {
             <li><strong>Business Name:</strong> TypingPracticeHub</li>
             <li><strong>Nature of Business:</strong> Online Typing Practice Services</li>
             <li><strong>Email:</strong>{" "}
-              <a href="mailto:support@typingpracticehub.in" className="text-indigo-600 hover:underline">
-                support@typingpracticehub.in
+              <a href="mailto:typingpracticehub@gmail.com" className="text-indigo-600 hover:underline">
+                typingpracticehub@gmail.com
               </a>
             </li>
           </ul>

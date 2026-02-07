@@ -97,29 +97,39 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     const autoSubmitVal = autoSubmitSecondsRef.current;
     const currentTime =
       autoSubmitVal > 0 ? Math.max(0, autoSubmitVal - timerVal) : timerVal;
+    const passageText = paragraph.text;
+    const hasLeadingWs = /^\s+/.test(passageText);
+    const passageForMetrics = hasLeadingWs
+      ? "__LEADING_WS__ " + passageText.trimStart()
+      : passageText;
+    const userForMetrics =
+      hasLeadingWs && /^\s+/.test(currentInput)
+        ? "__LEADING_WS__ " + currentInput.trimStart()
+        : currentInput;
     const metrics = computeTypingMetrics(
-      paragraph.text,
-      currentInput,
+      passageForMetrics,
+      userForMetrics,
       currentTime,
       currentKeystrokes,
       currentBackspace,
       paragraph.language
     );
-    setResultsMetrics(metrics);
+    const metricsToUse = { ...metrics, userInput: currentInput };
+    setResultsMetrics(metricsToUse);
     setResultsOpen(true);
     try {
       await submitTypingResult(paragraph._id, {
-        timeTakenSeconds: metrics.timeTakenSeconds,
-        accuracy: metrics.accuracy,
-        totalKeystrokes: metrics.totalKeystrokes,
-        backspaceCount: metrics.backspaceCount,
-        wordsTyped: metrics.wordsTyped,
-        wpm: metrics.wpm,
-        kpm: metrics.kpm,
-        incorrectWordsCount: metrics.incorrectWordsCount,
-        incorrectWords: metrics.incorrectWords,
-        correctWordsCount: metrics.correctWordsCount,
-        userInput: metrics.userInput
+        timeTakenSeconds: metricsToUse.timeTakenSeconds,
+        accuracy: metricsToUse.accuracy,
+        totalKeystrokes: metricsToUse.totalKeystrokes,
+        backspaceCount: metricsToUse.backspaceCount,
+        wordsTyped: metricsToUse.wordsTyped,
+        wpm: metricsToUse.wpm,
+        kpm: metricsToUse.kpm,
+        incorrectWordsCount: metricsToUse.incorrectWordsCount,
+        incorrectWords: metricsToUse.incorrectWords,
+        correctWordsCount: metricsToUse.correctWordsCount,
+        userInput: metricsToUse.userInput
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),

@@ -39,7 +39,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Who can I contact for support?",
     answer:
-      "Email us at support@typingpracticehub.in or join our Telegram channel. We aim to respond within 24–48 working hours."
+      "Email us at typingpracticehub@gmail.com or join our Telegram channel. We aim to respond within 24–48 working hours."
   }
 ];
 
