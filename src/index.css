@@ -132,3 +132,15 @@ a {
     background-color: #e7f7ed;
   }
 }
+
+/* Pricing: bounce list items on hover */
+@keyframes pricing-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.pricing-feature-li {
+  transition: transform 0.2s ease;
+}
+.pricing-feature-li:hover {
+  animation: pricing-bounce 0.5s ease;
+}

@@ -315,12 +315,12 @@ export function Pricing() {
                         {!comingSoon && expandedProduct === p.productId && (
                           <div className="small mt-1 text-dark" style={{ lineHeight: 1.5 }}>
                             <ul className="list-unstyled mb-0 ps-0">
-                              <li className="mb-1">▪️ Unlimited Typing Practice</li>
-                              <li className="mb-1">▫️ All Passages Access available.</li>
-                              <li className="mb-1">▪️ Full lessons access</li>
-                              <li className="mb-1">▫️ Progress tracking</li>
-                              <li className="mb-1">▪️ Exam-ready practice</li>
-                              <li className="mb-1">▫️ Result Oriented Passege</li>
+                              <li className="mb-1 pricing-feature-li">▪️ Unlimited Typing Practice</li>
+                              <li className="mb-1 pricing-feature-li">▫️ All Passages Access available.</li>
+                              <li className="mb-1 pricing-feature-li">▪️ Full lessons access</li>
+                              <li className="mb-1 pricing-feature-li">▫️ Progress tracking</li>
+                              <li className="mb-1 pricing-feature-li">▪️ Exam-ready practice</li>
+                              <li className="mb-1 pricing-feature-li">▫️ Result Oriented Passages</li>
                             </ul>
                           </div>
                         )}
