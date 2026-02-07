@@ -98,6 +98,11 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
       e.preventDefault();
       return;
     }
+    // Prevent Backspace/Delete from removing a selection (only allow single-character delete)
+    if (ta.selectionStart !== ta.selectionEnd && (e.key === "Backspace" || e.key === "Delete")) {
+      e.preventDefault();
+      return;
+    }
     if (!enableBackspace && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
       return;
@@ -317,7 +322,10 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           </div>
         </div>
 
-        <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
+        <div
+          className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light"
+          onCopy={(e) => e.preventDefault()}
+        >
           <label className="d-flex align-items-center gap-2 small mb-0">
             <input
               type="checkbox"
@@ -460,6 +468,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onCopy={handleCopyPaste}
+              onCopyCapture={(e) => e.preventDefault()}
               onPaste={handleCopyPaste}
               onCut={handleCopyPaste}
               spellCheck={false}

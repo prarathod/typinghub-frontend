@@ -184,13 +184,18 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
       e.preventDefault();
       return;
     }
-    if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+    if ((e.ctrlKey || e.metaKey) && (e.key === "a" || e.key === "A")) {
       e.preventDefault();
       return;
     }
     // Prevent Space from replacing a selection (e.g. after Ctrl+A, space would wipe all text)
     const ta = e.currentTarget;
     if (e.key === " " && ta.selectionStart !== ta.selectionEnd) {
+      e.preventDefault();
+      return;
+    }
+    // Prevent Backspace/Delete from removing a selection (only allow single-character delete)
+    if (ta.selectionStart !== ta.selectionEnd && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
       return;
     }
@@ -507,6 +512,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                 lineHeight: 1.6,
                 color: "#000000"
               }}
+              onCopy={(e) => e.preventDefault()}
             >
               {enableHighlight ? (
                 <>
@@ -559,6 +565,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
               onKeyDown={handleKeyDown}
               onMouseDown={handleTextareaMouseDown}
               onCopy={handleCopyPaste}
+              onCopyCapture={(e) => e.preventDefault()}
               onPaste={handleCopyPaste}
               onCut={handleCopyPaste}
               spellCheck={false}

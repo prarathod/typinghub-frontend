@@ -189,6 +189,11 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       e.preventDefault();
       return;
     }
+    // Prevent Backspace/Delete from removing a selection (only allow single-character delete)
+    if (ta.selectionStart !== ta.selectionEnd && (e.key === "Backspace" || e.key === "Delete")) {
+      e.preventDefault();
+      return;
+    }
     // Disable Delete and Backspace
     if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
