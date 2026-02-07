@@ -208,9 +208,13 @@ export function TestResultsModal({
                   <MetricArrow />
                   <span><strong>Correct Words :</strong> {metrics.correctWordsCount}</span>
                 </li>
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
+                </li>
                 <li className="d-flex align-items-start">
                   <MetricArrow />
-                  <span><strong>Accuracy :</strong> {metrics.accuracy}%</span>
+                  <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
                 </li>
               </ul>
             </div>
@@ -218,11 +222,7 @@ export function TestResultsModal({
               <ul className="list-unstyled mb-0">
                 <li className="mb-2 d-flex align-items-start">
                   <MetricArrow />
-                  <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
-                </li>
-                <li className="mb-2 d-flex align-items-start">
-                  <MetricArrow />
-                  <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
+                  <span><strong>Accuracy :</strong> {metrics.accuracy}%</span>
                 </li>
                 {showTotalKeystrokes && (
                   <li className="mb-2 d-flex align-items-start">
