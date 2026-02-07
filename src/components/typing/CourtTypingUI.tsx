@@ -115,6 +115,16 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       paragraph.language
     );
     const metricsToUse = { ...metrics, userInput: currentInput };
+    if (hasLeadingWs && !/^\s+/.test(currentInput)) {
+      metricsToUse.incorrectWordsCount = metricsToUse.incorrectWordsCount + 1;
+      metricsToUse.incorrectWords = [
+        "(omitted leading tab)",
+        ...metricsToUse.incorrectWords
+      ];
+      metricsToUse.accuracy = Math.round(
+        (metricsToUse.correctWordsCount / (metricsToUse.wordsTyped + 1)) * 100
+      );
+    }
     setResultsMetrics(metricsToUse);
     setResultsOpen(true);
     try {
