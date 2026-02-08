@@ -513,11 +513,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
 
           <aside
-            className="rounded-3 rounded-end-0 p-3 flex-shrink-0 d-flex flex-column gap-3"
+            className="rounded-3 rounded-end-0 p-3 flex-shrink-0 d-flex flex-column gap-3 bg-primary bg-opacity-25"
             style={{
               width: "240px",
-              backgroundColor: "#15803d",
-              color: "#fff",
+              color: "#212529",
               marginRight: "calc(-1 * var(--bs-gutter-x, 0.75rem))",
               alignSelf: "stretch"
             }}
@@ -535,7 +534,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                 {user?.name ? `Hello, ${user.name}` : "Hello, Guest User"}
               </div>
             </div>
-            <label className="d-flex align-items-center gap-2 small mb-0 text-white">
+            <label className="d-flex align-items-center gap-2 small mb-0 text-dark">
               <input
                 type="checkbox"
                 checked={enableHighlight}
@@ -545,7 +544,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
               />
               <span>Enable Highlight</span>
             </label>
-            <label className="d-flex align-items-center gap-2 small mb-0 text-white">
+            <label className="d-flex align-items-center gap-2 small mb-0 text-dark">
               <input
                 type="checkbox"
                 checked={enableBackspace}
@@ -556,7 +555,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
               <span>Enable Backspace</span>
             </label>
             <div className="d-flex align-items-center gap-2">
-              <label className="small mb-0 text-white">Auto submit:</label>
+              <label className="small mb-0 text-dark">Auto submit:</label>
               <select
                 className="form-select form-select-sm"
                 style={{ width: "auto", flex: 1 }}
@@ -572,7 +571,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
               </select>
             </div>
             <div className="d-flex align-items-center gap-2">
-              <span className="small text-white">Font size:</span>
+              <span className="small text-dark">Font size:</span>
               <div
                 className="btn-group btn-group-sm"
                 style={{
