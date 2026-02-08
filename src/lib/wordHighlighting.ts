@@ -136,16 +136,23 @@ export function evaluateWords(
   const completedTypedWords = inputEndsWithSpace
     ? inputWords
     : inputWords.slice(0, -1);
-  const activeTargetIndex =
-    !inputEndsWithSpace && inputWords.length > 0
-      ? Math.min(inputWords.length - 1, targetWords.length - 1)
-      : -1;
-
   const aligned =
     completedTypedWords.length > 0
       ? alignWords(targetWords, completedTypedWords, { caseSensitive })
       : [];
   const alignedByIndex = new Map(aligned.map((a) => [a.wordIndex, a]));
+
+  // Active = the target word we're currently typing (next after last aligned).
+  // Use alignment so omitted words don't make us point at the wrong target.
+  const activeTargetIndex =
+    !inputEndsWithSpace && inputWords.length > 0
+      ? aligned.length > 0
+        ? Math.min(
+            Math.max(...aligned.map((a) => a.wordIndex)) + 1,
+            targetWords.length - 1
+          )
+        : 0
+      : -1;
 
   const result: WordEvaluation[] = [];
   for (let i = 0; i < targetWords.length; i++) {

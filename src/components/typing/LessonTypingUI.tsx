@@ -75,7 +75,9 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
-    const next = e.target.value;
+    const raw = e.target.value;
+    // Collapse multiple consecutive spaces to a single space
+    const next = raw.replace(/  +/g, " ");
     const delta = next.length - input.length;
     if (delta > 0) setTotalKeystrokes((k) => k + delta);
     setInput(next);
@@ -95,6 +97,11 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     // Prevent Space from replacing a selection (e.g. after Ctrl+A, space would wipe all text)
     const ta = e.currentTarget;
     if (e.key === " " && ta.selectionStart !== ta.selectionEnd) {
+      e.preventDefault();
+      return;
+    }
+    // Allow only one space at a time — block Space if there is already a space before the cursor
+    if (e.key === " " && ta.selectionStart > 0 && input[ta.selectionStart - 1] === " ") {
       e.preventDefault();
       return;
     }

@@ -161,7 +161,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
-    const next = e.target.value;
+    const raw = e.target.value;
+    // MPSC: collapse multiple consecutive spaces to a single space
+    const next = raw.replace(/  +/g, " ");
     const delta = next.length - input.length;
     if (delta > 0) setTotalKeystrokes((k) => k + delta);
     setInput(next);
@@ -194,6 +196,11 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     // Prevent Space from replacing a selection (e.g. after Ctrl+A, space would wipe all text)
     const ta = e.currentTarget;
     if (e.key === " " && ta.selectionStart !== ta.selectionEnd) {
+      e.preventDefault();
+      return;
+    }
+    // MPSC: allow only one space at a time — block Space if there is already a space before the cursor
+    if (e.key === " " && ta.selectionStart > 0 && input[ta.selectionStart - 1] === " ") {
       e.preventDefault();
       return;
     }
@@ -360,7 +367,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         style={
           isFullScreen
             ? { minHeight: "100vh", maxHeight: "100vh", overflow: "auto", backgroundColor: "#fff", padding: "1rem" }
-            : { backgroundColor: "#fff", minHeight: "100vh" }
+            : { backgroundColor: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column" }
         }
       >
         <div
@@ -410,7 +417,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
         </div>
 
-        <div className="d-flex gap-3 mb-3" style={{ alignItems: "flex-start" }}>
+        <div
+          className="d-flex gap-3 mb-3 flex-grow-1"
+          style={{ alignItems: "stretch", minHeight: 0 }}
+        >
           <div className="flex-grow-1" style={{ minWidth: 0 }}>
             <div className="card border shadow-sm mb-3 lesson-typing-card">
           <div className="card-body">
@@ -503,11 +513,13 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
 
           <aside
-            className="rounded-3 p-3 flex-shrink-0 d-flex flex-column gap-3"
+            className="rounded-3 rounded-end-0 p-3 flex-shrink-0 d-flex flex-column gap-3"
             style={{
               width: "240px",
               backgroundColor: "#15803d",
-              color: "#fff"
+              color: "#fff",
+              marginRight: "calc(-1 * var(--bs-gutter-x, 0.75rem))",
+              alignSelf: "stretch"
             }}
           >
             <div className="text-center">
