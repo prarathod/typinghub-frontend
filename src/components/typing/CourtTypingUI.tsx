@@ -126,6 +126,10 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     setResultsMetrics(metricsToUse);
     setResultsOpen(true);
     try {
+      const totalPassageWords =
+        metricsToUse.correctWordsCount +
+        metricsToUse.incorrectWordsCount +
+        metricsToUse.omittedWordsCount;
       await submitTypingResult(paragraph._id, {
         timeTakenSeconds: metricsToUse.timeTakenSeconds,
         accuracy: metricsToUse.accuracy,
@@ -137,7 +141,9 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         incorrectWordsCount: metricsToUse.incorrectWordsCount,
         incorrectWords: metricsToUse.incorrectWords,
         correctWordsCount: metricsToUse.correctWordsCount,
-        userInput: metricsToUse.userInput
+        userInput: metricsToUse.userInput,
+        omittedWordsCount: metricsToUse.omittedWordsCount,
+        totalPassageWords
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),

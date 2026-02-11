@@ -106,6 +106,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     setResultsMetrics(metrics);
     setResultsOpen(true);
     try {
+      const totalPassageWords =
+        metrics.correctWordsCount +
+        metrics.incorrectWordsCount +
+        metrics.omittedWordsCount;
       await submitTypingResult(paragraph._id, {
         timeTakenSeconds: metrics.timeTakenSeconds,
         accuracy: metrics.accuracy,
@@ -117,7 +121,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         incorrectWordsCount: metrics.incorrectWordsCount,
         incorrectWords: metrics.incorrectWords,
         correctWordsCount: metrics.correctWordsCount,
-        userInput: metrics.userInput
+        userInput: metrics.userInput,
+        omittedWordsCount: metrics.omittedWordsCount,
+        totalPassageWords
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
@@ -262,6 +268,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     setResultsMetrics(metrics);
     setResultsOpen(true);
     try {
+      const totalPassageWords =
+        metrics.correctWordsCount +
+        metrics.incorrectWordsCount +
+        metrics.omittedWordsCount;
       await submitTypingResult(paragraph._id, {
         timeTakenSeconds: metrics.timeTakenSeconds,
         accuracy: metrics.accuracy,
@@ -273,7 +283,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         incorrectWordsCount: metrics.incorrectWordsCount,
         incorrectWords: metrics.incorrectWords,
         correctWordsCount: metrics.correctWordsCount,
-        userInput: metrics.userInput
+        userInput: metrics.userInput,
+        omittedWordsCount: metrics.omittedWordsCount,
+        totalPassageWords
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
