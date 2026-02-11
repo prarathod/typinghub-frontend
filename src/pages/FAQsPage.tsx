@@ -14,7 +14,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "What are the Premium and Custom plans?",
     answer:
-      "Premium lets you pick one course (e.g. English Typing for Court Exam) at ₹49/plan. Custom lets you select multiple courses and get a discount. Both give full access to all passages and lessons in the selected course(s)."
+      "Premium lets you pick one course (e.g. English Typing for Court Exam) at ₹99/plan. Custom lets you select multiple courses and get a discount (e.g. 2 courses for ₹149). Both give full access to all passages and lessons in the selected course(s)."
   },
   {
     question: "How is my typing speed measured?",

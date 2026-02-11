@@ -14,16 +14,16 @@ import { useAuthStore } from "@/stores/authStore";
 import { getApiBaseUrl } from "@/lib/api";
 
 const FALLBACK_PRODUCTS: Product[] = [
-  { productId: "english-court", name: "English Court Typing", amountPaise: 4900 },
-  { productId: "english-mpsc", name: "English MPSC Typing Exam", amountPaise: 4900 },
-  { productId: "marathi-court", name: "Marathi Court Exam", amountPaise: 4900 },
-  { productId: "marathi-mpsc", name: "Marathi MPSC Typing Exam", amountPaise: 4900 },
+  { productId: "english-court", name: "English Court Typing", amountPaise: 9900 },
+  { productId: "english-mpsc", name: "English MPSC Typing Exam", amountPaise: 9900 },
+  { productId: "marathi-court", name: "Marathi Court Exam", amountPaise: 9900 },
+  { productId: "marathi-mpsc", name: "Marathi MPSC Typing Exam", amountPaise: 9900 },
 ];
 
 const FALLBACK_BUNDLE_RULES = [
-  { count: 2, amountPaise: 8900 },
-  { count: 3, amountPaise: 13200 },
-  { count: 4, amountPaise: 17500 },
+  { count: 2, amountPaise: 14900 },
+  { count: 3, amountPaise: 19900 },
+  { count: 4, amountPaise: 24900 },
 ];
 
 /** Right-pointing arrow icon for free features list — alternating black and blue. */
@@ -244,7 +244,7 @@ export function Pricing() {
               <div className="card-body d-flex flex-column p-3" style={{ paddingBottom: "3.25rem" }}>
                 <h5 className="text-uppercase fw-bold mb-1 text-center" style={{ fontSize: "1.2rem", fontFamily: "inherit" }}>
                   <span style={{ color: "#0d6efd", fontFamily: '"Playfair Display", serif' }}>PREMIUM</span>
-                  <span style={{ color: "#198754" }}> - 49 ₹/Plan</span>
+                  <span style={{ color: "#198754" }}> - 99 ₹/Plan</span>
                 </h5>
                 <p className="text-body mb-2 fw-medium text-center" style={{ fontSize: "1.05rem", color: "#000" }}>
                   Pick any one course.
