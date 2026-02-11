@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
-import shortLogo from "@/assets/shortLogo.jpg";
 import longLogo from "@/assets/longLogo.png";
 import { LoginDialog } from "@/components/LoginDialog";
 import { logout } from "@/features/auth/authApi";
@@ -10,20 +9,11 @@ import { getApiBaseUrl } from "@/lib/api";
 
 function Logo() {
   return (
-    <>
-      <img
-        src={shortLogo}
-        alt="Typing Practice Hub"
-        className="d-lg-none"
-        style={{ height: 36, width: "auto" }}
-      />
-      <img
-        src={longLogo}
-        alt="Typing Practice Hub"
-        className="d-none d-lg-block"
-        style={{ height: 36, width: "auto" }}
-      />
-    </>
+    <img
+      src={longLogo}
+      alt="Typing Practice Hub"
+      style={{ height: 36, width: "auto" }}
+    />
   );
 }
 
