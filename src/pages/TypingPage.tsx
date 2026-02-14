@@ -35,6 +35,7 @@ export function TypingPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const sessionInvalidated = useAuthStore((s) => s.sessionInvalidated);
   const [showTypingUI, setShowTypingUI] = useState(false);
   const prevStatusRef = useRef<string | undefined>(undefined);
 
@@ -124,7 +125,7 @@ export function TypingPage() {
   const notLoggedIn = !user;
 
   useEffect(() => {
-    if (!hasAccess && paragraph) {
+    if (!hasAccess && paragraph && !sessionInvalidated) {
       const listPath = CATEGORY_TO_PATH[paragraph.category] ?? "/practice/lessons";
       navigate(listPath, {
         replace: true,
@@ -133,7 +134,7 @@ export function TypingPage() {
           : { openPricing: true, productId: paidProductId ?? undefined }
       });
     }
-  }, [hasAccess, paragraph, notLoggedIn, paidProductId, navigate]);
+  }, [hasAccess, paragraph, notLoggedIn, paidProductId, sessionInvalidated, navigate]);
 
   if (!hasAccess) {
     return (

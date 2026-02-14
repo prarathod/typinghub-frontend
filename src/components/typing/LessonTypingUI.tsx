@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
@@ -189,6 +190,9 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+      }
       console.error("Failed to store submission:", err);
     }
   };

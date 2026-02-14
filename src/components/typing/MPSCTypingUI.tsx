@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 import blueProfileImage from "@/assets/blueProfileImage.png";
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
@@ -148,6 +149,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+      }
       console.error("Failed to store submission:", err);
     }
   }, [
@@ -310,6 +314,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+      }
       console.error("Failed to store submission:", err);
     }
   };

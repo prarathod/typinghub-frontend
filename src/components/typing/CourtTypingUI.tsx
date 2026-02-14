@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import jsPDF from "jspdf";
 
 import shortLogoUrl from "@/assets/shortLogo.jpg";
@@ -168,6 +169,9 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+      }
       console.error("Failed to store submission:", err);
     }
   }, [hasSubmitted, paragraph.text, paragraph._id, paragraph.language, queryClient]);
