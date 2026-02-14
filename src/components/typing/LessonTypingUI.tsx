@@ -73,6 +73,22 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     textareaRef.current?.focus();
   }, []);
 
+  // Disable mouse wheel scroll on paragraph area; user can only scroll via scrollbar.
+  // Only prevent when wheel would scroll this container, so programmatic scrollTo() still works.
+  useEffect(() => {
+    const el = paragraphScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const maxScroll = scrollHeight - clientHeight;
+      const wouldScrollDown = e.deltaY > 0 && scrollTop < maxScroll;
+      const wouldScrollUp = e.deltaY < 0 && scrollTop > 0;
+      if (wouldScrollDown || wouldScrollUp) e.preventDefault();
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
     const raw = e.target.value;

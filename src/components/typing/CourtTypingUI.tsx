@@ -70,12 +70,29 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const [resultsOpen, setResultsOpen] = useState(false);
   const [resultsMetrics, setResultsMetrics] = useState<TypingMetrics | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const paragraphScrollRef = useRef<HTMLDivElement>(null);
   const autoSubmitTriggeredRef = useRef(false);
   const inputRef = useRef(input);
   const totalKeystrokesRef = useRef(totalKeystrokes);
   const backspaceCountRef = useRef(backspaceCount);
   const timerSecondsRef = useRef(timerSeconds);
   const autoSubmitSecondsRef = useRef(autoSubmitSeconds);
+
+  // Disable mouse wheel scroll on paragraph area; user can only scroll via scrollbar.
+  // Only prevent when wheel would scroll this container, so programmatic scroll still works.
+  useEffect(() => {
+    const el = paragraphScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const maxScroll = scrollHeight - clientHeight;
+      const wouldScrollDown = e.deltaY > 0 && scrollTop < maxScroll;
+      const wouldScrollUp = e.deltaY < 0 && scrollTop > 0;
+      if (wouldScrollDown || wouldScrollUp) e.preventDefault();
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
 
   useEffect(() => {
     inputRef.current = input;
@@ -364,6 +381,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             <div className="card-body">
               <h2 className="h6 fw-semibold mb-3">Paragraph to type</h2>
               <div
+                ref={paragraphScrollRef}
                 className="overflow-auto rounded-3 p-4 mb-0"
                 style={{
                   whiteSpace: "pre-wrap",
