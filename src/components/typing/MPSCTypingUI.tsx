@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
+import { isPaidParagraph } from "@/lib/access";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
 import {
   getWordSegments,
@@ -105,14 +106,16 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const submitCurrentAttempt = useCallback(async () => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
-    try {
-      await getCurrentUser();
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        navigate("/");
-        return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
       }
-      throw err;
     }
     autoSubmitTriggeredRef.current = true;
     setHasSubmitted(true);
@@ -168,6 +171,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   }, [
     hasSubmitted,
     autoSubmitSeconds,
+    paragraph,
     paragraph.text,
     paragraph._id,
     paragraph.language,
@@ -287,14 +291,16 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleSubmit = async () => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
-    try {
-      await getCurrentUser();
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        navigate("/");
-        return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
       }
-      throw err;
     }
     const timeTaken =
       autoSubmitSeconds > 0 ? autoSubmitSeconds - timerSeconds : timerSeconds;

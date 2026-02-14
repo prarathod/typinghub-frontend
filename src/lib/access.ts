@@ -46,6 +46,10 @@ function getEffectiveAccessType(p: ParagraphForAccess): AccessType {
   return p.isFree !== false ? "free" : "paid";
 }
 
+export function isPaidParagraph(p: ParagraphForAccess): boolean {
+  return getEffectiveAccessType(p) === "paid";
+}
+
 export function hasAccessToParagraph(
   user: User | null,
   paragraph: ParagraphForAccess

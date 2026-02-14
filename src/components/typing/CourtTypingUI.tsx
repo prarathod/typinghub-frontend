@@ -10,6 +10,7 @@ import { TestResultsModal } from "@/components/typing/TestResultsModal";
 import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
+import { isPaidParagraph } from "@/lib/access";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
 
 function formatTime(seconds: number): string {
@@ -106,14 +107,16 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
 
   const submitCurrentAttempt = useCallback(async () => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
-    try {
-      await getCurrentUser();
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        navigate("/");
-        return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
       }
-      throw err;
     }
     autoSubmitTriggeredRef.current = true;
     setHasSubmitted(true);
@@ -185,7 +188,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       }
       console.error("Failed to store submission:", err);
     }
-  }, [hasSubmitted, paragraph.text, paragraph._id, paragraph.language, queryClient, navigate]);
+  }, [hasSubmitted, paragraph, paragraph.text, paragraph._id, paragraph.language, queryClient, navigate]);
 
   useEffect(() => {
     if (!timerStarted || hasSubmitted || autoSubmitTriggeredRef.current) return;

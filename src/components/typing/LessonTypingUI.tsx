@@ -7,6 +7,7 @@ import { TestResultsModal } from "@/components/typing/TestResultsModal";
 import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
+import { isPaidParagraph } from "@/lib/access";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
 import {
   getWordSegments,
@@ -154,14 +155,16 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
   const handleSubmit = async () => {
     if (typeof paragraph?.text !== "string") return;
-    try {
-      await getCurrentUser();
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        navigate("/");
-        return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
       }
-      throw err;
     }
     setHasSubmitted(true);
     const metrics = computeTypingMetrics(
