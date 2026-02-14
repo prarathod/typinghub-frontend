@@ -6,6 +6,7 @@ import axios from "axios";
 import blueProfileImage from "@/assets/blueProfileImage.png";
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
 import { useAuthStore } from "@/stores/authStore";
+import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
@@ -104,6 +105,15 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const submitCurrentAttempt = useCallback(async () => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    try {
+      await getCurrentUser();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        navigate("/");
+        return;
+      }
+      throw err;
+    }
     autoSubmitTriggeredRef.current = true;
     setHasSubmitted(true);
     setTimerStarted(false);
@@ -151,6 +161,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         setResultsOpen(false);
+        navigate("/");
       }
       console.error("Failed to store submission:", err);
     }
@@ -160,7 +171,8 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     paragraph.text,
     paragraph._id,
     paragraph.language,
-    queryClient
+    queryClient,
+    navigate
   ]);
 
   useEffect(() => {
@@ -275,6 +287,15 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleSubmit = async () => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    try {
+      await getCurrentUser();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        navigate("/");
+        return;
+      }
+      throw err;
+    }
     const timeTaken =
       autoSubmitSeconds > 0 ? autoSubmitSeconds - timerSeconds : timerSeconds;
     setHasSubmitted(true);
@@ -316,6 +337,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         setResultsOpen(false);
+        navigate("/");
       }
       console.error("Failed to store submission:", err);
     }

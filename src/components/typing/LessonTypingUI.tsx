@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
+import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
@@ -153,6 +154,15 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
   const handleSubmit = async () => {
     if (typeof paragraph?.text !== "string") return;
+    try {
+      await getCurrentUser();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        navigate("/");
+        return;
+      }
+      throw err;
+    }
     setHasSubmitted(true);
     const metrics = computeTypingMetrics(
       paragraph.text,
@@ -192,6 +202,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         setResultsOpen(false);
+        navigate("/");
       }
       console.error("Failed to store submission:", err);
     }
