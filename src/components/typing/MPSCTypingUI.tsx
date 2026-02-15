@@ -81,6 +81,17 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const backspaceCountRef = useRef(backspaceCount);
   const timerSecondsRef = useRef(timerSeconds);
 
+  useEffect(() => {
+    if (!resultsOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Tab") {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [resultsOpen]);
+
   // Disable mouse wheel scroll on paragraph area; user can only scroll via scrollbar.
   // Only prevent when wheel would scroll this container, so programmatic scrollIntoView() still works.
   useEffect(() => {

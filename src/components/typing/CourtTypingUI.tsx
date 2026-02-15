@@ -81,6 +81,17 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const timerSecondsRef = useRef(timerSeconds);
   const autoSubmitSecondsRef = useRef(autoSubmitSeconds);
 
+  useEffect(() => {
+    if (!resultsOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Tab") {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [resultsOpen]);
+
   // Disable mouse wheel scroll on paragraph area; user can only scroll via scrollbar.
   // Only prevent when wheel would scroll this container, so programmatic scroll still works.
   useEffect(() => {

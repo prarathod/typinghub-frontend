@@ -66,6 +66,17 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   const paragraphScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!resultsOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Tab") {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [resultsOpen]);
+
+  useEffect(() => {
     if (!timerStarted || hasSubmitted) return;
     const id = setInterval(() => setTimerSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
