@@ -105,7 +105,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     autoSubmitSecondsRef.current = autoSubmitSeconds;
   }, [input, totalKeystrokes, backspaceCount, timerSeconds, autoSubmitSeconds]);
 
-  const submitCurrentAttempt = useCallback(async () => {
+  const submitCurrentAttempt = useCallback(async (autoSubmitTimeTaken?: number) => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
     if (isPaidParagraph(paragraph)) {
       try {
@@ -127,7 +127,11 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     const timerVal = timerSecondsRef.current;
     const autoSubmitVal = autoSubmitSecondsRef.current;
     const currentTime =
-      autoSubmitVal > 0 ? Math.max(0, autoSubmitVal - timerVal) : timerVal;
+      autoSubmitTimeTaken != null
+        ? autoSubmitTimeTaken
+        : autoSubmitVal > 0
+          ? Math.max(0, autoSubmitVal - timerVal)
+          : timerVal;
     const passageText = paragraph.text;
     const hasLeadingWs = /^\s+/.test(passageText);
     const passageForMetrics = hasLeadingWs
@@ -197,7 +201,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         setTimerSeconds((s) => {
           const next = s - 1;
           if (next <= 0 && !autoSubmitTriggeredRef.current) {
-            submitCurrentAttempt();
+            submitCurrentAttempt(autoSubmitSecondsRef.current);
           }
           return Math.max(0, next);
         });

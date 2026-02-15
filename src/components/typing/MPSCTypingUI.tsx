@@ -104,7 +104,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     timerSecondsRef.current = timerSeconds;
   }, [input, totalKeystrokes, backspaceCount, timerSeconds]);
 
-  const submitCurrentAttempt = useCallback(async () => {
+  const submitCurrentAttempt = useCallback(async (autoSubmitTimeTaken?: number) => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
     if (isPaidParagraph(paragraph)) {
       try {
@@ -125,7 +125,11 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     const currentBackspace = backspaceCountRef.current;
     const currentTime = timerSecondsRef.current;
     const timeTaken =
-      autoSubmitSeconds > 0 ? autoSubmitSeconds - currentTime : currentTime;
+      autoSubmitTimeTaken != null
+        ? autoSubmitTimeTaken
+        : autoSubmitSeconds > 0
+          ? autoSubmitSeconds - currentTime
+          : currentTime;
     const metrics = computeTypingMetrics(
       paragraph.text,
       currentInput,
@@ -192,7 +196,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         if (autoSubmitSeconds > 0) {
           const next = s - 1;
           if (next <= 0 && !autoSubmitTriggeredRef.current) {
-            submitCurrentAttempt();
+            submitCurrentAttempt(autoSubmitSeconds);
           }
           return Math.max(0, next);
         }
