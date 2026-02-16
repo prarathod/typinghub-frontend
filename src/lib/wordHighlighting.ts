@@ -68,9 +68,9 @@ export function alignWords(
   targetWords: string[],
   typedWords: string[],
   options?: { caseSensitive?: boolean }
-): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> {
+): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string; isSkipped?: boolean }> {
   const caseSensitive = options?.caseSensitive ?? true;
-  const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> = [];
+  const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string; isSkipped?: boolean }> = [];
   let ti = 0;
   let ty = 0;
 
