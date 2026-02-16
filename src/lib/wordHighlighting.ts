@@ -17,6 +17,7 @@ export type WordEvaluation = {
   text: string;
   status: WordStatus;
   wordIndex: number;
+  isSkipped?: boolean;
 };
 
 /**
@@ -68,30 +69,50 @@ export function alignWords(
   targetWords: string[],
   typedWords: string[],
   options?: { caseSensitive?: boolean }
-): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> {
+): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string; isSkipped?: boolean }> {
   const caseSensitive = options?.caseSensitive ?? true;
-  const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string }> = [];
+  const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string; isSkipped?: boolean }> = [];
   let ti = 0;
   let ty = 0;
+  const usedTypedWords = new Set<string>();
 
   while (ti < targetWords.length) {
     const tw = targetWords[ti];
     if (ty >= typedWords.length) {
-      result.push({ text: tw, status: "omitted", wordIndex: ti });
+      result.push({ text: tw, status: "omitted", wordIndex: ti, isSkipped: false });
       ti++;
       continue;
     }
     const uw = typedWords[ty];
+    const isDuplicate = usedTypedWords.has(uw);
     if (wordsMatch(tw, uw, caseSensitive)) {
+      usedTypedWords.add(uw);
       result.push({ text: tw, status: "correct", wordIndex: ti });
       ti++;
       ty++;
       continue;
     }
-    // Same word but wrong case (e.g. "the" for "The") -> mark incorrect, don't match to a later occurrence
     if (caseSensitive && tw.toLowerCase() === uw.toLowerCase()) {
+      const foundExact = targetWords.findIndex(
+        (w, j) => j > ti && w === uw
+      );
+      if (foundExact >= 0) {
+        for (let k = ti; k < foundExact; k++) {
+          result.push({ text: targetWords[k], status: "omitted", wordIndex: k, isSkipped: true });
+        }
+        usedTypedWords.add(uw);
+        result.push({ text: targetWords[foundExact], status: "correct", wordIndex: foundExact });
+        ti = foundExact + 1;
+        ty++;
+      } else {
+        result.push({ text: tw, status: "incorrect", wordIndex: ti, typedWord: uw });
+        ti++;
+        ty++;
+      }
+      continue;
+    }
+    if (isDuplicate) {
       result.push({ text: tw, status: "incorrect", wordIndex: ti, typedWord: uw });
-      ti++;
       ty++;
       continue;
     }
@@ -100,8 +121,9 @@ export function alignWords(
     );
     if (found >= 0) {
       for (let k = ti; k < found; k++) {
-        result.push({ text: targetWords[k], status: "omitted", wordIndex: k });
+        result.push({ text: targetWords[k], status: "omitted", wordIndex: k, isSkipped: true });
       }
+      usedTypedWords.add(uw);
       result.push({ text: targetWords[found], status: "correct", wordIndex: found });
       ti = found + 1;
       ty++;
@@ -110,6 +132,10 @@ export function alignWords(
       ti++;
       ty++;
     }
+  }
+
+  for (let i = ty; i < typedWords.length; i++) {
+    result.push({ text: typedWords[i], status: "incorrect", wordIndex: targetWords.length + i, typedWord: typedWords[i] });
   }
 
   return result;
@@ -161,13 +187,11 @@ export function evaluateWords(
     if (i === activeTargetIndex) {
       status = "active";
     } else if (a) {
-      status = a.status;
-    } else if (
-      completedTypedWords.length > 0 &&
-      i >= completedTypedWords.length &&
-      i > activeTargetIndex
-    ) {
-      status = "omitted";
+      if (a.status === "omitted" && !a.isSkipped) {
+        status = "pending";
+      } else {
+        status = a.status;
+      }
     } else {
       status = "pending";
     }
