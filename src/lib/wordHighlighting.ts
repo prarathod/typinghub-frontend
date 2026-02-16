@@ -147,13 +147,13 @@ export function evaluateWords(
     if (i === activeTargetIndex) {
       status = "active";
     } else if (a) {
-      status = a.status;
-    } else if (
-      completedTypedWords.length > 0 &&
-      i >= completedTypedWords.length &&
-      i > activeTargetIndex
-    ) {
-      status = "omitted";
+      if (a.status === "omitted" && !a.isSkipped) {
+        status = "pending";
+      } else {
+        status = a.status;
+      }
+    } else if (activeTargetIndex >= 0 && i > activeTargetIndex) {
+      status = "pending";
     } else {
       status = "pending";
     }
