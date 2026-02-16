@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import shortLogo from "@/assets/shortLogo.jpg";
+import longLogo from "@/assets/longLogo.png";
 
 const FOOTER_BG = "#1e3a5f";
 
@@ -12,7 +12,7 @@ export function Footer() {
           <div className="col-12 col-lg-auto mb-4 mb-lg-0">
             <Link to="/" className="d-flex align-items-center text-decoration-none">
               <img
-                src={shortLogo}
+                src={longLogo}
                 className="me-3"
                 alt="Typing Practice Hub"
                 style={{ height: "2rem", width: "auto" }}

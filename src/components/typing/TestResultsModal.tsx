@@ -18,10 +18,6 @@ function formatTimeLong(seconds: number): string {
   return parts.join(" ");
 }
 
-function splitWords(s: string): string[] {
-  return s.split(/\s+/).filter(Boolean);
-}
-
 /** Small teal right-pointing triangular arrow before each metric. */
 function MetricArrow() {
   return (
@@ -31,40 +27,14 @@ function MetricArrow() {
   );
 }
 
-/** Renders user input with correct (green) and incorrect (red) word highlighting when expectedText is provided. */
+/** Renders user input in black (no correct/incorrect coloring). */
 function UserInputHighlighted({
-  userInput,
-  expectedText
+  userInput
 }: {
   userInput: string;
   expectedText: string;
 }) {
-  if (typeof expectedText !== "string") return <>{userInput}</>;
-  const expectedWords = splitWords(expectedText);
-  const tokens = userInput.split(/(\s+)/);
-  let wordIndex = 0;
-  return (
-    <>
-      {tokens.map((t, i) => {
-        if (/^\s+$/.test(t)) return <span key={i}>{t}</span>;
-        const isCorrect =
-          expectedWords[wordIndex] !== undefined && t === expectedWords[wordIndex];
-        wordIndex++;
-        return (
-          <span
-            key={i}
-            style={{
-              color: isCorrect ? "#15803d" : "#b91c1c",
-              padding: "0 1px",
-              borderRadius: "2px"
-            }}
-          >
-            {t}
-          </span>
-        );
-      })}
-    </>
-  );
+  return <>{userInput}</>;
 }
 
 /** Renders expected paragraph with correct (green), incorrect (red), omitted (orange + strikethrough). */
@@ -78,7 +48,7 @@ function ExpectedParagraphHighlighted({
   if (typeof expectedText !== "string") return null;
   const targetWords = splitWordsUtil(expectedText);
   const typedWords = splitWordsUtil(userInput.trim());
-  const aligned = alignWords(targetWords, typedWords, { caseSensitive: false });
+  const aligned = alignWords(targetWords, typedWords, { caseSensitive: true });
   const statusByIndex = new Map(aligned.map((a) => [a.wordIndex, a.status]));
   const segments = getWordSegments(expectedText);
 
@@ -238,9 +208,13 @@ export function TestResultsModal({
                   <MetricArrow />
                   <span><strong>Correct Words :</strong> {metrics.correctWordsCount}</span>
                 </li>
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
+                </li>
                 <li className="d-flex align-items-start">
                   <MetricArrow />
-                  <span><strong>Accuracy :</strong> {metrics.accuracy}%</span>
+                  <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
                 </li>
               </ul>
             </div>
@@ -248,11 +222,7 @@ export function TestResultsModal({
               <ul className="list-unstyled mb-0">
                 <li className="mb-2 d-flex align-items-start">
                   <MetricArrow />
-                  <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
-                </li>
-                <li className="mb-2 d-flex align-items-start">
-                  <MetricArrow />
-                  <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
+                  <span><strong>Accuracy :</strong> {metrics.accuracy}%</span>
                 </li>
                 {showTotalKeystrokes && (
                   <li className="mb-2 d-flex align-items-start">

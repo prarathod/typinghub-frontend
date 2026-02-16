@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import type { User } from "@/types/auth";
+import type { SubscriptionItem, User } from "@/types/auth";
 
 export type Product = {
   productId: string;
@@ -31,7 +31,7 @@ export type CreateOrderResponse = {
 export type VerifyPaymentResponse = {
   success: boolean;
   user: User | null;
-  subscriptions?: string[];
+  subscriptions?: SubscriptionItem[];
 };
 
 export async function createOrder(productIds: string[]): Promise<CreateOrderResponse> {
@@ -49,6 +49,10 @@ export async function verifyPayment(params: {
   const { data } = await api.post<VerifyPaymentResponse>("/payments/verify", params);
   if (data.user && data.subscriptions) {
     data.user.subscriptions = data.subscriptions;
+    const now = new Date();
+    data.user.activeProductIds = data.subscriptions
+      .filter((s) => !s.validUntil || new Date(s.validUntil) > now)
+      .map((s) => s.productId);
   }
   return data;
 }

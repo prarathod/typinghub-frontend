@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import jsPDF from "jspdf";
 
+import shortLogoUrl from "@/assets/shortLogo.jpg";
+import telegramIconUrl from "@/assets/telegram.png";
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
+import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
+import { isPaidParagraph } from "@/lib/access";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
 
 function formatTime(seconds: number): string {
@@ -38,6 +43,17 @@ const AUTO_SUBMIT_OPTIONS = [
   { value: 0, label: "Off" }
 ] as const;
 
+async function imageUrlToBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 type CourtTypingUIProps = {
   paragraph: ParagraphDetail;
 };
@@ -57,12 +73,40 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const [resultsOpen, setResultsOpen] = useState(false);
   const [resultsMetrics, setResultsMetrics] = useState<TypingMetrics | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const paragraphScrollRef = useRef<HTMLDivElement>(null);
   const autoSubmitTriggeredRef = useRef(false);
   const inputRef = useRef(input);
   const totalKeystrokesRef = useRef(totalKeystrokes);
   const backspaceCountRef = useRef(backspaceCount);
   const timerSecondsRef = useRef(timerSeconds);
   const autoSubmitSecondsRef = useRef(autoSubmitSeconds);
+
+  useEffect(() => {
+    if (!resultsOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Tab") {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [resultsOpen]);
+
+  // Disable mouse wheel scroll on paragraph area; user can only scroll via scrollbar.
+  // Only prevent when wheel would scroll this container, so programmatic scroll still works.
+  useEffect(() => {
+    const el = paragraphScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const maxScroll = scrollHeight - clientHeight;
+      const wouldScrollDown = e.deltaY > 0 && scrollTop < maxScroll;
+      const wouldScrollUp = e.deltaY < 0 && scrollTop > 0;
+      if (wouldScrollDown || wouldScrollUp) e.preventDefault();
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
 
   useEffect(() => {
     inputRef.current = input;
@@ -72,8 +116,19 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     autoSubmitSecondsRef.current = autoSubmitSeconds;
   }, [input, totalKeystrokes, backspaceCount, timerSeconds, autoSubmitSeconds]);
 
-  const submitCurrentAttempt = useCallback(async () => {
+  const submitCurrentAttempt = useCallback(async (autoSubmitTimeTaken?: number) => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
+      }
+    }
     autoSubmitTriggeredRef.current = true;
     setHasSubmitted(true);
     setTimerStarted(false);
@@ -83,30 +138,58 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     const timerVal = timerSecondsRef.current;
     const autoSubmitVal = autoSubmitSecondsRef.current;
     const currentTime =
-      autoSubmitVal > 0 ? Math.max(0, autoSubmitVal - timerVal) : timerVal;
+      autoSubmitTimeTaken != null
+        ? autoSubmitTimeTaken
+        : autoSubmitVal > 0
+          ? Math.max(0, autoSubmitVal - timerVal)
+          : timerVal;
+    const passageText = paragraph.text;
+    const hasLeadingWs = /^\s+/.test(passageText);
+    const passageForMetrics = hasLeadingWs
+      ? "__LEADING_WS__ " + passageText.trimStart()
+      : passageText;
+    const userForMetrics =
+      hasLeadingWs && /^\s+/.test(currentInput)
+        ? "__LEADING_WS__ " + currentInput.trimStart()
+        : currentInput;
     const metrics = computeTypingMetrics(
-      paragraph.text,
-      currentInput,
+      passageForMetrics,
+      userForMetrics,
       currentTime,
       currentKeystrokes,
       currentBackspace,
       paragraph.language
     );
-    setResultsMetrics(metrics);
+    const metricsToUse = { ...metrics, userInput: currentInput };
+    if (hasLeadingWs && !/^\s+/.test(currentInput)) {
+      metricsToUse.accuracy = Math.round(
+        (metricsToUse.correctWordsCount / (metricsToUse.wordsTyped + 1)) * 100
+      );
+      metricsToUse.omittedWords = metricsToUse.omittedWords.map((w) =>
+        w === "__LEADING_WS__" ? "(leading tab)" : w
+      );
+    }
+    setResultsMetrics(metricsToUse);
     setResultsOpen(true);
     try {
+      const totalPassageWords =
+        metricsToUse.correctWordsCount +
+        metricsToUse.incorrectWordsCount +
+        metricsToUse.omittedWordsCount;
       await submitTypingResult(paragraph._id, {
-        timeTakenSeconds: metrics.timeTakenSeconds,
-        accuracy: metrics.accuracy,
-        totalKeystrokes: metrics.totalKeystrokes,
-        backspaceCount: metrics.backspaceCount,
-        wordsTyped: metrics.wordsTyped,
-        wpm: metrics.wpm,
-        kpm: metrics.kpm,
-        incorrectWordsCount: metrics.incorrectWordsCount,
-        incorrectWords: metrics.incorrectWords,
-        correctWordsCount: metrics.correctWordsCount,
-        userInput: metrics.userInput
+        timeTakenSeconds: metricsToUse.timeTakenSeconds,
+        accuracy: metricsToUse.accuracy,
+        totalKeystrokes: metricsToUse.totalKeystrokes,
+        backspaceCount: metricsToUse.backspaceCount,
+        wordsTyped: metricsToUse.wordsTyped,
+        wpm: metricsToUse.wpm,
+        kpm: metricsToUse.kpm,
+        incorrectWordsCount: metricsToUse.incorrectWordsCount,
+        incorrectWords: metricsToUse.incorrectWords,
+        correctWordsCount: metricsToUse.correctWordsCount,
+        userInput: metricsToUse.userInput,
+        omittedWordsCount: metricsToUse.omittedWordsCount,
+        totalPassageWords
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
@@ -114,9 +197,13 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+        navigate("/");
+      }
       console.error("Failed to store submission:", err);
     }
-  }, [hasSubmitted, paragraph.text, paragraph._id, paragraph.language, queryClient]);
+  }, [hasSubmitted, paragraph, paragraph.text, paragraph._id, paragraph.language, queryClient, navigate]);
 
   useEffect(() => {
     if (!timerStarted || hasSubmitted || autoSubmitTriggeredRef.current) return;
@@ -125,7 +212,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         setTimerSeconds((s) => {
           const next = s - 1;
           if (next <= 0 && !autoSubmitTriggeredRef.current) {
-            submitCurrentAttempt();
+            submitCurrentAttempt(autoSubmitSecondsRef.current);
           }
           return Math.max(0, next);
         });
@@ -155,6 +242,11 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     // Prevent Space from replacing a selection (e.g. after Ctrl+A, space would wipe all text)
     const ta = e.currentTarget;
     if (e.key === " " && ta.selectionStart !== ta.selectionEnd) {
+      e.preventDefault();
+      return;
+    }
+    // Prevent Backspace/Delete from removing a selection (only allow single-character delete)
+    if (ta.selectionStart !== ta.selectionEnd && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
       return;
     }
@@ -210,33 +302,83 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     autoSubmitTriggeredRef.current = false;
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
+    const [logoDataUrl, telegramDataUrl] = await Promise.all([
+      imageUrlToBase64(shortLogoUrl),
+      imageUrlToBase64(telegramIconUrl)
+    ]);
+
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const footerHeight = 14;
+    const contentBottom = pageHeight - footerHeight;
+    const margin = 14;
+    const lineHeight = 5;
+    const iconSize = 6;
     let yPos = 20;
-    
-    // Title
+
+    // Title — centered at top
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Title:", 14, yPos);
+    const titleLines = doc.splitTextToSize(paragraph.title, pageWidth - 2 * margin);
+    for (const line of titleLines) {
+      const textWidth = doc.getTextWidth(line);
+      doc.text(line, (pageWidth - textWidth) / 2, yPos);
+      yPos += 6;
+    }
     yPos += 8;
-    doc.setFont("helvetica", "normal");
-    const titleLines = doc.splitTextToSize(paragraph.title, 180);
-    doc.text(titleLines, 14, yPos);
-    yPos += titleLines.length * 6 + 5;
-    
+
     // Instruction
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Start typing from below:", 14, yPos);
+    doc.text("Start typing from below:", margin, yPos);
     yPos += 8;
-    
-    // Paragraph text
+
+    // Paragraph text with pagination
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    const lines = doc.splitTextToSize(paragraph.text, 180);
-    doc.text(lines, 14, yPos);
-    
-    doc.save(`${paragraph.title.replace(/[^a-z0-9]/gi, "_")}.pdf`);
+    const lines = doc.splitTextToSize(paragraph.text, pageWidth - 2 * margin);
+    for (const line of lines) {
+      if (yPos + lineHeight > contentBottom) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.text(line, margin, yPos);
+      yPos += lineHeight;
+    }
+
+    // Footer: background #d6a692, black bold text, left: logo + link, right: telegram icon + link
+    const totalPages = doc.getNumberOfPages();
+    const leftUrl = "https://typingpracticehub.com";
+    const rightUrl = "https://t.me/TypingPracticeHub";
+    const leftText = "www.typingpracticehub.com";
+    const rightText = "@TypingPracticeHub";
+    const footerBgR = 214;
+    const footerBgG = 166;
+    const footerBgB = 146;
+
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p);
+      const footerY = pageHeight - footerHeight;
+      doc.setFillColor(footerBgR, footerBgG, footerBgB);
+      doc.rect(0, footerY, pageWidth, footerHeight, "F");
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+
+      // Left: logo + title with link
+      doc.addImage(logoDataUrl, "JPEG", margin, footerY + (footerHeight - iconSize) / 2, iconSize, iconSize);
+      doc.textWithLink(leftText, margin + iconSize + 2, footerY + footerHeight / 2 + 1.5, { url: leftUrl });
+
+      // Right: telegram icon first, then title with link
+      const rightW = doc.getTextWidth(rightText);
+      const rightIconX = pageWidth - margin - iconSize - 2 - rightW;
+      doc.addImage(telegramDataUrl, "PNG", rightIconX, footerY + (footerHeight - iconSize) / 2, iconSize, iconSize);
+      doc.textWithLink(rightText, rightIconX + iconSize + 2, footerY + footerHeight / 2 + 1.5, { url: rightUrl });
+    }
+
+    doc.save(`tph_${paragraph.title.replace(/[^a-z0-9]/gi, "_")}.pdf`);
   };
 
   return (
@@ -272,6 +414,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             <div className="card-body">
               <h2 className="h6 fw-semibold mb-3">Paragraph to type</h2>
               <div
+                ref={paragraphScrollRef}
                 className="overflow-auto rounded-3 p-4 mb-0"
                 style={{
                   whiteSpace: "pre-wrap",

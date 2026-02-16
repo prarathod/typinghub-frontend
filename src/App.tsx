@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -24,6 +25,7 @@ import { PrivacyPolicyPage } from "@/pages/PrivacyPolicyPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { RefundPolicyPage } from "@/pages/RefundPolicyPage";
 import { TermsPage } from "@/pages/TermsPage";
+import { SessionInvalidModal } from "@/components/SessionInvalidModal";
 import { TypingPageErrorBoundary } from "@/components/TypingPageErrorBoundary";
 import { TypingPage } from "@/pages/TypingPage";
 
@@ -37,6 +39,8 @@ function AppContent() {
       className="d-flex flex-column"
       style={{ minHeight: "100vh" }}
     >
+      <SessionInvalidModal />
+      <Analytics />
       {!isAdminRoute && !isTypingPage && <Navbar />}
       <div
         className="flex-grow-1 d-flex flex-column"

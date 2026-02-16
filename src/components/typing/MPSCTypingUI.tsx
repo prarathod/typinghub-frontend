@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
+import blueProfileImage from "@/assets/blueProfileImage.png";
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
+import { useAuthStore } from "@/stores/authStore";
+import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
+import { isPaidParagraph } from "@/lib/access";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
 import {
   getWordSegments,
@@ -52,11 +57,12 @@ type MPSCTypingUIProps = {
 export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
   const [input, setInput] = useState("");
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerStarted, setTimerStarted] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [enableHighlight, setEnableHighlight] = useState(true);
+  const [enableHighlight, setEnableHighlight] = useState(false);
   const [enableBackspace, setEnableBackspace] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX);
@@ -68,11 +74,39 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentCharRef = useRef<HTMLSpanElement>(null);
+  const paragraphScrollRef = useRef<HTMLDivElement>(null);
   const autoSubmitTriggeredRef = useRef(false);
   const inputRef = useRef(input);
   const totalKeystrokesRef = useRef(totalKeystrokes);
   const backspaceCountRef = useRef(backspaceCount);
   const timerSecondsRef = useRef(timerSeconds);
+
+  useEffect(() => {
+    if (!resultsOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Tab") {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [resultsOpen]);
+
+  // Disable mouse wheel scroll on paragraph area; user can only scroll via scrollbar.
+  // Only prevent when wheel would scroll this container, so programmatic scrollIntoView() still works.
+  useEffect(() => {
+    const el = paragraphScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const maxScroll = scrollHeight - clientHeight;
+      const wouldScrollDown = e.deltaY > 0 && scrollTop < maxScroll;
+      const wouldScrollUp = e.deltaY < 0 && scrollTop > 0;
+      if (wouldScrollDown || wouldScrollUp) e.preventDefault();
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
 
   useEffect(() => {
     inputRef.current = input;
@@ -81,8 +115,19 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     timerSecondsRef.current = timerSeconds;
   }, [input, totalKeystrokes, backspaceCount, timerSeconds]);
 
-  const submitCurrentAttempt = useCallback(async () => {
+  const submitCurrentAttempt = useCallback(async (autoSubmitTimeTaken?: number) => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
+      }
+    }
     autoSubmitTriggeredRef.current = true;
     setHasSubmitted(true);
     setTimerStarted(false);
@@ -91,7 +136,11 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     const currentBackspace = backspaceCountRef.current;
     const currentTime = timerSecondsRef.current;
     const timeTaken =
-      autoSubmitSeconds > 0 ? autoSubmitSeconds - currentTime : currentTime;
+      autoSubmitTimeTaken != null
+        ? autoSubmitTimeTaken
+        : autoSubmitSeconds > 0
+          ? autoSubmitSeconds - currentTime
+          : currentTime;
     const metrics = computeTypingMetrics(
       paragraph.text,
       currentInput,
@@ -103,6 +152,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     setResultsMetrics(metrics);
     setResultsOpen(true);
     try {
+      const totalPassageWords =
+        metrics.correctWordsCount +
+        metrics.incorrectWordsCount +
+        metrics.omittedWordsCount;
       await submitTypingResult(paragraph._id, {
         timeTakenSeconds: metrics.timeTakenSeconds,
         accuracy: metrics.accuracy,
@@ -114,7 +167,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         incorrectWordsCount: metrics.incorrectWordsCount,
         incorrectWords: metrics.incorrectWords,
         correctWordsCount: metrics.correctWordsCount,
-        userInput: metrics.userInput
+        userInput: metrics.userInput,
+        omittedWordsCount: metrics.omittedWordsCount,
+        totalPassageWords
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
@@ -122,15 +177,21 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+        navigate("/");
+      }
       console.error("Failed to store submission:", err);
     }
   }, [
     hasSubmitted,
     autoSubmitSeconds,
+    paragraph,
     paragraph.text,
     paragraph._id,
     paragraph.language,
-    queryClient
+    queryClient,
+    navigate
   ]);
 
   useEffect(() => {
@@ -146,7 +207,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         if (autoSubmitSeconds > 0) {
           const next = s - 1;
           if (next <= 0 && !autoSubmitTriggeredRef.current) {
-            submitCurrentAttempt();
+            submitCurrentAttempt(autoSubmitSeconds);
           }
           return Math.max(0, next);
         }
@@ -158,7 +219,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
-    const next = e.target.value;
+    const raw = e.target.value;
+    // MPSC: collapse multiple consecutive spaces to a single space
+    const next = raw.replace(/  +/g, " ");
     const delta = next.length - input.length;
     if (delta > 0) setTotalKeystrokes((k) => k + delta);
     setInput(next);
@@ -167,12 +230,24 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
+    // Disable directional keys and Home/End so cursor cannot be moved
+    if (
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight" ||
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown" ||
+      e.key === "Home" ||
+      e.key === "End"
+    ) {
+      e.preventDefault();
+      return;
+    }
     // MPSC: block Tab and Enter
     if (e.key === "Tab" || e.key === "Enter") {
       e.preventDefault();
       return;
     }
-    if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+    if ((e.ctrlKey || e.metaKey) && (e.key === "a" || e.key === "A")) {
       e.preventDefault();
       return;
     }
@@ -182,12 +257,34 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
       e.preventDefault();
       return;
     }
+    // MPSC: allow only one space at a time — block Space if there is already a space before the cursor
+    if (e.key === " " && ta.selectionStart > 0 && input[ta.selectionStart - 1] === " ") {
+      e.preventDefault();
+      return;
+    }
+    // Prevent Backspace/Delete from removing a selection (only allow single-character delete)
+    if (ta.selectionStart !== ta.selectionEnd && (e.key === "Backspace" || e.key === "Delete")) {
+      e.preventDefault();
+      return;
+    }
     if (!enableBackspace && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
       return;
     }
     if (enableBackspace && e.key === "Backspace")
       setBackspaceCount((c) => c + 1);
+  };
+
+  const handleTextareaMouseDown = () => {
+    if (hasSubmitted) return;
+    // Keep cursor at end after click: run after the browser would have moved the cursor
+    requestAnimationFrame(() => {
+      const ta = textareaRef.current;
+      if (ta) {
+        const len = input.length;
+        ta.setSelectionRange(len, len);
+      }
+    });
   };
 
   const handleCopyPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -209,6 +306,17 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
 
   const handleSubmit = async () => {
     if (hasSubmitted || autoSubmitTriggeredRef.current) return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
+      }
+    }
     const timeTaken =
       autoSubmitSeconds > 0 ? autoSubmitSeconds - timerSeconds : timerSeconds;
     setHasSubmitted(true);
@@ -223,6 +331,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     setResultsMetrics(metrics);
     setResultsOpen(true);
     try {
+      const totalPassageWords =
+        metrics.correctWordsCount +
+        metrics.incorrectWordsCount +
+        metrics.omittedWordsCount;
       await submitTypingResult(paragraph._id, {
         timeTakenSeconds: metrics.timeTakenSeconds,
         accuracy: metrics.accuracy,
@@ -234,7 +346,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         incorrectWordsCount: metrics.incorrectWordsCount,
         incorrectWords: metrics.incorrectWords,
         correctWordsCount: metrics.correctWordsCount,
-        userInput: metrics.userInput
+        userInput: metrics.userInput,
+        omittedWordsCount: metrics.omittedWordsCount,
+        totalPassageWords
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
@@ -242,6 +356,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+        navigate("/");
+      }
       console.error("Failed to store submission:", err);
     }
   };
@@ -276,7 +394,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const fontSize = FONT_SIZES[fontSizeIndex];
   const text = paragraph.text;
   const segments = getWordSegments(text);
-  const evaluations = evaluateWords(text, input, { caseSensitive: false });
+  const evaluations = evaluateWords(text, input, { caseSensitive: true });
   const targetWordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
   function getSegmentStatus(seg: { text: string; wordIndex: number; isWord: boolean }): WordStatus | "space" {
@@ -328,7 +446,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         style={
           isFullScreen
             ? { minHeight: "100vh", maxHeight: "100vh", overflow: "auto", backgroundColor: "#fff", padding: "1rem" }
-            : { backgroundColor: "#fff", minHeight: "100vh" }
+            : { backgroundColor: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column" }
         }
       >
         <div
@@ -378,101 +496,16 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
         </div>
 
-        <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
-          <label className="d-flex align-items-center gap-2 small mb-0">
-            <input
-              type="checkbox"
-              checked={enableHighlight}
-              onChange={(e) => setEnableHighlight(e.target.checked)}
-              disabled={hasSubmitted}
-              className="form-check-input"
-            />
-            <span>Enable Text Highlight</span>
-          </label>
-          <label className="d-flex align-items-center gap-2 small mb-0">
-            <input
-              type="checkbox"
-              checked={enableBackspace}
-              onChange={(e) => setEnableBackspace(e.target.checked)}
-              disabled={hasSubmitted}
-              className="form-check-input"
-            />
-            <span>Enable Backspace</span>
-          </label>
-          <div className="d-flex align-items-center gap-2">
-            <label className="small mb-0">Auto submit:</label>
-            <select
-              className="form-select form-select-sm"
-              style={{ width: "auto" }}
-              value={autoSubmitSeconds}
-              onChange={(e) => setAutoSubmitSeconds(Number(e.target.value))}
-              disabled={hasSubmitted || timerStarted}
-            >
-              {AUTO_SUBMIT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="d-flex align-items-center gap-2">
-            <span className="small text-muted">Font size:</span>
-            <div className="btn-group btn-group-sm">
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))}
-                disabled={fontSizeIndex === 0 || hasSubmitted}
-                aria-label="Decrease font size"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                disabled
-                style={{ minWidth: "2.5rem" }}
-              >
-                {fontSize}
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() =>
-                  setFontSizeIndex((i) =>
-                    Math.min(FONT_SIZES.length - 1, i + 1)
-                  )
-                }
-                disabled={
-                  fontSizeIndex === FONT_SIZES.length - 1 || hasSubmitted
-                }
-                aria-label="Increase font size"
-              >
-                +
-              </button>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-primary"
-            onClick={toggleFullScreen}
-            aria-pressed={isFullScreen}
-          >
-            {isFullScreen ? "Exit full screen" : "Full screen mode"}
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-secondary"
-            onClick={handleRestart}
-          >
-            Restart
-          </button>
-        </div>
-
-        <div className="card border shadow-sm mb-3 lesson-typing-card">
+        <div
+          className="d-flex gap-3 mb-3 flex-grow-1"
+          style={{ alignItems: "stretch", minHeight: 0 }}
+        >
+          <div className="flex-grow-1" style={{ minWidth: 0 }}>
+            <div className="card border shadow-sm mb-3 lesson-typing-card">
           <div className="card-body">
             <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
             <div
+              ref={paragraphScrollRef}
               className="overflow-auto rounded-3 p-4 mb-0"
               style={{
                 whiteSpace: "pre-wrap",
@@ -483,6 +516,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                 lineHeight: 1.6,
                 color: "#000000"
               }}
+              onCopy={(e) => e.preventDefault()}
             >
               {enableHighlight ? (
                 <>
@@ -515,44 +549,175 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
         </div>
 
-        <div className="card border shadow-sm lesson-typing-card">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h2 className="h6 fw-semibold mb-0">Your typing</h2>
-              {hasSubmitted && resultsMetrics && (
-                <span className="badge bg-success">
-                  Done · {formatTime(resultsMetrics.timeTakenSeconds)}
-                </span>
-              )}
+            <div className="card border shadow-sm lesson-typing-card">
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h2 className="h6 fw-semibold mb-0">Your typing</h2>
+                  {hasSubmitted && resultsMetrics && (
+                    <span className="badge bg-success">
+                      Done · {formatTime(resultsMetrics.timeTakenSeconds)}
+                    </span>
+                  )}
+                </div>
+                <textarea
+                  ref={textareaRef}
+                  className="form-control"
+                  rows={8}
+                  placeholder="Start your practice here..."
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onMouseDown={handleTextareaMouseDown}
+                  onCopy={handleCopyPaste}
+                  onCopyCapture={(e) => e.preventDefault()}
+                  onPaste={handleCopyPaste}
+                  onCut={handleCopyPaste}
+                  spellCheck={false}
+                  disabled={hasSubmitted}
+                  autoFocus
+                  aria-label="Typing input"
+                  style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}
+                />
+              </div>
             </div>
-            <textarea
-              ref={textareaRef}
-              className="form-control"
-              rows={8}
-              placeholder="Start your practice here..."
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onCopy={handleCopyPaste}
-              onPaste={handleCopyPaste}
-              onCut={handleCopyPaste}
-              spellCheck={false}
-              disabled={hasSubmitted}
-              autoFocus
-              aria-label="Typing input"
-              style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}
-            />
+            <div className="d-flex justify-content-center mt-4 mb-5 py-3">
+              <button
+                type="button"
+                className="btn btn-primary btn-lg px-5"
+                onClick={handleSubmit}
+                disabled={hasSubmitted}
+              >
+                Submit
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="d-flex justify-content-center mt-4 mb-5 py-3">
-          <button
-            type="button"
-            className="btn btn-primary btn-lg px-5"
-            onClick={handleSubmit}
-            disabled={hasSubmitted}
+
+          <aside
+            className="rounded-3 rounded-end-0 p-3 flex-shrink-0 d-flex flex-column gap-3 bg-primary bg-opacity-25"
+            style={{
+              width: "240px",
+              color: "#212529",
+              marginRight: "calc(-1 * var(--bs-gutter-x, 0.75rem))",
+              alignSelf: "stretch"
+            }}
           >
-            Submit
-          </button>
+            <div className="text-center">
+              <img
+                src={blueProfileImage}
+                alt=""
+                className="rounded-circle mb-2"
+                width={56}
+                height={56}
+                style={{ objectFit: "cover" }}
+              />
+              <div className="small fw-semibold">
+                {user?.name ? `Hello, ${user.name}` : "Hello, Guest User"}
+              </div>
+            </div>
+            <label className="d-flex align-items-center gap-2 small mb-0 text-dark">
+              <input
+                type="checkbox"
+                checked={enableHighlight}
+                onChange={(e) => setEnableHighlight(e.target.checked)}
+                disabled={hasSubmitted}
+                className="form-check-input"
+              />
+              <span>Enable Highlight</span>
+            </label>
+            <label className="d-flex align-items-center gap-2 small mb-0 text-dark">
+              <input
+                type="checkbox"
+                checked={enableBackspace}
+                onChange={(e) => setEnableBackspace(e.target.checked)}
+                disabled={hasSubmitted}
+                className="form-check-input"
+              />
+              <span>Enable Backspace</span>
+            </label>
+            <div className="d-flex align-items-center gap-2">
+              <label className="small mb-0 text-dark">Auto submit:</label>
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "auto", flex: 1 }}
+                value={autoSubmitSeconds}
+                onChange={(e) => setAutoSubmitSeconds(Number(e.target.value))}
+                disabled={hasSubmitted || timerStarted}
+              >
+                {AUTO_SUBMIT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <span className="small text-dark">Font size:</span>
+              <div
+                className="btn-group btn-group-sm"
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #000"
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-sm bg-white text-dark"
+                  style={{ borderColor: "rgba(0, 0, 0, 0.89)" }}
+                  onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))}
+                  disabled={fontSizeIndex === 0 || hasSubmitted}
+                  aria-label="Decrease font size"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm bg-white text-dark"
+                  disabled
+                  style={{
+                    minWidth: "2rem",
+                    fontSize: "0.875rem",
+                    borderColor: "rgba(0, 0, 0, 0.89)"
+                  }}
+                >
+                  {fontSize}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm bg-white text-dark"
+                  style={{ borderColor: "rgba(0, 0, 0, 0.89)" }}
+                  onClick={() =>
+                    setFontSizeIndex((i) =>
+                      Math.min(FONT_SIZES.length - 1, i + 1)
+                    )
+                  }
+                  disabled={
+                    fontSizeIndex === FONT_SIZES.length - 1 || hasSubmitted
+                  }
+                  aria-label="Increase font size"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-light btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
+              onClick={toggleFullScreen}
+              aria-pressed={isFullScreen}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
+                <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z" />
+              </svg>
+              {isFullScreen ? "Exit full screen" : "Full screen mode"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-light btn-sm w-100"
+              onClick={handleRestart}
+            >
+              Restart
+            </button>
+          </aside>
         </div>
       </div>
     </main>

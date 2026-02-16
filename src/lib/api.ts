@@ -22,6 +22,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
+      const hadToken = Boolean(useAuthStore.getState().token);
+      if (hadToken) {
+        useAuthStore.getState().setSessionInvalidated(true);
+      }
       useAuthStore.getState().clearAuth();
     }
     return Promise.reject(error);

@@ -26,13 +26,13 @@ export function computeTypingMetrics(
   passage: string,
   userInput: string,
   timeTakenSeconds: number,
-  totalKeystrokes: number,
+  _totalKeystrokes: number,
   backspaceCount: number,
   _language: "english" | "marathi"
 ): TypingMetrics {
   const passageWords = splitWords(passage);
   const userWords = splitWords(userInput.trim());
-  const caseSensitive = false;
+  const caseSensitive = true;
   const aligned = alignWords(passageWords, userWords, { caseSensitive });
 
   let correctWordsCount = 0;
@@ -61,12 +61,13 @@ export function computeTypingMetrics(
   const accuracy =
     wordsTyped === 0 ? 100 : Math.round((correctWordsCount / wordsTyped) * 100);
   const wpm = Math.round(correctWordsCount / timeMinutes);
-  const kpm = Math.round(totalKeystrokes / timeMinutes);
+  const totalKeystrokesAsChars = userInput.length;
+  const kpm = Math.round(totalKeystrokesAsChars / timeMinutes);
 
   return {
     timeTakenSeconds,
     accuracy,
-    totalKeystrokes,
+    totalKeystrokes: totalKeystrokesAsChars,
     backspaceCount,
     wordsTyped,
     wpm,

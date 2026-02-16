@@ -1,6 +1,30 @@
 import { Link } from "react-router-dom";
 
+import type { SubscriptionItem } from "@/types/auth";
 import { useAuthStore } from "@/stores/authStore";
+
+const PRODUCT_DISPLAY_NAMES: Record<string, string> = {
+  "english-court": "English Court Typing",
+  "english-mpsc": "MPSC Exam Typing",
+  "marathi-court": "Marathi Court Exam",
+  "marathi-mpsc": "Marathi MPSC Typing Exam",
+};
+
+function getDaysLeft(validUntil: string | null): number | null {
+  if (!validUntil) return null;
+  const end = new Date(validUntil);
+  const now = new Date();
+  const ms = end.getTime() - now.getTime();
+  return Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
+}
+
+function formatSubscriptionStatus(item: SubscriptionItem): string {
+  const name = PRODUCT_DISPLAY_NAMES[item.productId] ?? item.productId;
+  const days = getDaysLeft(item.validUntil);
+  if (days === null) return `${name} – premium`;
+  if (days === 0) return `${name} – premium – Expired`;
+  return `${name} – premium – ${days} day${days === 1 ? "" : "s"} left`;
+}
 
 export function ProfilePage() {
   const user = useAuthStore((s) => s.user);
@@ -15,6 +39,8 @@ export function ProfilePage() {
       </main>
     );
   }
+
+  const subscriptions = (user.subscriptions ?? []) as SubscriptionItem[];
 
   return (
     <main className="container py-5">
@@ -45,6 +71,28 @@ export function ProfilePage() {
           <p className="text-muted small mb-0">{user.email}</p>
         </div>
       </div>
+      {subscriptions.length > 0 && (
+        <div className="card border shadow-sm mt-3" style={{ maxWidth: "32rem" }}>
+          <div className="card-header bg-light">
+            <h2 className="h6 mb-0 fw-semibold">My subscriptions</h2>
+          </div>
+          <ul className="list-group list-group-flush">
+            {subscriptions.map((item) => {
+              const days = getDaysLeft(item.validUntil);
+              const isExpired = days !== null && days === 0;
+              return (
+                <li
+                  key={item.productId}
+                  className={`list-group-item d-flex justify-content-between align-items-center ${isExpired ? "text-muted" : ""}`}
+                >
+                  <span>{formatSubscriptionStatus(item)}</span>
+                  {isExpired && <span className="badge bg-secondary">Expired</span>}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </main>
   );
 }

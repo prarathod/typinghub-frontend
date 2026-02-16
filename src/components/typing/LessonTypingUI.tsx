@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 import { TestResultsModal } from "@/components/typing/TestResultsModal";
+import { getCurrentUser } from "@/features/auth/authApi";
 import { submitTypingResult } from "@/features/paragraphs/paragraphsApi";
 import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
+import { isPaidParagraph } from "@/lib/access";
 import { computeTypingMetrics, type TypingMetrics } from "@/lib/typingMetrics";
 import {
   getWordSegments,
@@ -63,6 +66,17 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   const paragraphScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!resultsOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Tab") {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [resultsOpen]);
+
+  useEffect(() => {
     if (!timerStarted || hasSubmitted) return;
     const id = setInterval(() => setTimerSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
@@ -73,9 +87,27 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     textareaRef.current?.focus();
   }, []);
 
+  // Disable mouse wheel scroll on paragraph area; user can only scroll via scrollbar.
+  // Only prevent when wheel would scroll this container, so programmatic scrollTo() still works.
+  useEffect(() => {
+    const el = paragraphScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const maxScroll = scrollHeight - clientHeight;
+      const wouldScrollDown = e.deltaY > 0 && scrollTop < maxScroll;
+      const wouldScrollUp = e.deltaY < 0 && scrollTop > 0;
+      if (wouldScrollDown || wouldScrollUp) e.preventDefault();
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (hasSubmitted) return;
-    const next = e.target.value;
+    const raw = e.target.value;
+    // Collapse multiple consecutive spaces to a single space
+    const next = raw.replace(/  +/g, " ");
     const delta = next.length - input.length;
     if (delta > 0) setTotalKeystrokes((k) => k + delta);
     setInput(next);
@@ -95,6 +127,16 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     // Prevent Space from replacing a selection (e.g. after Ctrl+A, space would wipe all text)
     const ta = e.currentTarget;
     if (e.key === " " && ta.selectionStart !== ta.selectionEnd) {
+      e.preventDefault();
+      return;
+    }
+    // Allow only one space at a time — block Space if there is already a space before the cursor
+    if (e.key === " " && ta.selectionStart > 0 && input[ta.selectionStart - 1] === " ") {
+      e.preventDefault();
+      return;
+    }
+    // Prevent Backspace/Delete from removing a selection (only allow single-character delete)
+    if (ta.selectionStart !== ta.selectionEnd && (e.key === "Backspace" || e.key === "Delete")) {
       e.preventDefault();
       return;
     }
@@ -124,6 +166,17 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
   const handleSubmit = async () => {
     if (typeof paragraph?.text !== "string") return;
+    if (isPaidParagraph(paragraph)) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          navigate("/");
+          return;
+        }
+        throw err;
+      }
+    }
     setHasSubmitted(true);
     const metrics = computeTypingMetrics(
       paragraph.text,
@@ -136,6 +189,10 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     setResultsMetrics(metrics);
     setResultsOpen(true);
     try {
+      const totalPassageWords =
+        metrics.correctWordsCount +
+        metrics.incorrectWordsCount +
+        metrics.omittedWordsCount;
       await submitTypingResult(paragraph._id, {
         timeTakenSeconds: metrics.timeTakenSeconds,
         accuracy: metrics.accuracy,
@@ -147,7 +204,9 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         incorrectWordsCount: metrics.incorrectWordsCount,
         incorrectWords: metrics.incorrectWords,
         correctWordsCount: metrics.correctWordsCount,
-        userInput: metrics.userInput
+        userInput: metrics.userInput,
+        omittedWordsCount: metrics.omittedWordsCount,
+        totalPassageWords
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
@@ -155,6 +214,10 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         queryClient.invalidateQueries({ queryKey: ["paragraphs"] })
       ]);
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setResultsOpen(false);
+        navigate("/");
+      }
       console.error("Failed to store submission:", err);
     }
   };
@@ -201,7 +264,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   // Ensure text is always a string so getWordSegments/evaluateWords never throw (e.g. if API returns non-string)
   const text = typeof paragraph?.text === "string" ? paragraph.text : "";
   const segments = getWordSegments(text);
-  const evaluations = evaluateWords(text, input, { caseSensitive: false });
+  const evaluations = evaluateWords(text, input, { caseSensitive: true });
   const targetWordCount = text.trim().split(/\s+/).filter(Boolean).length;
 
   if (!text.trim()) {
@@ -317,7 +380,10 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           </div>
         </div>
 
-        <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
+        <div
+          className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light"
+          onCopy={(e) => e.preventDefault()}
+        >
           <label className="d-flex align-items-center gap-2 small mb-0">
             <input
               type="checkbox"
@@ -460,6 +526,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onCopy={handleCopyPaste}
+              onCopyCapture={(e) => e.preventDefault()}
               onPaste={handleCopyPaste}
               onCut={handleCopyPaste}
               spellCheck={false}

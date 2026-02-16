@@ -71,6 +71,9 @@ export type TypingSubmissionPayload = {
   incorrectWords: string[];
   correctWordsCount: number;
   userInput: string;
+  /** For genuine-candidate ranking: total words in passage (correct + incorrect + omitted). */
+  totalPassageWords?: number;
+  omittedWordsCount?: number;
 };
 
 export async function submitTypingResult(

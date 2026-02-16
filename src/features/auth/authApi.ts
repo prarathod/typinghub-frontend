@@ -1,10 +1,16 @@
 import { api } from "@/lib/api";
-import type { User } from "@/types/auth";
+import type { SubscriptionItem, User } from "@/types/auth";
+
+export type MeResponse = {
+  user: Omit<User, "subscriptions" | "activeProductIds">;
+  subscriptions: SubscriptionItem[];
+  activeProductIds: string[];
+};
 
 export const getCurrentUser = async (): Promise<User> => {
-  const response = await api.get<{ user: User; subscriptions: string[] }>("/auth/me");
-  const { user, subscriptions } = response.data;
-  return { ...user, subscriptions };
+  const response = await api.get<MeResponse>("/auth/me");
+  const { user, subscriptions, activeProductIds } = response.data;
+  return { ...user, subscriptions, activeProductIds };
 };
 
 export const logout = async (): Promise<void> => {
