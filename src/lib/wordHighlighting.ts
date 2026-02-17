@@ -103,18 +103,16 @@ type AlignedWord = {
 
 /**
  * Aligns target words with typed words using greedy forward matching.
- * 
+ *
  * Algorithm:
  * 1. Initialize sourcePtr = 0
  * 2. For each typed word:
- *    a. Exact match scan: scan forward from sourcePtr looking for exact match
- *       - If found at j: mark sourceWords[sourcePtr..j-1] as OMITTED, sourceWords[j] as CORRECT
- *    b. Misspelling check (if step a failed): compare using Levenshtein distance
- *       - Threshold = ceil(max(typed.length, source.length) / 2)
- *       - If 0 < distance <= threshold: mark as MISSPELLED
- *    c. Extra word (if steps a & b failed): mark typed word as EXTRA
- *       - sourcePtr stays the same
- * 3. After all typed words: remaining source words are unprocessed (OMITTED on finish)
+ *    a. Check exact match at sourcePtr (respecting case sensitivity)
+ *    b. Check for case-only mismatch (mark as incorrect)
+ *    c. Check for misspelling at sourcePtr (Levenshtein distance)
+ *    d. Look ahead in a limited window (5 words) for exact match
+ *    e. If no match found: mark as EXTRA
+ * 3. After all typed words: remaining source words are OMITTED
  */
 export function alignWords(
   targetWords: string[],
@@ -124,53 +122,94 @@ export function alignWords(
   const caseSensitive = options?.caseSensitive ?? true;
   const result: AlignedWord[] = [];
   let sourcePtr = 0;
+  let prevWasCorrect = true; // Track if previous word was correct
 
   for (let ty = 0; ty < typedWords.length; ty++) {
     const typed = typedWords[ty];
-    
-    // Step 1: Exact match scan - forward from sourcePtr
+
+    // Step 1: Try exact match against current expected word (sourcePtr)
+    if (sourcePtr < targetWords.length) {
+      const source = targetWords[sourcePtr];
+
+      // 1a. Exact match (respecting case sensitivity)
+      if (wordsMatch(source, typed, caseSensitive)) {
+        result.push({ text: source, status: "correct", wordIndex: sourcePtr });
+        sourcePtr++;
+        prevWasCorrect = true;
+        continue;
+      }
+
+      // 1b. Case-only mismatch (mark as incorrect)
+      if (caseSensitive && source.toLowerCase() === typed.toLowerCase()) {
+        result.push({ text: source, status: "incorrect", wordIndex: sourcePtr, typedWord: typed });
+        sourcePtr++;
+        prevWasCorrect = false;
+        continue;
+      }
+    }
+
+    // Step 2: Look ahead for exact match in limited window (prioritize exact matches)
+    const lookAheadWindow = 5;
     let foundIndex = -1;
-    for (let j = sourcePtr; j < targetWords.length; j++) {
+    for (let j = sourcePtr + 1; j < Math.min(sourcePtr + lookAheadWindow + 1, targetWords.length); j++) {
       if (wordsMatch(targetWords[j], typed, caseSensitive)) {
         foundIndex = j;
         break;
       }
     }
 
-    if (foundIndex >= 0) {
-      // Found exact match - mark skipped words as OMITTED
+    if (foundIndex > sourcePtr) {
+      // Mark skipped words as OMITTED
       for (let k = sourcePtr; k < foundIndex; k++) {
         result.push({ text: targetWords[k], status: "omitted", wordIndex: k, isSkipped: true });
       }
-      // Mark the matched word as CORRECT
+      // Mark found word as CORRECT
       result.push({ text: targetWords[foundIndex], status: "correct", wordIndex: foundIndex });
       sourcePtr = foundIndex + 1;
+      prevWasCorrect = true;
       continue;
     }
 
-    // Step 2: Misspelling check - compare against sourceWords[sourcePtr]
+    // Step 3: No exact match found, check similarity to current position
     if (sourcePtr < targetWords.length) {
       const source = targetWords[sourcePtr];
       const maxLen = Math.max(typed.length, source.length);
-      const threshold = Math.ceil(maxLen / 2);
-      
-      // Use case-insensitive comparison for misspelling detection
+
+      // Stricter threshold based on word length:
+      // - Short words (<=4 chars): must be exact (threshold=0)
+      // - Medium words (5-7 chars): allow 1 char difference
+      // - Long words (8+ chars): allow 2 char difference
+      let similarityThreshold;
+      if (maxLen <= 4) {
+        similarityThreshold = 0; // Must be exact for short words
+      } else if (maxLen <= 7) {
+        similarityThreshold = 1;
+      } else {
+        similarityThreshold = 2;
+      }
+
       const dist = levenshteinDistance(
-        caseSensitive ? typed : typed.toLowerCase(),
-        caseSensitive ? source : source.toLowerCase()
+        typed.toLowerCase(),
+        source.toLowerCase()
       );
-      
-      if (dist > 0 && dist <= threshold) {
-        // Mark as misspelled
-        result.push({ text: source, status: "misspelled", wordIndex: sourcePtr, typedWord: typed });
+
+      // If similar enough, treat as a match to current position
+      if (dist > 0 && dist <= similarityThreshold) {
+        // Mark as misspelled only if it's a minor typo and previous was correct
+        // Otherwise mark as incorrect
+        const isMisspelled = prevWasCorrect && dist <= 1;
+        const status = isMisspelled ? "misspelled" : "incorrect";
+        result.push({ text: source, status, wordIndex: sourcePtr, typedWord: typed });
         sourcePtr++;
+        prevWasCorrect = false;
         continue;
       }
     }
 
-    // Step 3: Extra word - no match found, mark as EXTRA
+    // Step 4: No match found anywhere - mark as EXTRA
     result.push({ text: typed, status: "extra", wordIndex: targetWords.length + ty, typedWord: typed });
-    // sourcePtr stays the same
+    prevWasCorrect = false;
+    // sourcePtr stays the same (don't advance)
   }
 
   // Mark remaining unprocessed source words as OMITTED (not skipped, just untyped)

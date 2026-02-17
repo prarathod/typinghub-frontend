@@ -210,6 +210,14 @@ export function TestResultsModal({
                 </li>
                 <li className="mb-2 d-flex align-items-start">
                   <MetricArrow />
+                  <span><strong>Misspelled Words :</strong> {metrics.misspelledWordsCount}</span>
+                </li>
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
+                  <span><strong>Extra Words :</strong> {metrics.extraWordsCount}</span>
+                </li>
+                <li className="mb-2 d-flex align-items-start">
+                  <MetricArrow />
                   <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
                 </li>
                 <li className="d-flex align-items-start">
