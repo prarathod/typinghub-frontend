@@ -1,11 +1,14 @@
 /**
  * Word-by-word evaluation for real-time typing test.
  * Words are evaluated only when completed (space pressed).
- * Status: pending (not typed), active (currently typing), correct, incorrect, omitted.
- * Omitted = target word was skipped (user typed a different word that matches a later target).
+ * 
+ * Core Algorithm: Greedy Forward Matching
+ * - Space commits a word
+ * - Uses Levenshtein edit distance for misspelling detection
+ * - Threshold = ceil(max(typed.length, source.length) / 2)
  */
 
-export type WordStatus = "pending" | "active" | "correct" | "incorrect" | "omitted";
+export type WordStatus = "pending" | "active" | "correct" | "incorrect" | "omitted" | "misspelled" | "extra";
 
 export type WordSegment = {
   text: string;
@@ -17,6 +20,7 @@ export type WordEvaluation = {
   text: string;
   status: WordStatus;
   wordIndex: number;
+  typedWord?: string;
 };
 
 /**
@@ -52,100 +56,136 @@ function wordsMatch(a: string, b: string, caseSensitive: boolean): boolean {
 }
 
 /**
- * Aligns target words with typed words using sequential matching.
- * Detects omitted words (skipped) vs incorrect (wrong substitution).
- *
- * Logic:
- * - Match target[ti] with typed[ty] in order.
- * - If match: correct, advance both.
- * - If no match: search if typed[ty] appears later in target.
- *   - If found at j>ti: target[ti..j-1] are OMITTED (user skipped them),
- *     target[j] is correct. Advance to j+1, ty+1. No chain reaction.
- *   - If not found: target[ti] is INCORRECT (wrong word typed), advance both.
- * - If we run out of typed words: remaining target words are OMITTED.
+ * Calculates Levenshtein edit distance between two strings.
+ * Standard dynamic programming implementation.
+ */
+function levenshteinDistance(a: string, b: string): number {
+  const aLen = a.length;
+  const bLen = b.length;
+  
+  if (aLen === 0) return bLen;
+  if (bLen === 0) return aLen;
+  
+  const matrix: number[][] = [];
+  
+  for (let i = 0; i <= aLen; i++) {
+    matrix[i] = [i];
+  }
+  
+  for (let j = 0; j <= bLen; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= aLen; i++) {
+    for (let j = 1; j <= bLen; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,     // deletion
+        matrix[i][j - 1] + 1,     // insertion
+        matrix[i - 1][j - 1] + cost // substitution
+      );
+    }
+  }
+  
+  return matrix[aLen][bLen];
+}
+
+/**
+ * Result type for aligned words
+ */
+type AlignedWord = {
+  text: string;
+  status: "correct" | "incorrect" | "omitted" | "misspelled" | "extra";
+  wordIndex: number;
+  typedWord?: string;
+  isSkipped?: boolean;
+};
+
+/**
+ * Aligns target words with typed words using greedy forward matching.
+ * 
+ * Algorithm:
+ * 1. Initialize sourcePtr = 0
+ * 2. For each typed word:
+ *    a. Exact match scan: scan forward from sourcePtr looking for exact match
+ *       - If found at j: mark sourceWords[sourcePtr..j-1] as OMITTED, sourceWords[j] as CORRECT
+ *    b. Misspelling check (if step a failed): compare using Levenshtein distance
+ *       - Threshold = ceil(max(typed.length, source.length) / 2)
+ *       - If 0 < distance <= threshold: mark as MISSPELLED
+ *    c. Extra word (if steps a & b failed): mark typed word as EXTRA
+ *       - sourcePtr stays the same
+ * 3. After all typed words: remaining source words are unprocessed (OMITTED on finish)
  */
 export function alignWords(
   targetWords: string[],
   typedWords: string[],
   options?: { caseSensitive?: boolean }
-): Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string; isSkipped?: boolean }> {
+): AlignedWord[] {
   const caseSensitive = options?.caseSensitive ?? true;
-  const result: Array<{ text: string; status: "correct" | "incorrect" | "omitted"; wordIndex: number; typedWord?: string; isSkipped?: boolean }> = [];
-  let ti = 0;
-  let ty = 0;
-  const usedTypedWords = new Set<string>();
+  const result: AlignedWord[] = [];
+  let sourcePtr = 0;
 
-  while (ti < targetWords.length) {
-    const tw = targetWords[ti];
-    if (ty >= typedWords.length) {
-      result.push({ text: tw, status: "omitted", wordIndex: ti, isSkipped: false });
-      ti++;
-      continue;
-    }
-    const uw = typedWords[ty];
-    const isDuplicate = usedTypedWords.has(uw);
-    if (wordsMatch(tw, uw, caseSensitive)) {
-      usedTypedWords.add(uw);
-      result.push({ text: tw, status: "correct", wordIndex: ti });
-      ti++;
-      ty++;
-      continue;
-    }
-    if (caseSensitive && tw.toLowerCase() === uw.toLowerCase()) {
-      const foundExact = targetWords.findIndex(
-        (w, j) => j > ti && w === uw
-      );
-      if (foundExact >= 0) {
-        for (let k = ti; k < foundExact; k++) {
-          result.push({ text: targetWords[k], status: "omitted", wordIndex: k, isSkipped: true });
-        }
-        usedTypedWords.add(uw);
-        result.push({ text: targetWords[foundExact], status: "correct", wordIndex: foundExact });
-        ti = foundExact + 1;
-        ty++;
-      } else {
-        result.push({ text: tw, status: "incorrect", wordIndex: ti, typedWord: uw });
-        ti++;
-        ty++;
+  for (let ty = 0; ty < typedWords.length; ty++) {
+    const typed = typedWords[ty];
+    
+    // Step 1: Exact match scan - forward from sourcePtr
+    let foundIndex = -1;
+    for (let j = sourcePtr; j < targetWords.length; j++) {
+      if (wordsMatch(targetWords[j], typed, caseSensitive)) {
+        foundIndex = j;
+        break;
       }
-      continue;
     }
-    if (isDuplicate) {
-      result.push({ text: tw, status: "incorrect", wordIndex: ti, typedWord: uw });
-      ty++;
-      continue;
-    }
-    const found = targetWords.findIndex(
-      (w, j) => j > ti && wordsMatch(w, uw, caseSensitive)
-    );
-    if (found >= 0) {
-      for (let k = ti; k < found; k++) {
+
+    if (foundIndex >= 0) {
+      // Found exact match - mark skipped words as OMITTED
+      for (let k = sourcePtr; k < foundIndex; k++) {
         result.push({ text: targetWords[k], status: "omitted", wordIndex: k, isSkipped: true });
       }
-      usedTypedWords.add(uw);
-      result.push({ text: targetWords[found], status: "correct", wordIndex: found });
-      ti = found + 1;
-      ty++;
-    } else {
-      result.push({ text: tw, status: "incorrect", wordIndex: ti, typedWord: uw });
-      ti++;
-      ty++;
+      // Mark the matched word as CORRECT
+      result.push({ text: targetWords[foundIndex], status: "correct", wordIndex: foundIndex });
+      sourcePtr = foundIndex + 1;
+      continue;
     }
+
+    // Step 2: Misspelling check - compare against sourceWords[sourcePtr]
+    if (sourcePtr < targetWords.length) {
+      const source = targetWords[sourcePtr];
+      const maxLen = Math.max(typed.length, source.length);
+      const threshold = Math.ceil(maxLen / 2);
+      
+      // Use case-insensitive comparison for misspelling detection
+      const dist = levenshteinDistance(
+        caseSensitive ? typed : typed.toLowerCase(),
+        caseSensitive ? source : source.toLowerCase()
+      );
+      
+      if (dist > 0 && dist <= threshold) {
+        // Mark as misspelled
+        result.push({ text: source, status: "misspelled", wordIndex: sourcePtr, typedWord: typed });
+        sourcePtr++;
+        continue;
+      }
+    }
+
+    // Step 3: Extra word - no match found, mark as EXTRA
+    result.push({ text: typed, status: "extra", wordIndex: targetWords.length + ty, typedWord: typed });
+    // sourcePtr stays the same
   }
 
-  for (let i = ty; i < typedWords.length; i++) {
-    result.push({ text: typedWords[i], status: "incorrect", wordIndex: targetWords.length + i, typedWord: typedWords[i] });
+  // Mark remaining unprocessed source words as OMITTED (not skipped, just untyped)
+  for (let k = sourcePtr; k < targetWords.length; k++) {
+    result.push({ text: targetWords[k], status: "omitted", wordIndex: k, isSkipped: false });
   }
 
   return result;
 }
 
 /**
- * Evaluates target vs input word-by-word.
+ * Evaluates target vs input word-by-word for real-time display.
  * - pending: word not yet reached
  * - active: currently typing (last word, no trailing space)
- * - correct/incorrect/omitted: from alignment of completed words
- * Handles: extra spaces, backspace, extra words, omitted words, case sensitivity.
+ * - correct/incorrect/omitted/misspelled/extra: from alignment
  */
 export function evaluateWords(
   target: string,
@@ -158,56 +198,67 @@ export function evaluateWords(
   const inputEndsWithSpace = input.length > 0 && /\s$/.test(input);
   const inputWords = splitWords(inputTrimmed);
 
+  // Only evaluate completed words (ended with space)
   const completedTypedWords = inputEndsWithSpace
     ? inputWords
     : inputWords.slice(0, -1);
+    
   const aligned =
     completedTypedWords.length > 0
       ? alignWords(targetWords, completedTypedWords, { caseSensitive })
       : [];
+      
   const alignedByIndex = new Map(aligned.map((a) => [a.wordIndex, a]));
 
-  // Active = the target word we're currently typing (next after last aligned).
-  // Use alignment so omitted words don't make us point at the wrong target.
+  // Active = the target word we're currently typing
+  // Find the last processed source word index
+  let lastProcessedIndex = -1;
+  for (const a of aligned) {
+    if (a.wordIndex < targetWords.length) {
+      lastProcessedIndex = Math.max(lastProcessedIndex, a.wordIndex);
+    }
+  }
+  
   const activeTargetIndex =
     !inputEndsWithSpace && inputWords.length > 0
-      ? aligned.length > 0
-        ? Math.min(
-            Math.max(...aligned.map((a) => a.wordIndex)) + 1,
-            targetWords.length - 1
-          )
-        : 0
+      ? Math.min(lastProcessedIndex + 1, targetWords.length - 1)
       : -1;
 
   const result: WordEvaluation[] = [];
   for (let i = 0; i < targetWords.length; i++) {
     const a = alignedByIndex.get(i);
     let status: WordStatus;
+    
     if (i === activeTargetIndex) {
       status = "active";
     } else if (a) {
+      // If word is marked as omitted but not skipped, it's untyped (pending)
       if (a.status === "omitted" && !a.isSkipped) {
         status = "pending";
       } else {
         status = a.status;
       }
-    } else if (activeTargetIndex >= 0 && i > activeTargetIndex) {
+    } else if (lastProcessedIndex >= 0 && i > lastProcessedIndex) {
       status = "pending";
     } else {
       status = "pending";
     }
+    
     result.push({
       text: targetWords[i],
       status,
-      wordIndex: i
+      wordIndex: i,
+      typedWord: a?.typedWord
     });
   }
 
+  // Add extra words (typed beyond target)
   for (let i = targetWords.length; i < inputWords.length; i++) {
     result.push({
       text: inputWords[i],
-      status: "incorrect",
-      wordIndex: i
+      status: "extra",
+      wordIndex: i,
+      typedWord: inputWords[i]
     });
   }
 

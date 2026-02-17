@@ -45,10 +45,14 @@ export function computeTypingMetrics(
         correctWordsCount++;
         break;
       case "incorrect":
+      case "misspelled":
+      case "extra":
         incorrectWords.push(a.typedWord ?? a.text);
         break;
       case "omitted":
-        omittedWords.push(a.text);
+        if (a.isSkipped) {
+          omittedWords.push(a.text);
+        }
         break;
     }
   }

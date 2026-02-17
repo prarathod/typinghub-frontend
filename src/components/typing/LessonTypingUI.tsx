@@ -291,6 +291,8 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
       case "correct":
         return { color: "#15803d", fontWeight: 400 };
       case "incorrect":
+      case "misspelled":
+      case "extra":
         return { color: "#b02a37", fontWeight: 400 };
       case "omitted":
         return { color: "#000000", fontWeight: 400 };
