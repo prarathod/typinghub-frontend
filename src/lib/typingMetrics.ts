@@ -60,9 +60,8 @@ export function computeTypingMetrics(
         extraWords.push(a.typedWord ?? a.text);
         break;
       case "omitted":
-        if (a.isSkipped) {
-          omittedWords.push(a.text);
-        }
+        // Count all omitted words (both skipped during typing and untyped at end)
+        omittedWords.push(a.text);
         break;
     }
   }
