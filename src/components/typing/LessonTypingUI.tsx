@@ -247,20 +247,21 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
   const fontSize = FONT_SIZES[fontSizeIndex];
 
-  useEffect(() => {
-    const el = currentCharRef.current;
-    const container = paragraphScrollRef.current;
-    if (!el || !container) return;
-    const lineHeightPx = fontSize * 1.6;
-    const targetOffsetFromBottom = 1 * lineHeightPx;
-    const scrollTop =
-      el.offsetTop - container.clientHeight + targetOffsetFromBottom;
-    const maxScroll = container.scrollHeight - container.clientHeight;
-    container.scrollTo({
-      top: Math.max(0, Math.min(scrollTop, maxScroll)),
-      behavior: "smooth"
-    });
-  }, [input, fontSize]);
+  // autoscroll disabled
+  // useEffect(() => {
+  //   const el = currentCharRef.current;
+  //   const container = paragraphScrollRef.current;
+  //   if (!el || !container) return;
+  //   const lineHeightPx = fontSize * 1.6;
+  //   const targetOffsetFromBottom = 1 * lineHeightPx;
+  //   const scrollTop =
+  //     el.offsetTop - container.clientHeight + targetOffsetFromBottom;
+  //   const maxScroll = container.scrollHeight - container.clientHeight;
+  //   container.scrollTo({
+  //     top: Math.max(0, Math.min(scrollTop, maxScroll)),
+  //     behavior: "smooth"
+  //   });
+  // }, [input, fontSize]);
   // Ensure text is always a string so getWordSegments/evaluateWords never throw (e.g. if API returns non-string)
   const text = typeof paragraph?.text === "string" ? paragraph.text : "";
   const segments = getWordSegments(text);

@@ -387,9 +387,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     return () => document.removeEventListener("fullscreenchange", onFullScreenChange);
   }, []);
 
-  useEffect(() => {
-    currentCharRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [input]);
+  // autoscroll disabled
+  // useEffect(() => {
+  //   currentCharRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  // }, [input]);
 
   const fontSize = FONT_SIZES[fontSizeIndex];
   const text = paragraph.text;
