@@ -223,6 +223,10 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
     // MPSC: collapse multiple consecutive spaces to a single space
     const next = raw.replace(/  +/g, " ");
     const delta = next.length - input.length;
+    // Reject if more than 1 character was added at once — guards against
+    // browser autocorrect/autocomplete silently inserting extra words.
+    // delta <= 0 (deletions) and delta === 1 (normal typing) are always allowed.
+    if (delta > 1) return;
     if (delta > 0) setTotalKeystrokes((k) => k + delta);
     setInput(next);
     if (next.length > 0 && !timerStarted) setTimerStarted(true);
@@ -576,6 +580,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                   onPaste={handleCopyPaste}
                   onCut={handleCopyPaste}
                   spellCheck={false}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
                   disabled={hasSubmitted}
                   autoFocus
                   aria-label="Typing input"
