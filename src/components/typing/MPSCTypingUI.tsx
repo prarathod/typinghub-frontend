@@ -400,8 +400,6 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const text = paragraph.text;
   const segments = getWordSegments(text);
   const evaluations = evaluateWords(text, input, { caseSensitive: true });
-  const targetWordCount = text.trim().split(/\s+/).filter(Boolean).length;
-
   function getSegmentStatus(seg: { text: string; wordIndex: number; isWord: boolean }): WordStatus | "space" {
     if (!seg.isWord) return "space";
     const eval_ = evaluations[seg.wordIndex];
@@ -540,14 +538,6 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                       </span>
                     );
                   })}
-                  {evaluations.slice(targetWordCount).map((eval_, idx) => (
-                    <span
-                      key={`extra-${idx}`}
-                      style={getStatusStyles("incorrect")}
-                    >
-                      {" "}{eval_.text}
-                    </span>
-                  ))}
                 </>
               ) : (
                 <span style={{ color: "#000000" }}>{text}</span>
