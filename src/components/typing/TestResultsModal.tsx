@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,22 +19,42 @@ function formatTimeLong(seconds: number): string {
 }
 
 /** Small teal right-pointing triangular arrow before each metric. */
-function MetricArrow() {
+function MetricArrow({ style }: { style?: React.CSSProperties }) {
   return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="#0d9488" className="flex-shrink-0 me-2" style={{ marginTop: "2px" }} aria-hidden>
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="#0d9488" className="flex-shrink-0 me-2" style={style} aria-hidden>
       <path d="M8 4l12 8-12 8V4z" />
     </svg>
   );
 }
 
-/** Renders user input in black (no correct/incorrect coloring). */
+/** Renders user input with extra words bolded, rest in normal weight. */
 function UserInputHighlighted({
-  userInput
+  userInput,
+  expectedText
 }: {
   userInput: string;
   expectedText: string;
 }) {
-  return <>{userInput}</>;
+  const targetWords = splitWordsUtil(expectedText);
+  const typedWords = splitWordsUtil(userInput.trim());
+  const aligned = alignWords(targetWords, typedWords, { caseSensitive: true });
+  // Filter out omitted entries to get one entry per typed word in order
+  const typedAligned = aligned.filter((a) => a.status !== "omitted");
+  const segments = getWordSegments(userInput);
+
+  return (
+    <>
+      {segments.map((seg, i) => {
+        if (!seg.isWord) return <span key={i}>{seg.text}</span>;
+        const isExtra = typedAligned[seg.wordIndex]?.status === "extra";
+        return (
+          <span key={i} style={isExtra ? { fontWeight: 700, color: "#b91c1c" } : undefined}>
+            {seg.text}
+          </span>
+        );
+      })}
+    </>
+  );
 }
 
 /** Renders expected paragraph with correct (green), incorrect (red), omitted (orange + strikethrough). */
@@ -196,45 +216,55 @@ export function TestResultsModal({
               }}
             >
               <ul className="list-unstyled mb-0">
-                <li className="mb-2 d-flex align-items-start">
+                <li className="mb-2 d-flex align-items-center">
                   <MetricArrow />
                   <span><strong>Time Taken :</strong> {formatTimeLong(metrics.timeTakenSeconds)}</span>
                 </li>
-                <li className="mb-2 d-flex align-items-start">
+                <li className="mb-2 d-flex align-items-center">
                   <MetricArrow />
                   <span><strong>Total Typed words :</strong> {metrics.wordsTyped}</span>
                 </li>
-                <li className="mb-2 d-flex align-items-start">
+                <li className="mb-2 d-flex align-items-center">
                   <MetricArrow />
                   <span><strong>Correct Words :</strong> {metrics.correctWordsCount}</span>
                 </li>
-                <li className="mb-2 d-flex align-items-start">
-                  <MetricArrow />
-                  <span><strong>Incorrect Words :</strong> {metrics.incorrectWordsCount}</span>
-                </li>
                 <li className="d-flex align-items-start">
-                  <MetricArrow />
-                  <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
+                  <MetricArrow style={{ marginTop: "4px" }} />
+                  <span>
+                    <strong>Incorrect Words :</strong> {metrics.misspelledWordsCount + metrics.incorrectWordsCount + metrics.extraWordsCount}
+                    <br />
+                    <span className="ms-3 d-inline-block" style={{ fontSize: "0.95em", color: "#555" }}>
+                      ↳ <strong>Misspelled Words :</strong> {metrics.misspelledWordsCount + metrics.incorrectWordsCount}
+                    </span>
+                    <br />
+                    <span className="ms-3 d-inline-block" style={{ fontSize: "0.95em", color: "#555" }}>
+                      ↳ <strong>Extra Words :</strong> {metrics.extraWordsCount}
+                    </span>
+                  </span>
                 </li>
               </ul>
             </div>
             <div className="col-6 p-3" style={{ fontSize: "1.0625rem" }}>
               <ul className="list-unstyled mb-0">
-                <li className="mb-2 d-flex align-items-start">
+                <li className="mb-2 d-flex align-items-center">
+                  <MetricArrow />
+                  <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
+                </li>
+                <li className="mb-2 d-flex align-items-center">
                   <MetricArrow />
                   <span><strong>Accuracy :</strong> {metrics.accuracy}%</span>
                 </li>
                 {showTotalKeystrokes && (
-                  <li className="mb-2 d-flex align-items-start">
+                  <li className="mb-2 d-flex align-items-center">
                     <MetricArrow />
                     <span><strong>Total Keystrokes :</strong> {metrics.totalKeystrokes}</span>
                   </li>
                 )}
-                <li className="mb-2 d-flex align-items-start">
+                <li className="mb-2 d-flex align-items-center">
                   <MetricArrow />
                   <span><strong>Keystrokes Per Minute :</strong> {metrics.kpm}</span>
                 </li>
-                <li className="d-flex align-items-start">
+                <li className="d-flex align-items-center">
                   <MetricArrow />
                   <span><strong>Words Per Minute :</strong> {metrics.wpm}</span>
                 </li>
