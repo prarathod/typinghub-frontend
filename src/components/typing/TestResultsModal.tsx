@@ -27,14 +27,34 @@ function MetricArrow({ style }: { style?: React.CSSProperties }) {
   );
 }
 
-/** Renders user input in black (no correct/incorrect coloring). */
+/** Renders user input with extra words bolded, rest in normal weight. */
 function UserInputHighlighted({
-  userInput
+  userInput,
+  expectedText
 }: {
   userInput: string;
   expectedText: string;
 }) {
-  return <>{userInput}</>;
+  const targetWords = splitWordsUtil(expectedText);
+  const typedWords = splitWordsUtil(userInput.trim());
+  const aligned = alignWords(targetWords, typedWords, { caseSensitive: true });
+  // Filter out omitted entries to get one entry per typed word in order
+  const typedAligned = aligned.filter((a) => a.status !== "omitted");
+  const segments = getWordSegments(userInput);
+
+  return (
+    <>
+      {segments.map((seg, i) => {
+        if (!seg.isWord) return <span key={i}>{seg.text}</span>;
+        const isExtra = typedAligned[seg.wordIndex]?.status === "extra";
+        return (
+          <span key={i} style={isExtra ? { fontWeight: 700, color: "#b91c1c" } : undefined}>
+            {seg.text}
+          </span>
+        );
+      })}
+    </>
+  );
 }
 
 /** Renders expected paragraph with correct (green), incorrect (red), omitted (orange + strikethrough). */
