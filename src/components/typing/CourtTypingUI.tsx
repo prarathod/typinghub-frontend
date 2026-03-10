@@ -66,6 +66,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const [timerStarted, setTimerStarted] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [showTimer, setShowTimer] = useState(true);
+  const [enableBackspace, setEnableBackspace] = useState(false);
   const [autoSubmitSeconds, setAutoSubmitSeconds] = useState(10 * 60);
   const [isStarted, setIsStarted] = useState(false);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
@@ -250,10 +251,18 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       e.preventDefault();
       return;
     }
-    // Disable Delete and Backspace
-    if (e.key === "Delete" || e.key === "Backspace") {
+    // Disable Delete; conditionally disable Backspace
+    if (e.key === "Delete") {
       e.preventDefault();
-      if (e.key === "Backspace") setBackspaceCount((c) => c + 1);
+      return;
+    }
+    if (e.key === "Backspace") {
+      if (!enableBackspace) {
+        e.preventDefault();
+        setBackspaceCount((c) => c + 1);
+        return;
+      }
+      setBackspaceCount((c) => c + 1);
       return;
     }
     // Court: allow Enter and Tab; insert tab in textarea instead of moving focus
@@ -442,6 +451,15 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
               />
               <span>Show timer</span>
             </label>
+            <label className="d-flex align-items-center gap-2 small mb-0">
+              <input
+                type="checkbox"
+                checked={enableBackspace}
+                onChange={(e) => setEnableBackspace(e.target.checked)}
+                className="form-check-input"
+              />
+              <span>Enable Backspace</span>
+            </label>
             <div className="d-flex align-items-center gap-2">
               <label className="small mb-0">Auto submit:</label>
               <select
@@ -494,6 +512,15 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
                 className="form-check-input"
               />
               <span>Show timer</span>
+            </label>
+            <label className="d-flex align-items-center gap-2 small mb-0">
+              <input
+                type="checkbox"
+                checked={enableBackspace}
+                onChange={(e) => setEnableBackspace(e.target.checked)}
+                className="form-check-input"
+              />
+              <span>Enable Backspace</span>
             </label>
             <button
               type="button"

@@ -39,7 +39,7 @@ function ClockIcon() {
 }
 
 const FONT_SIZES = [14, 16, 18, 20, 22] as const;
-const DEFAULT_FONT_INDEX = 2;
+const DEFAULT_FONT_INDEX = 4;
 
 type LessonTypingUIProps = {
   paragraph: ParagraphDetail;
