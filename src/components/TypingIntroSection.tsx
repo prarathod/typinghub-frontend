@@ -67,6 +67,44 @@ export function TypingIntroSection() {
         background: "linear-gradient(90deg, #e8f4fc 0%, #f0f9f0 50%, #f8faf8 100%)",
       }}
     >
+              {/* Language cards */}
+        <div className="row justify-content-center g-4">
+          {cards.map((card) => (
+            <div key={card.title} className="col-12 col-sm-6 col-lg-5">
+              <Link
+                to={card.to}
+                className={`text-decoration-none d-flex flex-column align-items-center justify-content-center gap-3 rounded-3 p-4 h-100 shadow-sm text-center ${card.bgClass}`}
+                style={{ transition: "transform 0.2s, box-shadow 0.2s" }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 0.5rem 1rem rgba(0,0,0,0.1)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "";
+                }}
+              >
+                <div
+                  className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
+                  style={{ width: "56px", height: "56px" }}
+                >
+                  <img
+                    src={card.logoSrc}
+                    alt=""
+                    className="w-100 h-100"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+                <div>
+                  <h3 className="fw-bold text-dark mb-1" style={{ fontSize: "1.35rem" }}>{card.title}</h3>
+                  <p className="mb-0 text-secondary" style={{ fontSize: "1rem" }}>{card.subtitle}</p>
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+
+
       <div className="container py-4">
         {/* Main heading — Tinos Bold 700 */}
         <h1
@@ -111,42 +149,6 @@ export function TypingIntroSection() {
           <p className="mb-0 fw-semibold" style={{ color: "#1e3a5f", fontSize: "1rem" }}>
             Sign up and unlock <span className="text-success">5 Additional Passages</span>  to level up your speed even faster
           </p>
-        </div>
-        {/* Language cards */}
-        <div className="row justify-content-center g-4">
-          {cards.map((card) => (
-            <div key={card.title} className="col-12 col-sm-6 col-lg-5">
-              <Link
-                to={card.to}
-                className={`text-decoration-none d-flex flex-column align-items-center justify-content-center gap-3 rounded-3 p-4 h-100 shadow-sm text-center ${card.bgClass}`}
-                style={{ transition: "transform 0.2s, box-shadow 0.2s" }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 0.5rem 1rem rgba(0,0,0,0.1)";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "";
-                }}
-              >
-                <div
-                  className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden"
-                  style={{ width: "56px", height: "56px" }}
-                >
-                  <img
-                    src={card.logoSrc}
-                    alt=""
-                    className="w-100 h-100"
-                    style={{ objectFit: "cover" }}
-                  />
-                </div>
-                <div>
-                  <h3 className="fw-bold text-dark mb-1" style={{ fontSize: "1.35rem" }}>{card.title}</h3>
-                  <p className="mb-0 text-secondary" style={{ fontSize: "1rem" }}>{card.subtitle}</p>
-                </div>
-              </Link>
-            </div>
-          ))}
         </div>
       </div>
     </section>
