@@ -15,6 +15,7 @@ export type ParagraphListItem = {
   solvedCount: number;
   createdAt: string;
   solvedByUser?: boolean;
+  order?: number;
 };
 
 export type ParagraphsResponse = {

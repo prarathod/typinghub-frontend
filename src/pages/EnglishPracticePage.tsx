@@ -120,22 +120,10 @@ const PRICE_OPTIONS: { value: PriceFilter; label: string }[] = [
   { value: "paid", label: "Paid" },
 ];
 
-/** Parse "Lesson X.Y" or "X.Y" from title; return [major, minor] for sort. Non-matching titles get [Infinity, Infinity] so they sort last, then by title. */
-function getLessonSortKey(title: string): [number, number] {
-  const match = title.match(/(?:Lesson\s*)?(\d+)(?:\.(\d+))?/i) ?? title.match(/(\d+)\.(\d+)/);
-  if (match) {
-    const major = parseInt(match[1], 10);
-    const minor = match[2] ? parseInt(match[2], 10) : 0;
-    return [major, minor];
-  }
-  return [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
-}
-
 function lessonOrderComparator(a: ParagraphListItem, b: ParagraphListItem): number {
-  const [aMajor, aMinor] = getLessonSortKey(a.title);
-  const [bMajor, bMinor] = getLessonSortKey(b.title);
-  if (aMajor !== bMajor) return aMajor - bMajor;
-  if (aMinor !== bMinor) return aMinor - bMinor;
+  const aOrder = a.order ?? Number.POSITIVE_INFINITY;
+  const bOrder = b.order ?? Number.POSITIVE_INFINITY;
+  if (aOrder !== bOrder) return aOrder - bOrder;
   return a.title.localeCompare(b.title);
 }
 
