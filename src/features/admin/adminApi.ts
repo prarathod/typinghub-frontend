@@ -89,6 +89,7 @@ export type UserSubscriptionsResponse = {
   productIds: string[];
   adminGrantedProductIds: string[];
   products: AdminProduct[];
+  subscriptions?: Array<{ productId: string; validUntil: string | null }>;
 };
 
 adminApi.interceptors.request.use((config) => {
@@ -169,11 +170,12 @@ export async function fetchUserSubscriptions(
 
 export async function updateUserSubscriptions(
   userId: string,
-  productIds: string[]
+  productIds: string[],
+  days?: number
 ): Promise<{ productIds: string[] }> {
   const { data } = await adminApi.put<{ productIds: string[] }>(
     `/admin/users/${userId}/subscriptions`,
-    { productIds }
+    { productIds, ...(days !== undefined && { days }) }
   );
   return data;
 }

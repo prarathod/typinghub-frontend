@@ -30,10 +30,12 @@ export function AdminUsersPage() {
   });
 
   const [adminGrantedProductIds, setAdminGrantedProductIds] = useState<string[]>([]);
+  const [subscriptionDays, setSubscriptionDays] = useState(30);
 
   const handleEdit = (user: AdminUser) => {
     setEditingUser({ ...user });
     setAdminGrantedProductIds([]);
+    setSubscriptionDays(30);
   };
 
   const { data: subscriptionsData } = useQuery({
@@ -56,7 +58,12 @@ export function AdminUsersPage() {
         email: editingUser.email,
         isPaid: editingUser.isPaid
       });
-      await updateUserSubscriptions(editingUser._id, adminGrantedProductIds);
+      // If marking as paid and no courses manually selected, auto-grant all available courses
+      const allProductIds = subscriptionsData?.products?.map((p) => p.productId) ?? [];
+      const toGrant = editingUser.isPaid && adminGrantedProductIds.length === 0
+        ? allProductIds
+        : adminGrantedProductIds;
+      await updateUserSubscriptions(editingUser._id, toGrant, subscriptionDays);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setEditingUser(null);
     } catch (err) {
@@ -307,6 +314,14 @@ export function AdminUsersPage() {
                         const hasAccess =
                           paymentOnly || adminGrantedProductIds.includes(product.productId);
                         const disabled = paymentOnly;
+                        const subEntry = subscriptionsData?.subscriptions?.find(
+                          (s) => s.productId === product.productId
+                        );
+                        const expiryText = subEntry
+                          ? subEntry.validUntil
+                            ? `Expires: ${new Date(subEntry.validUntil).toLocaleDateString()}`
+                            : "No expiry"
+                          : null;
                         return (
                           <div key={product.productId} className="form-check">
                             <input
@@ -331,6 +346,9 @@ export function AdminUsersPage() {
                               {disabled && (
                                 <span className="text-muted small ms-1">(from payment)</span>
                               )}
+                              {!disabled && expiryText && (
+                                <span className="text-muted small ms-2">{expiryText}</span>
+                              )}
                             </label>
                           </div>
                         );
@@ -340,6 +358,25 @@ export function AdminUsersPage() {
                     <span className="text-muted small">No courses configured.</span>
                   ) : (
                     <span className="text-muted small">Loading…</span>
+                  )}
+                  {editingUser.isPaid && (
+                    <div className="mt-3">
+                      <label className="form-label mb-1">Duration (days)</label>
+                      <input
+                        type="number"
+                        className="form-control form-control-sm w-auto"
+                        min={1}
+                        max={3650}
+                        value={subscriptionDays}
+                        onChange={(e) =>
+                          setSubscriptionDays(Math.max(1, Math.min(3650, parseInt(e.target.value, 10) || 1)))
+                        }
+                      />
+                      <small className="text-muted d-block mt-1">
+                        Expires on:{" "}
+                        {new Date(Date.now() + subscriptionDays * 86400000).toLocaleDateString()}
+                      </small>
+                    </div>
                   )}
                 </div>
               </div>
