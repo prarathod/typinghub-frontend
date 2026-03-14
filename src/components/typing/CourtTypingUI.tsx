@@ -323,30 +323,30 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     const footerHeight = 14;
     const contentBottom = pageHeight - footerHeight;
     const margin = 14;
-    const lineHeight = 5;
+    const lineHeight = 8;
     const iconSize = 6;
     let yPos = 20;
 
     // Title — centered at top
-    doc.setFontSize(16);
+    doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
     const titleLines = doc.splitTextToSize(paragraph.title, pageWidth - 2 * margin);
     for (const line of titleLines) {
       const textWidth = doc.getTextWidth(line);
       doc.text(line, (pageWidth - textWidth) / 2, yPos);
-      yPos += 6;
+      yPos += 9;
     }
     yPos += 8;
 
     // Instruction
-    doc.setFontSize(12);
+    doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.text("Start typing from below:", margin, yPos);
-    yPos += 8;
+    yPos += 10;
 
     // Paragraph text with pagination
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
+    doc.setFontSize(16);
     const lines = doc.splitTextToSize(paragraph.text, pageWidth - 2 * margin);
     for (const line of lines) {
       if (yPos + lineHeight > contentBottom) {
