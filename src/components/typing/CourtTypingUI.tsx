@@ -344,17 +344,35 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     doc.text("Start typing from below:", margin, yPos);
     yPos += 9;
 
-    // Paragraph text with pagination
+    // Paragraph text with pagination — justified
     doc.setFont("helvetica", "normal");
     doc.setFontSize(14);
-    const lines = doc.splitTextToSize(paragraph.text, pageWidth - 2 * margin);
-    for (const line of lines) {
-      if (yPos + lineHeight > contentBottom) {
-        doc.addPage();
-        yPos = 20;
+    const textAreaWidth = pageWidth - 2 * margin;
+    const paragraphs = paragraph.text.split(/\n+/);
+    for (const para of paragraphs) {
+      const lines = doc.splitTextToSize(para.trim(), textAreaWidth);
+      for (let i = 0; i < lines.length; i++) {
+        if (yPos + lineHeight > contentBottom) {
+          doc.addPage();
+          yPos = 20;
+        }
+        const line = lines[i];
+        const isLastLine = i === lines.length - 1;
+        const words = line.trim().split(" ");
+        if (isLastLine || words.length <= 1) {
+          doc.text(line, margin, yPos);
+        } else {
+          const totalWordWidth = words.reduce((sum, w) => sum + doc.getTextWidth(w), 0);
+          const spaceWidth = (textAreaWidth - totalWordWidth) / (words.length - 1);
+          let x = margin;
+          for (const word of words) {
+            doc.text(word, x, yPos);
+            x += doc.getTextWidth(word) + spaceWidth;
+          }
+        }
+        yPos += lineHeight;
       }
-      doc.text(line, margin, yPos);
-      yPos += lineHeight;
+      yPos += 2;
     }
 
     // Footer: background #d6a692, black bold text, left: logo + link, right: telegram icon + link
