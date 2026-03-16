@@ -362,7 +362,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         if (isLastLine || words.length <= 1) {
           doc.text(line, margin, yPos);
         } else {
-          const totalWordWidth = words.reduce((sum, w) => sum + doc.getTextWidth(w), 0);
+          const totalWordWidth = words.reduce((sum: number, w: string) => sum + doc.getTextWidth(w), 0);
           const spaceWidth = (textAreaWidth - totalWordWidth) / (words.length - 1);
           let x = margin;
           for (const word of words) {
