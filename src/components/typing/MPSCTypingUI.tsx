@@ -519,7 +519,8 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                 backgroundColor: "#f8f9fa",
                 fontSize: `${fontSize}px`,
                 lineHeight: 1.6,
-                color: "#000000"
+                color: "#000000",
+                textAlign: "justify"
               }}
               onCopy={(e) => e.preventDefault()}
             >

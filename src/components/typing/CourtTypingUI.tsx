@@ -350,21 +350,26 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
     const textAreaWidth = pageWidth - 2 * margin;
     const paragraphs = paragraph.text.split(/\n+/);
     for (const para of paragraphs) {
-      const lines = doc.splitTextToSize(para.trim(), textAreaWidth);
+      // Expand tabs to 4 spaces; preserve leading indent, only trim trailing whitespace
+      const expanded = para.replace(/\t/g, "    ").trimEnd();
+      const lines = doc.splitTextToSize(expanded, textAreaWidth);
       for (let i = 0; i < lines.length; i++) {
         if (yPos + lineHeight > contentBottom) {
           doc.addPage();
           yPos = 20;
         }
-        const line = lines[i];
+        const line = lines[i] as string;
         const isLastLine = i === lines.length - 1;
-        const words = line.trim().split(" ");
-        if (isLastLine || words.length <= 1) {
+        const leadingSpaces = line.match(/^(\s+)/)?.[1] ?? "";
+        const leadingWidth = doc.getTextWidth(leadingSpaces);
+        const words = line.trimStart().split(/\s+/).filter(Boolean);
+        // Left-align: indented lines, last line of paragraph, or single-word lines
+        if (isLastLine || words.length <= 1 || leadingSpaces.length > 0) {
           doc.text(line, margin, yPos);
         } else {
           const totalWordWidth = words.reduce((sum: number, w: string) => sum + doc.getTextWidth(w), 0);
-          const spaceWidth = (textAreaWidth - totalWordWidth) / (words.length - 1);
-          let x = margin;
+          const spaceWidth = (textAreaWidth - leadingWidth - totalWordWidth) / (words.length - 1);
+          let x = margin + leadingWidth;
           for (const word of words) {
             doc.text(word, x, yPos);
             x += doc.getTextWidth(word) + spaceWidth;
@@ -451,7 +456,8 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
                   fontSize: "18px",
                   fontFamily: "inherit",
                   lineHeight: 1.6,
-                  color: "#1a1a1a"
+                  color: "#1a1a1a",
+                  textAlign: "justify"
                 }}
               >
                 {paragraph.text}
