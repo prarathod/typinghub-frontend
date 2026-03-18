@@ -106,6 +106,7 @@ export function Pricing() {
 
   const products = (productsData?.products?.length ? productsData.products : FALLBACK_PRODUCTS) as Product[];
   const bundleRules = productsData?.bundleRules?.length ? productsData.bundleRules : FALLBACK_BUNDLE_RULES;
+  const saleActive = productsData?.sale?.active ?? false;
 
   const runPayment = async (productIds: string[]) => {
     setPaymentError(null);
@@ -207,6 +208,14 @@ export function Pricing() {
           <p className="mb-0" style={{ fontSize: "1.2rem", color: "#000" }}>
             Choose the plan that fits your typing practice goals.
           </p>
+          {saleActive && (
+            <div
+              className="mt-3 mx-auto px-4 py-2 rounded-pill fw-bold text-white d-inline-block"
+              style={{ backgroundColor: "#e53935", fontSize: "1rem", letterSpacing: "0.03em" }}
+            >
+              Sale Live — ₹59/course only (ends 20 Mar midnight)
+            </div>
+          )}
         </div>
         <div className="row justify-content-center g-4 mb-3">
           {/* Card 1: Free (compact) */}
@@ -244,7 +253,14 @@ export function Pricing() {
               <div className="card-body d-flex flex-column p-3" style={{ paddingBottom: "3.25rem" }}>
                 <h5 className="text-uppercase fw-bold mb-1 text-center" style={{ fontSize: "1.2rem", fontFamily: "inherit" }}>
                   <span style={{ color: "#0d6efd", fontFamily: '"Playfair Display", serif' }}>PREMIUM</span>
-                  <span style={{ color: "#198754" }}> - 99 ₹/Plan</span>
+                  {saleActive ? (
+                    <>
+                      <span className="text-muted fw-normal text-decoration-line-through ms-1" style={{ fontSize: "0.95rem" }}>99 ₹</span>
+                      <span style={{ color: "#e53935" }}> 59 ₹/Plan</span>
+                    </>
+                  ) : (
+                    <span style={{ color: "#198754" }}> - 99 ₹/Plan</span>
+                  )}
                 </h5>
                 <p className="text-body mb-2 fw-medium text-center" style={{ fontSize: "1.05rem", color: "#000" }}>
                   Pick any one course.
@@ -309,7 +325,18 @@ export function Pricing() {
                             className="fw-bold flex-shrink-0 d-flex align-items-center"
                             style={{ color: comingSoon ? "#6c757d" : "#189fa8", fontSize: "1.1rem" }}
                           >
-                            {comingSoon ? "Coming soon" : `${formatPrice(p.amountPaise)}/month`}
+                            {comingSoon ? "Coming soon" : (
+                            <>
+                              {saleActive && p.originalAmountPaise && p.originalAmountPaise !== p.amountPaise && (
+                                <span className="text-muted text-decoration-line-through me-1" style={{ fontSize: "0.85rem", fontWeight: 400 }}>
+                                  {formatPrice(p.originalAmountPaise)}
+                                </span>
+                              )}
+                              <span style={{ color: saleActive ? "#e53935" : "#189fa8" }}>
+                                {formatPrice(p.amountPaise)}/month
+                              </span>
+                            </>
+                          )}
                           </span>
                         </div>
                         {!comingSoon && expandedProduct === p.productId && (
@@ -423,7 +450,18 @@ export function Pricing() {
                             className="fw-bold flex-shrink-0 d-flex align-items-center"
                             style={{ color: comingSoon ? "#6c757d" : "#189fa8", fontSize: "1.1rem" }}
                           >
-                            {comingSoon ? "Coming soon" : formatPrice(p.amountPaise)}
+                            {comingSoon ? "Coming soon" : (
+                              <>
+                                {saleActive && p.originalAmountPaise && p.originalAmountPaise !== p.amountPaise && (
+                                  <span className="text-muted text-decoration-line-through me-1" style={{ fontSize: "0.85rem", fontWeight: 400 }}>
+                                    {formatPrice(p.originalAmountPaise)}
+                                  </span>
+                                )}
+                                <span style={{ color: saleActive ? "#e53935" : "#189fa8" }}>
+                                  {formatPrice(p.amountPaise)}
+                                </span>
+                              </>
+                            )}
                           </span>
                         </div>
                       </div>

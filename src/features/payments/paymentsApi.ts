@@ -5,6 +5,7 @@ export type Product = {
   productId: string;
   name: string;
   amountPaise: number;
+  originalAmountPaise?: number;
   language?: string;
   category?: string;
 };
@@ -14,6 +15,7 @@ export type BundleRule = { count: number; amountPaise: number };
 export type ProductsResponse = {
   products: Product[];
   bundleRules: BundleRule[];
+  sale?: { active: boolean; saleEndUtc?: string };
 };
 
 export async function fetchProducts(): Promise<ProductsResponse> {
