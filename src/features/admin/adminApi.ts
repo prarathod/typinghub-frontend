@@ -248,3 +248,37 @@ export async function fetchStats(): Promise<AdminStats> {
   const { data } = await adminApi.get<AdminStats>("/admin/stats");
   return data;
 }
+
+export type PaymentEventType =
+  | "order_created"
+  | "verify_started"
+  | "verify_signature_failed"
+  | "access_granted"
+  | "verify_error";
+
+export type PaymentLog = {
+  _id: string;
+  eventType: PaymentEventType;
+  userId?: string;
+  userEmail?: string;
+  razorpayOrderId: string;
+  razorpayPaymentId?: string;
+  productIds: string[];
+  amountPaise: number;
+  meta?: Record<string, unknown>;
+  createdAt: string;
+};
+
+export async function fetchPaymentLogs(params?: {
+  email?: string;
+  eventType?: string;
+  orderId?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ items: PaymentLog[]; total: number; page: number; pages: number }> {
+  const { data } = await adminApi.get<{ items: PaymentLog[]; total: number; page: number; pages: number }>(
+    "/admin/payment-logs",
+    { params }
+  );
+  return data;
+}

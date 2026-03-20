@@ -38,7 +38,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             { path: "/admin/dashboard", label: "Dashboard" },
             { path: "/admin/users", label: "Users" },
             { path: "/admin/paragraphs", label: "Paragraphs" },
-            { path: "/admin/submissions", label: "Submissions" }
+            { path: "/admin/submissions", label: "Submissions" },
+            { path: "/admin/payments", label: "Payments" }
           ].map((item) => (
             <Link
               key={item.path}

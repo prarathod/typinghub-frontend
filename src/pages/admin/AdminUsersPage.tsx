@@ -29,12 +29,12 @@ export function AdminUsersPage() {
       })
   });
 
-  const [adminGrantedProductIds, setAdminGrantedProductIds] = useState<string[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [subscriptionDays, setSubscriptionDays] = useState(30);
 
   const handleEdit = (user: AdminUser) => {
     setEditingUser({ ...user });
-    setAdminGrantedProductIds([]);
+    setSelectedProductIds([]);
     setSubscriptionDays(30);
   };
 
@@ -45,10 +45,10 @@ export function AdminUsersPage() {
   });
 
   useEffect(() => {
-    if (subscriptionsData?.adminGrantedProductIds) {
-      setAdminGrantedProductIds([...subscriptionsData.adminGrantedProductIds]);
+    if (subscriptionsData?.productIds) {
+      setSelectedProductIds([...subscriptionsData.productIds]);
     }
-  }, [editingUser?._id, subscriptionsData?.adminGrantedProductIds]);
+  }, [editingUser?._id, subscriptionsData?.productIds]);
 
   const handleSave = async () => {
     if (!editingUser) return;
@@ -58,11 +58,11 @@ export function AdminUsersPage() {
         email: editingUser.email,
         isPaid: editingUser.isPaid
       });
-      // If marking as paid and no courses manually selected, auto-grant all available courses
+      // If marking as paid and no courses selected, auto-grant all available courses
       const allProductIds = subscriptionsData?.products?.map((p) => p.productId) ?? [];
-      const toGrant = editingUser.isPaid && adminGrantedProductIds.length === 0
+      const toGrant = editingUser.isPaid && selectedProductIds.length === 0
         ? allProductIds
-        : adminGrantedProductIds;
+        : selectedProductIds;
       await updateUserSubscriptions(editingUser._id, toGrant, subscriptionDays);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setEditingUser(null);
@@ -71,13 +71,10 @@ export function AdminUsersPage() {
     }
   };
 
-  const handleCourseAccessToggle = (productId: string, hasAccess: boolean, isAdminGranted: boolean) => {
-    if (hasAccess && !isAdminGranted) return;
-    if (hasAccess && isAdminGranted) {
-      setAdminGrantedProductIds((prev) => prev.filter((id) => id !== productId));
-    } else {
-      setAdminGrantedProductIds((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
-    }
+  const handleCourseAccessToggle = (productId: string) => {
+    setSelectedProductIds((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+    );
   };
 
   const handleDelete = async (id: string) => {
@@ -301,27 +298,21 @@ export function AdminUsersPage() {
                 <div className="mb-3">
                   <label className="form-label d-block">Course access</label>
                   <small className="text-muted d-block mb-2">
-                    Grant or revoke access to paid courses. Access from payment cannot be revoked here.
+                    Grant, revoke, or swap courses. Uncheck a paid course to remove it; check a new one to add it.
                   </small>
                   {subscriptionsData?.products?.length ? (
                     <div className="d-flex flex-column gap-2">
                       {subscriptionsData.products.map((product) => {
-                        const productIds = subscriptionsData.productIds ?? [];
-                        const initialAdminGranted = subscriptionsData.adminGrantedProductIds ?? [];
-                        const paymentOnly =
-                          productIds.includes(product.productId) &&
-                          !initialAdminGranted.includes(product.productId);
-                        const hasAccess =
-                          paymentOnly || adminGrantedProductIds.includes(product.productId);
-                        const disabled = paymentOnly;
+                        const initialPaymentBased =
+                          (subscriptionsData.productIds ?? []).includes(product.productId) &&
+                          !(subscriptionsData.adminGrantedProductIds ?? []).includes(product.productId);
+                        const hasAccess = selectedProductIds.includes(product.productId);
                         const subEntry = subscriptionsData?.subscriptions?.find(
                           (s) => s.productId === product.productId
                         );
-                        const expiryText = subEntry
-                          ? subEntry.validUntil
-                            ? `Expires: ${new Date(subEntry.validUntil).toLocaleDateString()}`
-                            : "No expiry"
-                          : null;
+                        const expiryText = subEntry?.validUntil
+                          ? `Expires: ${new Date(subEntry.validUntil).toLocaleDateString()}`
+                          : subEntry ? "No expiry" : null;
                         return (
                           <div key={product.productId} className="form-check">
                             <input
@@ -329,24 +320,17 @@ export function AdminUsersPage() {
                               className="form-check-input"
                               id={`course-${product.productId}`}
                               checked={hasAccess}
-                              disabled={disabled}
-                              onChange={() =>
-                                handleCourseAccessToggle(
-                                  product.productId,
-                                  hasAccess,
-                                  adminGrantedProductIds.includes(product.productId)
-                                )
-                              }
+                              onChange={() => handleCourseAccessToggle(product.productId)}
                             />
                             <label
                               className="form-check-label"
                               htmlFor={`course-${product.productId}`}
                             >
                               {product.name}
-                              {disabled && (
-                                <span className="text-muted small ms-1">(from payment)</span>
+                              {initialPaymentBased && (
+                                <span className="badge bg-warning text-dark ms-2" style={{ fontSize: "10px" }}>paid</span>
                               )}
-                              {!disabled && expiryText && (
+                              {expiryText && (
                                 <span className="text-muted small ms-2">{expiryText}</span>
                               )}
                             </label>
@@ -359,7 +343,7 @@ export function AdminUsersPage() {
                   ) : (
                     <span className="text-muted small">Loading…</span>
                   )}
-                  {editingUser.isPaid && (
+                  {(editingUser.isPaid || selectedProductIds.length > 0) && (
                     <div className="mt-3">
                       <label className="form-label mb-1">Duration (days)</label>
                       <input

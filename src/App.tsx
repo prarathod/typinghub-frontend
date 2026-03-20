@@ -8,6 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
 import { AdminLoginPage } from "@/pages/admin/AdminLoginPage";
 import { AdminParagraphsPage } from "@/pages/admin/AdminParagraphsPage";
+import { AdminPaymentsPage } from "@/pages/admin/AdminPaymentsPage";
 import { AdminSubmissionsPage } from "@/pages/admin/AdminSubmissionsPage";
 import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
 import { AboutPage } from "@/pages/AboutPage";
@@ -84,6 +85,16 @@ function AppContent() {
               <AdminProtectedRoute>
                 <AdminLayout>
                   <AdminSubmissionsPage />
+                </AdminLayout>
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/payments"
+            element={
+              <AdminProtectedRoute>
+                <AdminLayout>
+                  <AdminPaymentsPage />
                 </AdminLayout>
               </AdminProtectedRoute>
             }
