@@ -18,6 +18,7 @@ type ParagraphCardProps = {
   p: ParagraphListItem;
   /** For free lessons: navigate via Link. */
   to?: string;
+  linkState?: Record<string, string>;
   /** For paid lessons: show login/pricing dialog on click. */
   onClick?: (p: ParagraphListItem) => void;
 };
@@ -68,11 +69,12 @@ const cardHandlers = (_unused?: () => void) => ({
 });
 
 function ParagraphCard(props: ParagraphCardProps) {
-  const { p, to } = props;
+  const { p, to, linkState } = props;
   if (to) {
     return (
       <Link
         to={to}
+        state={linkState}
         className={PARAGRAPH_CARD_CLASS}
         style={{ ...cardStyle, textDecoration: "none", color: "inherit" }}
         {...cardHandlers()}
@@ -147,8 +149,9 @@ export function EnglishPracticePage() {
   };
 
   const handleCardClick = (p: ParagraphListItem) => {
+    const backUrl = location.pathname;
     if (p.isFree) {
-      navigate(`/practice/english/${p._id}`);
+      navigate(`/practice/english/${p._id}`, { state: { backUrl } });
       return;
     }
     if (!user) {
@@ -163,7 +166,7 @@ export function EnglishPracticePage() {
       setPricingOpen(true);
       return;
     }
-    navigate(`/practice/english/${p._id}`);
+    navigate(`/practice/english/${p._id}`, { state: { backUrl } });
   };
 
   // When redirected from TypingPage (no access), open the appropriate popup and clear state
@@ -271,7 +274,7 @@ export function EnglishPracticePage() {
               {displayItems.map((p) => (
                 <div key={p._id} className="col-6 col-sm-4 col-lg-2">
                   {hasAccessToParagraph(user, p) ? (
-                    <ParagraphCard p={p} to={`/practice/english/${p._id}`} />
+                    <ParagraphCard p={p} to={`/practice/english/${p._id}`} linkState={{ backUrl: location.pathname }} />
                   ) : (
                     <ParagraphCard p={p} onClick={handleCardClick} />
                   )}

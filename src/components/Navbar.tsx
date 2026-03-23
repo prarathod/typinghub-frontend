@@ -7,6 +7,63 @@ import { logout } from "@/features/auth/authApi";
 import { useAuthStore } from "@/stores/authStore";
 import { getApiBaseUrl } from "@/lib/api";
 
+const PRODUCT_NAMES: Record<string, string> = {
+  "english-court": "English Court",
+  "english-mpsc": "English MPSC",
+  "marathi-court": "Marathi Court",
+  "marathi-mpsc": "Marathi MPSC",
+};
+
+function SubscriptionTooltip({ activeProductIds, subscriptions }: {
+  activeProductIds: string[];
+  subscriptions: { productId: string; validUntil: string | null }[];
+}) {
+  const isPaid = activeProductIds.length > 0;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "calc(100% + 8px)",
+        right: 0,
+        background: "#fff",
+        border: "1px solid #e2e8f0",
+        borderRadius: 10,
+        boxShadow: "0 4px 16px rgba(0,0,0,0.13)",
+        padding: "12px 16px",
+        minWidth: 220,
+        zIndex: 2000,
+        pointerEvents: "none",
+      }}
+    >
+      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: isPaid ? "#0d9488" : "#64748b" }}>
+        {isPaid ? "✓ Active Subscription" : "Free Plan"}
+      </div>
+      {isPaid ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {activeProductIds.map((pid) => {
+            const sub = subscriptions.find((s) => s.productId === pid);
+            const expiry = sub?.validUntil
+              ? new Date(sub.validUntil).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+              : "No expiry";
+            return (
+              <div key={pid} style={{ fontSize: 12 }}>
+                <span style={{ fontWeight: 600, color: "#1e293b" }}>
+                  {PRODUCT_NAMES[pid] ?? pid}
+                </span>
+                <span style={{ color: "#94a3b8", marginLeft: 6 }}>
+                  · Expires {expiry}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div style={{ fontSize: 12, color: "#94a3b8" }}>No active courses</div>
+      )}
+    </div>
+  );
+}
+
 function Logo() {
   return (
     <img
@@ -29,6 +86,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
+  const [subscriptionTooltipOpen, setSubscriptionTooltipOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -105,9 +163,37 @@ export function Navbar() {
           <div className="d-flex flex-column flex-lg-row align-items-center gap-2">
             {isLoggedIn ? (
               <div
-                className="position-relative"
+                className="position-relative d-flex align-items-center gap-2"
                 ref={avatarRef}
               >
+                {/* Paid/Free badge with hover tooltip */}
+                <div
+                  className="position-relative"
+                  onMouseEnter={() => setSubscriptionTooltipOpen(true)}
+                  onMouseLeave={() => setSubscriptionTooltipOpen(false)}
+                  style={{ cursor: "default" }}
+                >
+                  {(user?.activeProductIds?.length ?? 0) > 0 ? (
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: "0.05em",
+                      background: "#0d9488", color: "#fff",
+                      borderRadius: 6, padding: "2px 7px"
+                    }}>PRO</span>
+                  ) : (
+                    <span style={{
+                      fontSize: 10, fontWeight: 600,
+                      background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.75)",
+                      borderRadius: 6, padding: "2px 7px"
+                    }}>FREE</span>
+                  )}
+                  {subscriptionTooltipOpen && (
+                    <SubscriptionTooltip
+                      activeProductIds={user?.activeProductIds ?? []}
+                      subscriptions={user?.subscriptions ?? []}
+                    />
+                  )}
+                </div>
+
                 <button
                   type="button"
                   className="border-0 bg-transparent p-0 d-flex align-items-center rounded-circle"

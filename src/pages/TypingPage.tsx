@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -34,6 +34,7 @@ const CATEGORY_TO_PATH: Record<string, string> = {
 export function TypingPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAuthStore((s) => s.user);
   const sessionInvalidated = useAuthStore((s) => s.sessionInvalidated);
   const [showTypingUI, setShowTypingUI] = useState(false);
@@ -48,6 +49,9 @@ export function TypingPage() {
       return true;
     }
   });
+
+  const backUrl = (location.state as { backUrl?: string } | null)?.backUrl
+    ?? (paragraph ? (CATEGORY_TO_PATH[paragraph.category] ?? "/practice/lessons") : "/practice/lessons");
 
   const is403 = axios.isAxiosError(error) && error.response?.status === 403;
   const showLoading = status === "pending" || isLoading || (status === "success" && !paragraph);
@@ -156,8 +160,8 @@ export function TypingPage() {
         <div className="alert alert-warning">
           This lesson has no content yet. Please try another lesson.
         </div>
-        <Link to="/practice/lessons" className="btn btn-outline-primary mt-2">
-          ← Back to lessons
+        <Link to={backUrl} className="btn btn-outline-primary mt-2">
+          ← Back
         </Link>
       </main>
     );
