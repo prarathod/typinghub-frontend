@@ -381,13 +381,25 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         setIsFullScreen(true);
       }
     } catch {
-      setIsFullScreen(!!document.fullscreenElement);
+      setIsFullScreen(document.fullscreenElement === fullscreenRef.current);
     }
   };
 
+  // Browser fullscreen: hides the URL bar / browser chrome on mobile
+  const toggleBrowserFullScreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch { /* not supported on this browser */ }
+  };
+
   useEffect(() => {
+    // Only set isFullScreen for div-level fullscreen, not document fullscreen
     const onFullScreenChange = () =>
-      setIsFullScreen(!!document.fullscreenElement);
+      setIsFullScreen(document.fullscreenElement === fullscreenRef.current);
     document.addEventListener("fullscreenchange", onFullScreenChange);
     return () => document.removeEventListener("fullscreenchange", onFullScreenChange);
   }, []);
@@ -434,7 +446,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   });
 
   return (
-    <main className="container py-4 mpsc-mobile-page">
+    <main className="container mpsc-mobile-page">
       <TestResultsModal
         open={resultsOpen}
         onOpenChange={setResultsOpen}
@@ -494,6 +506,18 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
             >
               <span className="small">Settings</span>
               <span style={{ fontSize: "10px" }}>{showMobileControls ? "▲" : "▼"}</span>
+            </button>
+            {/* Mobile-only: browser fullscreen (hides URL bar / chrome) */}
+            <button
+              type="button"
+              className="d-md-none btn btn-sm btn-outline-secondary py-1 px-2"
+              onClick={toggleBrowserFullScreen}
+              aria-label="Toggle browser fullscreen"
+              title="Full screen (hides browser UI)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
+                <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+              </svg>
             </button>
           </div>
           <h1 className="mpsc-header-title h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>

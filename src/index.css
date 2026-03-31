@@ -274,6 +274,11 @@ a {
   .mpsc-mobile-controls {
     display: none !important;
   }
+  /* Restore the removed py-4 on desktop */
+  .mpsc-mobile-page {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
 }
 
 /* ── Mobile: Court pre-start settings bar ─────────────────────────────────── */
