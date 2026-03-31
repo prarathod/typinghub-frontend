@@ -465,7 +465,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             </div>
           </div>
 
-          <div className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
+          <div className="court-settings-bar d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
             <label className="d-flex align-items-center gap-2 small mb-0">
               <input
                 type="checkbox"
@@ -519,7 +519,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         </>
       ) : (
         <div
-          className="mb-3"
+          className="court-active-header mb-3"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr auto 1fr",
@@ -527,7 +527,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
             alignItems: "center"
           }}
         >
-          <div className="d-flex align-items-center gap-2">
+          <div className="court-header-left d-flex align-items-center gap-2">
             <label className="d-flex align-items-center gap-2 small mb-0">
               <input
                 type="checkbox"
@@ -554,7 +554,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
               Restart
             </button>
           </div>
-          <h1 className="h4 fw-bold text-dark mb-0 text-center">
+          <h1 className="court-header-title h4 fw-bold text-dark mb-0 text-center">
             {paragraph.title}
           </h1>
           <div className="d-flex justify-content-end">

@@ -133,6 +133,160 @@ a {
   }
 }
 
+/* ── Mobile: Court Typing active header ───────────────────────────────────── */
+/* Desktop: 3-col grid (controls | title | timer).
+   Mobile:  stack title on top row, then controls + timer on second row.       */
+@media (max-width: 767.98px) {
+  .court-active-header {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .court-active-header .court-header-title {
+    width: 100%;
+    order: -1;
+  }
+  .court-active-header .court-header-left {
+    flex: 1;
+    flex-wrap: wrap;
+  }
+}
+
+/* ── Mobile: MPSC Typing full layout ──────────────────────────────────────── */
+@media (max-width: 767.98px) {
+  /* Page: strip outer padding */
+  .mpsc-mobile-page {
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  /* Root: fill viewport — use !important to beat the inline minHeight:100vh */
+  .mpsc-mobile-page .typing-lesson-root {
+    height: 100dvh !important;
+    min-height: unset !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    padding: 0.4rem 0.5rem 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Header: compact flat row, override inline negative margins + padding */
+  .mpsc-typing-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    margin: 0 0 0.25rem !important;   /* override inline marginLeft/Right: -0.5rem */
+    padding: 0.2rem 0 !important;     /* override inline paddingTop/Bottom: 0.5rem */
+    position: static !important;      /* remove sticky on mobile (saves reflow) */
+  }
+  .mpsc-header-title { display: none !important; }
+
+  /* Controls: fully transparent + zero-height when collapsed; no bleed */
+  .mpsc-mobile-controls {
+    display: block !important;
+    overflow: hidden !important;
+    max-height: 0;
+    opacity: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    flex-shrink: 0;
+    transition: max-height 0.22s ease, opacity 0.18s ease, padding 0.22s ease, margin 0.22s ease;
+  }
+  .mpsc-mobile-controls.mpsc-controls-open {
+    max-height: 200px;
+    opacity: 1;
+    padding: 0.5rem !important;
+    margin-bottom: 0.3rem !important;
+    background: rgba(13, 110, 253, 0.12) !important;
+    border-radius: 0.5rem !important;
+  }
+
+  /* Typing layout: column, fill remaining height */
+  .mpsc-typing-layout {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    align-items: stretch !important;
+  }
+
+  /* Content area: flex column, equal split between cards */
+  .mpsc-content-area {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.4rem !important;
+    overflow: hidden !important;
+  }
+
+  /* Cards: 50 / 50 */
+  .mpsc-passage-card,
+  .mpsc-typing-card {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  .mpsc-passage-card .card-body,
+  .mpsc-typing-card .card-body {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0.4rem !important;
+    overflow: hidden !important;
+  }
+  .mpsc-passage-scroll {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+  .mpsc-typing-card .card-body textarea {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    resize: none !important;
+  }
+
+  /* Submit: pinned to the bottom of the content area */
+  .mpsc-submit-area {
+    flex-shrink: 0 !important;
+    padding: 0.4rem 0 !important;
+    margin: 0 !important;
+  }
+  .mpsc-submit-area .btn {
+    padding-top: 0.4rem !important;
+    padding-bottom: 0.4rem !important;
+  }
+}
+@media (min-width: 768px) {
+  .mpsc-mobile-controls {
+    display: none !important;
+  }
+}
+
+/* ── Mobile: Court pre-start settings bar ─────────────────────────────────── */
+@media (max-width: 767.98px) {
+  .court-settings-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .court-settings-bar .btn {
+    width: 100%;
+  }
+}
+
 /* Pricing: bounce list items on hover */
 @keyframes pricing-bounce {
   0%, 100% { transform: translateY(0); }

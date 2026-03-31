@@ -63,6 +63,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const [timerStarted, setTimerStarted] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [enableHighlight, setEnableHighlight] = useState(false);
+  const [showMobileControls, setShowMobileControls] = useState(false);
   const [enableBackspace, setEnableBackspace] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX);
@@ -433,7 +434,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   });
 
   return (
-    <main className="container py-4">
+    <main className="container py-4 mpsc-mobile-page">
       <TestResultsModal
         open={resultsOpen}
         onOpenChange={setResultsOpen}
@@ -455,7 +456,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         }
       >
         <div
-          className="mb-3"
+          className="mpsc-typing-header mb-3"
           style={{
             display: "grid",
             gridTemplateColumns: "auto 1fr auto",
@@ -473,7 +474,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
             paddingRight: "0.5rem"
           }}
         >
-          <div className="d-flex justify-content-start">
+          <div className="d-flex justify-content-start align-items-center gap-2">
             {isFullScreen && (
               <button
                 type="button"
@@ -484,8 +485,18 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                 ← Back to practice
               </button>
             )}
+            {/* Mobile-only: toggle controls visibility */}
+            <button
+              type="button"
+              className="d-md-none btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 py-1 px-2"
+              onClick={() => setShowMobileControls((v) => !v)}
+              aria-expanded={showMobileControls}
+            >
+              <span className="small">Settings</span>
+              <span style={{ fontSize: "10px" }}>{showMobileControls ? "▲" : "▼"}</span>
+            </button>
           </div>
-          <h1 className="h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>
+          <h1 className="mpsc-header-title h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>
             {paragraph.title}
           </h1>
           <div className="d-flex justify-content-end">
@@ -501,17 +512,46 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
         </div>
 
+        {/* Mobile-only compact controls strip (hidden on md+, toggled by arrow) */}
+        <div className={`mpsc-mobile-controls flex-wrap align-items-center gap-2 p-2 rounded-3 bg-primary bg-opacity-25${showMobileControls ? " mpsc-controls-open" : ""}`}>
+          <label className="d-flex align-items-center gap-1 small mb-0">
+            <input type="checkbox" className="form-check-input" checked={enableHighlight} onChange={(e) => setEnableHighlight(e.target.checked)} disabled={hasSubmitted} />
+            <span>Highlight</span>
+          </label>
+          <label className="d-flex align-items-center gap-1 small mb-0">
+            <input type="checkbox" className="form-check-input" checked={enableBackspace} onChange={(e) => setEnableBackspace(e.target.checked)} disabled={hasSubmitted} />
+            <span>Backspace</span>
+          </label>
+          <div className="d-flex align-items-center gap-1">
+            <span className="small">Auto:</span>
+            <select className="form-select form-select-sm" style={{ width: "auto" }} value={autoSubmitSeconds} onChange={(e) => setAutoSubmitSeconds(Number(e.target.value))} disabled={hasSubmitted || timerStarted}>
+              {AUTO_SUBMIT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="d-flex align-items-center gap-1">
+            <span className="small">Font:</span>
+            <div className="btn-group btn-group-sm">
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))} disabled={fontSizeIndex === 0 || hasSubmitted} aria-label="Decrease font size">−</button>
+              <button type="button" className="btn btn-sm btn-outline-secondary" disabled style={{ minWidth: "2rem" }}>{FONT_SIZES[fontSizeIndex]}</button>
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setFontSizeIndex((i) => Math.min(FONT_SIZES.length - 1, i + 1))} disabled={fontSizeIndex === FONT_SIZES.length - 1 || hasSubmitted} aria-label="Increase font size">+</button>
+            </div>
+          </div>
+          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleRestart}>Restart</button>
+        </div>
+
         <div
-          className="d-flex gap-3 mb-3 flex-grow-1"
+          className="mpsc-typing-layout d-flex gap-3 mb-3 flex-grow-1"
           style={{ alignItems: "stretch", minHeight: 0 }}
         >
-          <div className="flex-grow-1" style={{ minWidth: 0 }}>
-            <div className="card border shadow-sm mb-3 lesson-typing-card">
+          <div className="mpsc-content-area flex-grow-1" style={{ minWidth: 0 }}>
+            <div className="mpsc-passage-card card border shadow-sm mb-3 lesson-typing-card">
           <div className="card-body">
             <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
             <div
               ref={paragraphScrollRef}
-              className="overflow-auto rounded-3 p-4 mb-0"
+              className="mpsc-passage-scroll overflow-auto rounded-3 p-4 mb-0"
               style={{
                 whiteSpace: "pre-wrap",
                 minHeight: "140px",
@@ -547,7 +587,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
         </div>
 
-            <div className="card border shadow-sm lesson-typing-card">
+            <div className="mpsc-typing-card card border shadow-sm lesson-typing-card">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <h2 className="h6 fw-semibold mb-0">Your typing</h2>
@@ -581,7 +621,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                 />
               </div>
             </div>
-            <div className="d-flex justify-content-center mt-4 mb-5 py-3">
+            <div className="mpsc-submit-area d-flex justify-content-center mt-4 mb-5 py-3">
               <button
                 type="button"
                 className="btn btn-primary btn-lg px-5"
@@ -594,7 +634,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
 
           <aside
-            className="rounded-3 rounded-end-0 p-3 flex-shrink-0 d-flex flex-column gap-3 bg-primary bg-opacity-25"
+            className="rounded-3 rounded-end-0 p-3 flex-shrink-0 d-none d-md-flex flex-column gap-3 bg-primary bg-opacity-25"
             style={{
               width: "240px",
               color: "#212529",
