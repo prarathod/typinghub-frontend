@@ -414,7 +414,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   };
 
   return (
-    <main className="container py-4" style={{ backgroundColor: "#fff", minHeight: "100vh" }}>
+    <main className="container court-mobile-page" style={{ backgroundColor: "#fff" }}>
       <TestResultsModal
         open={resultsOpen}
         onOpenChange={setResultsOpen}
@@ -425,7 +425,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         onNext={() => navigate(`/practice/${paragraph.category}`)}
       />
       {!isStarted ? (
-        <>
+        <div className="court-prestart-section">
           <div
             className="mb-3"
             style={{
@@ -516,117 +516,116 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
               Download Paragraph PDF
             </button>
           </div>
-        </>
-      ) : (
-        <div
-          className="court-active-header mb-3"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr auto 1fr",
-            gap: "0.75rem",
-            alignItems: "center"
-          }}
-        >
-          <div className="court-header-left d-flex align-items-center gap-2">
-            <label className="d-flex align-items-center gap-2 small mb-0">
-              <input
-                type="checkbox"
-                checked={showTimer}
-                onChange={(e) => setShowTimer(e.target.checked)}
-                className="form-check-input"
-              />
-              <span>Show timer</span>
-            </label>
-            <label className="d-flex align-items-center gap-2 small mb-0">
-              <input
-                type="checkbox"
-                checked={enableBackspace}
-                onChange={(e) => setEnableBackspace(e.target.checked)}
-                className="form-check-input"
-              />
-              <span>Enable Backspace</span>
-            </label>
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm"
-              onClick={handleRestart}
-            >
-              Restart
-            </button>
-          </div>
-          <h1 className="court-header-title h4 fw-bold text-dark mb-0 text-center">
-            {paragraph.title}
-          </h1>
-          <div className="d-flex justify-content-end">
-            {showTimer && (
-              <span
-                className="d-inline-flex align-items-center gap-2 rounded-3 px-3 py-2 font-monospace"
-                role="timer"
-                aria-live="polite"
-                style={{ backgroundColor: "#fae8e8", color: "#ff3131" }}
-              >
-                <ClockIcon />
-                {formatTime(timerSeconds)}
-              </span>
-            )}
-          </div>
         </div>
-      )}
-
-      {isStarted && (
-        <div style={{ width: "100%", maxWidth: "min(210mm, 90vw)", marginLeft: "auto", marginRight: "auto" }}>
-          {/* A4 portrait ratio: 210mm × 297mm */}
+      ) : (
+        <div className="court-active-section">
           <div
-            className="card border"
+            className="court-active-header mb-2"
             style={{
-              boxShadow: "0 0.5rem 1rem rgba(0,0,0,0.15)",
-              aspectRatio: "210 / 297",
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden"
+              display: "grid",
+              gridTemplateColumns: "1fr auto 1fr",
+              gap: "0.75rem",
+              alignItems: "center"
             }}
           >
-            <div className="card-body p-0 d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
-              {hasSubmitted && (
-                <div className="d-flex justify-content-end p-2 border-bottom flex-shrink-0">
-                  <span className="badge bg-success">
-                    Done ·{" "}
-                    {formatTime(
-                      autoSubmitSeconds > 0
-                        ? Math.max(0, autoSubmitSeconds - timerSeconds)
-                        : timerSeconds
-                    )}
-                  </span>
-                </div>
+            <div className="court-header-left d-flex align-items-center gap-2">
+              <label className="d-flex align-items-center gap-2 small mb-0">
+                <input
+                  type="checkbox"
+                  checked={showTimer}
+                  onChange={(e) => setShowTimer(e.target.checked)}
+                  className="form-check-input"
+                />
+                <span>Show timer</span>
+              </label>
+              <label className="d-flex align-items-center gap-2 small mb-0">
+                <input
+                  type="checkbox"
+                  checked={enableBackspace}
+                  onChange={(e) => setEnableBackspace(e.target.checked)}
+                  className="form-check-input"
+                />
+                <span>Enable Backspace</span>
+              </label>
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm"
+                onClick={handleRestart}
+              >
+                Restart
+              </button>
+            </div>
+            <h1 className="court-header-title h4 fw-bold text-dark mb-0 text-center">
+              {paragraph.title}
+            </h1>
+            <div className="d-flex justify-content-end">
+              {showTimer && (
+                <span
+                  className="d-inline-flex align-items-center gap-2 rounded-3 px-3 py-2 font-monospace"
+                  role="timer"
+                  aria-live="polite"
+                  style={{ backgroundColor: "#fae8e8", color: "#ff3131" }}
+                >
+                  <ClockIcon />
+                  {formatTime(timerSeconds)}
+                </span>
               )}
-              <textarea
-                ref={textareaRef}
-                className="form-control border-0 flex-grow-1"
-                rows={12}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onCopy={(e) => e.preventDefault()}
-                onPaste={(e) => e.preventDefault()}
-                onCut={(e) => e.preventDefault()}
-                spellCheck={false}
-                disabled={hasSubmitted}
-                autoFocus
-                aria-label="Typing input"
-                style={{ fontSize: "18px", lineHeight: 1.6, padding: 4, minHeight: 0, resize: "none" }}
-              />
             </div>
           </div>
-          <div className="d-flex justify-content-center mt-4 mb-3">
-            <button
-              type="button"
-              className="btn btn-primary btn-lg px-5"
-              onClick={handleSubmit}
-              disabled={hasSubmitted}
+          <div className="court-a4-wrapper" style={{ width: "100%", maxWidth: "min(210mm, 90vw)", marginLeft: "auto", marginRight: "auto" }}>
+            {/* A4 portrait ratio: 210mm × 297mm */}
+            <div
+              className="court-a4-card card border"
+              style={{
+                boxShadow: "0 0.5rem 1rem rgba(0,0,0,0.15)",
+                aspectRatio: "210 / 297",
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden"
+              }}
             >
-              Submit
-            </button>
+              <div className="card-body p-0 d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
+                {hasSubmitted && (
+                  <div className="d-flex justify-content-end p-2 border-bottom flex-shrink-0">
+                    <span className="badge bg-success">
+                      Done ·{" "}
+                      {formatTime(
+                        autoSubmitSeconds > 0
+                          ? Math.max(0, autoSubmitSeconds - timerSeconds)
+                          : timerSeconds
+                      )}
+                    </span>
+                  </div>
+                )}
+                <textarea
+                  ref={textareaRef}
+                  className="form-control border-0 flex-grow-1"
+                  rows={12}
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
+                  onCut={(e) => e.preventDefault()}
+                  spellCheck={false}
+                  disabled={hasSubmitted}
+                  autoFocus
+                  aria-label="Typing input"
+                  style={{ fontSize: "18px", lineHeight: 1.6, padding: 4, minHeight: 0, resize: "none" }}
+                />
+              </div>
+            </div>
+            <div className="court-submit-area d-flex justify-content-center mt-4 mb-3">
+              <button
+                type="button"
+                className="btn btn-primary btn-lg px-5"
+                onClick={handleSubmit}
+                disabled={hasSubmitted}
+              >
+                Submit
+              </button>
+            </div>
           </div>
         </div>
       )}

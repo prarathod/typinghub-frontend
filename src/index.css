@@ -154,13 +154,28 @@ a {
 }
 
 /* ── Mobile: MPSC Typing full layout ──────────────────────────────────────── */
-@media (max-width: 767.98px) {
+
+/* Desktop: restore spacing, hide mobile-only elements.
+   Must come BEFORE the mobile block so landscape overrides work correctly. */
+@media (min-width: 768px) {
+  .mpsc-mobile-controls { display: none !important; }
+  .mpsc-mobile-only     { display: none !important; }
+  .mpsc-mobile-page     { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .mpsc-desktop-sidebar { display: flex !important; }
+  .typing-desktop-controls { display: flex !important; }
+  .court-mobile-page { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+}
+
+/* Mobile layout — portrait AND landscape phones.
+   Landscape condition: height ≤ 540px catches phones rotated sideways (width > 768px)
+   without affecting tablets. Placed AFTER the desktop block so it overrides it. */
+@media (max-width: 767.98px), (max-height: 540px) and (orientation: landscape) {
   /* Page: strip outer padding */
   .mpsc-mobile-page {
     padding: 0 !important;
     overflow: hidden !important;
   }
-  /* Root: fill viewport — use !important to beat the inline minHeight:100vh */
+  /* Root: fill viewport */
   .mpsc-mobile-page .typing-lesson-root {
     height: 100dvh !important;
     min-height: unset !important;
@@ -171,19 +186,21 @@ a {
     flex-direction: column !important;
   }
 
-  /* Header: compact flat row, override inline negative margins + padding */
+  /* Header: compact flat row */
   .mpsc-typing-header {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
     flex-shrink: 0 !important;
-    margin: 0 0 0.25rem !important;   /* override inline marginLeft/Right: -0.5rem */
-    padding: 0.2rem 0 !important;     /* override inline paddingTop/Bottom: 0.5rem */
-    position: static !important;      /* remove sticky on mobile (saves reflow) */
+    margin: 0 0 0.25rem !important;
+    padding: 0.2rem 0 !important;
+    position: static !important;
   }
-  .mpsc-header-title { display: none !important; }
+  .mpsc-header-title   { display: none !important; }
+  .mpsc-desktop-sidebar { display: none !important; }
+  .mpsc-mobile-only    { display: flex !important; }
 
-  /* Controls: fully transparent + zero-height when collapsed; no bleed */
+  /* Controls: collapsed by default, no visual bleed */
   .mpsc-mobile-controls {
     display: block !important;
     overflow: hidden !important;
@@ -216,7 +233,7 @@ a {
     align-items: stretch !important;
   }
 
-  /* Content area: flex column, equal split between cards */
+  /* Content area: flex column, equal split */
   .mpsc-content-area {
     flex: 1 1 0 !important;
     min-height: 0 !important;
@@ -259,25 +276,97 @@ a {
     resize: none !important;
   }
 
-  /* Submit: pinned to the bottom of the content area */
-  .mpsc-submit-area {
-    flex-shrink: 0 !important;
-    padding: 0.4rem 0 !important;
-    margin: 0 !important;
+  /* Submit: pinned to bottom, no Bootstrap spacing */
+
+  /* Lesson typing: same as MPSC (reuses mpsc-* classes, nothing extra needed) */
+  .typing-desktop-controls { display: none !important; }
+
+  /* Court mobile page */
+  .court-mobile-page {
+    padding: 0 !important;
+    overflow: hidden !important;
+    min-height: 100dvh;
   }
-  .mpsc-submit-area .btn {
-    padding-top: 0.4rem !important;
-    padding-bottom: 0.4rem !important;
+  .court-prestart-section {
+    padding: 1rem !important;
+  }
+  .court-active-section {
+    height: 100dvh !important;
+    min-height: unset !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    padding: 0.4rem 0.5rem 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .court-a4-wrapper {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .court-a4-card {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+  }
+  .court-submit-area {
+    flex-shrink: 0 !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
   }
 }
-@media (min-width: 768px) {
-  .mpsc-mobile-controls {
-    display: none !important;
+
+/* ── Landscape mobile: same vertical layout as portrait, but show title ─────
+   Overrides the portrait-specific header tweaks (title hidden, flex header).
+   Must stay AFTER the combined mobile block above.                          */
+@media (max-height: 540px) and (orientation: landscape) {
+  /* Restore 3-col grid header: Setting | Title | Timer */
+  .mpsc-typing-header {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto !important;
+    gap: 0.5rem !important;
+    padding: 0.15rem 0 !important;
   }
-  /* Restore the removed py-4 on desktop */
-  .mpsc-mobile-page {
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+  /* Show the paragraph title in the centre */
+  .mpsc-header-title {
+    display: block !important;
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+  }
+
+  /* Strip every scrap of extra space so cards get maximum height */
+  .mpsc-mobile-page .typing-lesson-root {
+    padding: 0.25rem 0.4rem 0 !important;
+  }
+  .mpsc-typing-header {
+    margin-bottom: 0.15rem !important;
+  }
+  .mpsc-passage-card .card-body,
+  .mpsc-typing-card .card-body {
+    padding: 0.25rem !important;
+  }
+  .mpsc-passage-card .card-body h2,
+  .mpsc-typing-card .card-body h2 {
+    font-size: 0.7rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+  .mpsc-typing-layout {
+    gap: 0.25rem !important;
+  }
+  .mpsc-content-area {
+    gap: 0.25rem !important;
+  }
+  .court-active-section {
+    padding: 0.25rem 0.4rem 0 !important;
+  }
+  .court-submit-area {
+    padding: 0 !important;
+    margin: 0 !important;
   }
 }
 

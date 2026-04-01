@@ -55,7 +55,10 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   const [enableHighlight, setEnableHighlight] = useState(true);
   const [enableBackspace, setEnableBackspace] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX);
+  const [fontSizeIndex, setFontSizeIndex] = useState(
+    () => window.innerWidth <= 768 ? 2 : DEFAULT_FONT_INDEX // 2 = 18px on mobile
+  );
+  const [showMobileControls, setShowMobileControls] = useState(false);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [backspaceCount, setBackspaceCount] = useState(0);
   const [resultsOpen, setResultsOpen] = useState(false);
@@ -222,6 +225,13 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
     }
   };
 
+  const toggleBrowserFullScreen = async () => {
+    try {
+      if (document.fullscreenElement) { await document.exitFullscreen(); }
+      else { await document.documentElement.requestFullscreen(); }
+    } catch { /* not supported */ }
+  };
+
   const toggleFullScreen = async () => {
     const el = fullscreenRef.current;
     if (!el) return;
@@ -314,7 +324,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   });
 
   return (
-    <main className="container py-4">
+    <main className="container mpsc-mobile-page">
       {resultsOpen && (
         <TestResultsModal
           open={resultsOpen}
@@ -333,11 +343,11 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
         style={
           isFullScreen
             ? { minHeight: "100vh", maxHeight: "100vh", overflow: "auto", backgroundColor: "#fff", padding: "1rem" }
-            : { backgroundColor: "#fff", minHeight: "100vh" }
+            : { backgroundColor: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column" }
         }
       >
         <div
-          className="mb-3"
+          className="mpsc-typing-header mb-0 lg:mb-3"
           style={{
             display: "grid",
             gridTemplateColumns: "auto 1fr auto",
@@ -355,7 +365,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
             paddingRight: "0.5rem"
           }}
         >
-          <div className="d-flex justify-content-start">
+          <div className="d-flex justify-content-start align-items-center gap-2">
             {isFullScreen && (
               <button
                 type="button"
@@ -366,8 +376,28 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
                 ← Back to practice
               </button>
             )}
+            <button
+              type="button"
+              className="mpsc-mobile-only btn btn-sm btn-outline-secondary align-items-center gap-1 py-1 px-2"
+              onClick={() => setShowMobileControls((v) => !v)}
+              aria-expanded={showMobileControls}
+            >
+              <span className="small">Settings</span>
+              <span style={{ fontSize: "10px" }}>{showMobileControls ? "▲" : "▼"}</span>
+            </button>
+            <button
+              type="button"
+              className="mpsc-mobile-only btn btn-sm btn-outline-secondary py-1 px-2"
+              onClick={toggleBrowserFullScreen}
+              aria-label="Toggle browser fullscreen"
+              title="Full screen (hides browser UI)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
+                <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+              </svg>
+            </button>
           </div>
-          <h1 className="h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>
+          <h1 className="mpsc-header-title h4 fw-bold text-dark mb-0 text-center" style={{ justifySelf: "center" }}>
             {paragraph?.title ?? "Lesson"}
           </h1>
           <div className="d-flex justify-content-end">
@@ -383,8 +413,30 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           </div>
         </div>
 
+        {/* Mobile-only compact controls strip */}
+        <div className={`mpsc-mobile-controls flex-wrap align-items-center gap-2 p-0 lg:p-2 rounded-3 bg-primary bg-opacity-25${showMobileControls ? " mpsc-controls-open" : ""}`}>
+          <label className="d-flex align-items-center gap-1 small mb-0">
+            <input type="checkbox" className="form-check-input" checked={enableHighlight} onChange={(e) => setEnableHighlight(e.target.checked)} disabled={hasSubmitted} />
+            <span>Highlight</span>
+          </label>
+          <label className="d-flex align-items-center gap-1 small mb-0">
+            <input type="checkbox" className="form-check-input" checked={enableBackspace} onChange={(e) => setEnableBackspace(e.target.checked)} disabled={hasSubmitted} />
+            <span>Backspace</span>
+          </label>
+          <div className="d-flex align-items-center gap-1">
+            <span className="small">Font:</span>
+            <div className="btn-group btn-group-sm">
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))} disabled={fontSizeIndex === 0 || hasSubmitted} aria-label="Decrease font size">−</button>
+              <button type="button" className="btn btn-sm btn-outline-secondary" disabled style={{ minWidth: "2rem" }}>{FONT_SIZES[fontSizeIndex]}</button>
+              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setFontSizeIndex((i) => Math.min(FONT_SIZES.length - 1, i + 1))} disabled={fontSizeIndex === FONT_SIZES.length - 1 || hasSubmitted} aria-label="Increase font size">+</button>
+            </div>
+          </div>
+          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={toggleFullScreen}>Full screen</button>
+          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleRestart}>Restart</button>
+        </div>
+
         <div
-          className="d-flex flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light"
+          className="typing-desktop-controls flex-wrap align-items-center gap-3 mb-3 p-3 rounded-3 bg-light"
           onCopy={(e) => e.preventDefault()}
         >
           <label className="d-flex align-items-center gap-2 small mb-0">
@@ -461,12 +513,14 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           </button>
         </div>
 
-        <div className="card border shadow-sm mb-3 lesson-typing-card">
+        <div className="mpsc-typing-layout d-flex gap-3 mb-0 lg:mb-3 flex-grow-1" style={{ alignItems: "stretch", minHeight: 0 }}>
+          <div className="mpsc-content-area flex-grow-1" style={{ minWidth: 0 }}>
+        <div className="mpsc-passage-card card border shadow-sm mb-0 lg:mb-3 lesson-typing-card">
           <div className="card-body">
             <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
             <div
               ref={paragraphScrollRef}
-              className="overflow-auto rounded-3 p-4 mb-0"
+              className="mpsc-passage-scroll overflow-auto rounded-3 p-4 mb-0"
               style={{
                 whiteSpace: "pre-wrap",
                 minHeight: "140px",
@@ -510,7 +564,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
 
 
 
-        <div className="card border shadow-sm lesson-typing-card">
+        <div className="mpsc-typing-card card border shadow-sm lesson-typing-card">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-2">
               <h2 className="h6 fw-semibold mb-0">Your typing</h2>
@@ -539,7 +593,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
             />
           </div>
         </div>
-        <div className="d-flex justify-content-center mt-4 mb-5 py-3">
+        <div className="mpsc-submit-area d-flex justify-content-center mt-0 lg:mt-4 mb-0 lg:mb-5 py-0 lg:py-3">
           <button
             type="button"
             className="btn btn-primary btn-lg px-5"
@@ -548,6 +602,8 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           >
             Submit
           </button>
+        </div>
+          </div>
         </div>
       </div>
     </main>

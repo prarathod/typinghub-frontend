@@ -66,7 +66,9 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const [showMobileControls, setShowMobileControls] = useState(false);
   const [enableBackspace, setEnableBackspace] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX);
+  const [fontSizeIndex, setFontSizeIndex] = useState(
+    () => window.innerWidth <= 768 ? 2 : DEFAULT_FONT_INDEX // 2 = 18px on mobile
+  );
   const [autoSubmitSeconds, setAutoSubmitSeconds] = useState(10 * 60);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [backspaceCount, setBackspaceCount] = useState(0);
@@ -468,7 +470,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         }
       >
         <div
-          className="mpsc-typing-header mb-3"
+          className="mpsc-typing-header mb-0 lg:mb-3"
           style={{
             display: "grid",
             gridTemplateColumns: "auto 1fr auto",
@@ -500,7 +502,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
             {/* Mobile-only: toggle controls visibility */}
             <button
               type="button"
-              className="d-md-none btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 py-1 px-2"
+              className="mpsc-mobile-only btn btn-sm btn-outline-secondary align-items-center gap-1 py-1 px-2"
               onClick={() => setShowMobileControls((v) => !v)}
               aria-expanded={showMobileControls}
             >
@@ -510,7 +512,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
             {/* Mobile-only: browser fullscreen (hides URL bar / chrome) */}
             <button
               type="button"
-              className="d-md-none btn btn-sm btn-outline-secondary py-1 px-2"
+              className="mpsc-mobile-only btn btn-sm btn-outline-secondary py-1 px-2"
               onClick={toggleBrowserFullScreen}
               aria-label="Toggle browser fullscreen"
               title="Full screen (hides browser UI)"
@@ -537,7 +539,20 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         </div>
 
         {/* Mobile-only compact controls strip (hidden on md+, toggled by arrow) */}
-        <div className={`mpsc-mobile-controls flex-wrap align-items-center gap-2 p-2 rounded-3 bg-primary bg-opacity-25${showMobileControls ? " mpsc-controls-open" : ""}`}>
+        <div className={`mpsc-mobile-controls flex-wrap align-items-center gap-2 p-0 lg:p-2 rounded-3 bg-primary bg-opacity-25${showMobileControls ? " mpsc-controls-open" : ""}`}>
+          <div className="w-100 d-flex align-items-center gap-2 mb-1">
+            <img
+              src={blueProfileImage}
+              alt=""
+              className="rounded-circle"
+              width={28}
+              height={28}
+              style={{ objectFit: "cover" }}
+            />
+            <span className="small fw-semibold">
+              {user?.name ? `Hello, ${user.name}` : "Hello, Guest User"}
+            </span>
+          </div>
           <label className="d-flex align-items-center gap-1 small mb-0">
             <input type="checkbox" className="form-check-input" checked={enableHighlight} onChange={(e) => setEnableHighlight(e.target.checked)} disabled={hasSubmitted} />
             <span>Highlight</span>
@@ -566,11 +581,11 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         </div>
 
         <div
-          className="mpsc-typing-layout d-flex gap-3 mb-3 flex-grow-1"
+          className="mpsc-typing-layout d-flex gap-3 mb-0 lg:mb-3 flex-grow-1"
           style={{ alignItems: "stretch", minHeight: 0 }}
         >
           <div className="mpsc-content-area flex-grow-1" style={{ minWidth: 0 }}>
-            <div className="mpsc-passage-card card border shadow-sm mb-3 lesson-typing-card">
+            <div className="mpsc-passage-card card border shadow-sm mb-0 lg:mb-3 lesson-typing-card">
           <div className="card-body">
             <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
             <div
@@ -645,7 +660,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
                 />
               </div>
             </div>
-            <div className="mpsc-submit-area d-flex justify-content-center mt-4 mb-5 py-3">
+            <div className="mpsc-submit-area d-flex justify-content-center mt-0 lg:mt-4 lg:mb-5 py-0 lg:py-3">
               <button
                 type="button"
                 className="btn btn-primary btn-lg px-5"
@@ -658,7 +673,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
           </div>
 
           <aside
-            className="rounded-3 rounded-end-0 p-3 flex-shrink-0 d-none d-md-flex flex-column gap-3 bg-primary bg-opacity-25"
+            className="mpsc-desktop-sidebar rounded-3 rounded-end-0 p-3 flex-shrink-0 flex-column gap-3 bg-primary bg-opacity-25"
             style={{
               width: "240px",
               color: "#212529",
@@ -666,19 +681,6 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
               alignSelf: "stretch"
             }}
           >
-            <div className="text-center">
-              <img
-                src={blueProfileImage}
-                alt=""
-                className="rounded-circle mb-2"
-                width={56}
-                height={56}
-                style={{ objectFit: "cover" }}
-              />
-              <div className="small fw-semibold">
-                {user?.name ? `Hello, ${user.name}` : "Hello, Guest User"}
-              </div>
-            </div>
             <label className="d-flex align-items-center gap-2 small mb-0 text-dark">
               <input
                 type="checkbox"
