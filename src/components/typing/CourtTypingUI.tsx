@@ -153,9 +153,13 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       hasLeadingWs && /^\s+/.test(currentInput)
         ? "__LEADING_WS__ " + currentInput.trimStart()
         : currentInput;
+    // Replace newlines with a special token so Enter position is checked:
+    // correct Enter → __NEWLINE__ matches __NEWLINE__; wrong/missing → counted as error.
+    const passageWithNewlines = passageForMetrics.replace(/\n/g, " __NEWLINE__ ");
+    const userWithNewlines = userForMetrics.replace(/\n/g, " __NEWLINE__ ");
     const metrics = computeTypingMetrics(
-      passageForMetrics,
-      userForMetrics,
+      passageWithNewlines,
+      userWithNewlines,
       currentTime,
       currentKeystrokes,
       currentBackspace,
@@ -170,6 +174,12 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         w === "__LEADING_WS__" ? "(leading tab)" : w
       );
     }
+    // Replace __NEWLINE__ token with a readable label in all result arrays
+    const replaceNewlineToken = (w: string) => w === "__NEWLINE__" ? "↵ (Enter)" : w;
+    metricsToUse.incorrectWords = metricsToUse.incorrectWords.map(replaceNewlineToken);
+    metricsToUse.misspelledWords = metricsToUse.misspelledWords.map(replaceNewlineToken);
+    metricsToUse.extraWords = metricsToUse.extraWords.map(replaceNewlineToken);
+    metricsToUse.omittedWords = metricsToUse.omittedWords.map(replaceNewlineToken);
     setResultsMetrics(metricsToUse);
     setResultsOpen(true);
     try {
@@ -265,7 +275,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
       setBackspaceCount((c) => c + 1);
       return;
     }
-    // Court: allow Enter and Tab; insert tab in textarea instead of moving focus
+    // Court: allow Tab; insert 4 spaces in textarea instead of moving focus
     if (e.key === "Tab") {
       e.preventDefault();
       const ta = e.currentTarget;
@@ -423,6 +433,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         expectedText={paragraph.text}
         onRetry={handleRestart}
         onNext={() => navigate(`/practice/${paragraph.category}`)}
+        checkNewlines
       />
       {!isStarted ? (
         <div className="court-prestart-section">

@@ -57,19 +57,56 @@ function UserInputHighlighted({
   );
 }
 
+/**
+ * Returns the set of passage word-indices that immediately follow a wrong Enter.
+ * A wrong Enter = user typed \n where passage has no \n at that word boundary.
+ */
+function findWrongEnterWordIndices(expectedText: string, userInput: string): Set<number> {
+  const wrongIndices = new Set<number>();
+  // Correct Enter positions: cumulative word counts at each \n in passage
+  const passageBoundaries = new Set<number>();
+  let cumulative = 0;
+  const passageLines = expectedText.split('\n');
+  for (let i = 0; i < passageLines.length - 1; i++) {
+    cumulative += splitWordsUtil(passageLines[i]).length;
+    passageBoundaries.add(cumulative);
+  }
+  // Check each \n in user input against correct positions
+  cumulative = 0;
+  const userLines = userInput.split('\n');
+  for (let i = 0; i < userLines.length - 1; i++) {
+    cumulative += splitWordsUtil(userLines[i]).length;
+    if (!passageBoundaries.has(cumulative)) {
+      wrongIndices.add(cumulative);
+    }
+  }
+  return wrongIndices;
+}
+
 /** Renders expected paragraph with correct (green), incorrect (red), omitted (orange + strikethrough). */
 function ExpectedParagraphHighlighted({
   expectedText,
-  userInput
+  userInput,
+  checkNewlines
 }: {
   expectedText: string;
   userInput: string;
+  checkNewlines?: boolean;
 }) {
   if (typeof expectedText !== "string") return null;
   const targetWords = splitWordsUtil(expectedText);
   const typedWords = splitWordsUtil(userInput.trim());
   const aligned = alignWords(targetWords, typedWords, { caseSensitive: true });
   const statusByIndex = new Map(aligned.map((a) => [a.wordIndex, a.status]));
+  // Mark words following a wrong Enter as incorrect
+  if (checkNewlines) {
+    const wrongEnterIndices = findWrongEnterWordIndices(expectedText, userInput);
+    for (const idx of wrongEnterIndices) {
+      if (idx < targetWords.length && statusByIndex.get(idx) === "correct") {
+        statusByIndex.set(idx, "incorrect");
+      }
+    }
+  }
   const segments = getWordSegments(expectedText);
 
   return (
@@ -116,6 +153,8 @@ type TestResultsModalProps = {
   onNext?: () => void;
   /** Portal container - use fullscreen element when in fullscreen so modal displays correctly */
   portalContainer?: HTMLElement | null;
+  /** When true, wrong Enter key presses are highlighted as errors in the paragraph display. */
+  checkNewlines?: boolean;
 };
 
 export function TestResultsModal({
@@ -127,7 +166,8 @@ export function TestResultsModal({
   showTotalKeystrokes,
   onRetry,
   onNext,
-  portalContainer
+  portalContainer,
+  checkNewlines
 }: TestResultsModalProps) {
   const [showViewDetails, setShowViewDetails] = useState(false);
   useEffect(() => {
@@ -312,6 +352,7 @@ export function TestResultsModal({
                 <ExpectedParagraphHighlighted
                   expectedText={expectedText}
                   userInput={metrics.userInput}
+                  checkNewlines={checkNewlines}
                 />
               </div>
             </div>
