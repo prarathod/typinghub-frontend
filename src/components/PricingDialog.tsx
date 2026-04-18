@@ -125,7 +125,7 @@ export function PricingDialog({ open, onOpenChange, productId, onViewPricingRedi
                 <span className="display-5 fw-bold text-dark">
                   {formatPrice(product.amountPaise)}
                 </span>
-                <span className="text-muted small align-baseline"> one-time</span>
+                <span className="text-muted small align-baseline">/ Month</span>
               </div>
             </>
           ) : (
