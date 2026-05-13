@@ -176,17 +176,13 @@ export function alignWords(
       const source = targetWords[sourcePtr];
       const maxLen = Math.max(typed.length, source.length);
 
-      // Stricter threshold based on word length:
-      // - Short words (<=4 chars): must be exact (threshold=0)
-      // - Medium words (5-7 chars): allow 1 char difference
-      // - Long words (8+ chars): allow 2 char difference
       let similarityThreshold;
-      if (maxLen <= 4) {
-        similarityThreshold = 0; // Must be exact for short words
-      } else if (maxLen <= 7) {
-        similarityThreshold = 1;
+      if (maxLen <= 2) {
+        similarityThreshold = 0; // "a", "in", "on" — must be exact
+      } else if (maxLen <= 6) {
+        similarityThreshold = 1; // 3–6 char words: 1 char off is a typo
       } else {
-        similarityThreshold = 2;
+        similarityThreshold = 2; // 7+ char words: up to 2 chars off
       }
 
       const dist = levenshteinDistance(
@@ -198,7 +194,7 @@ export function alignWords(
       if (dist > 0 && dist <= similarityThreshold) {
         // Mark as misspelled only if it's a minor typo and previous was correct
         // Otherwise mark as incorrect
-        const isMisspelled = prevWasCorrect && dist <= 1;
+        const isMisspelled = prevWasCorrect && dist <= similarityThreshold;
         const status = isMisspelled ? "misspelled" : "incorrect";
         result.push({ text: source, status, wordIndex: sourcePtr, typedWord: typed });
         sourcePtr++;
