@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -56,6 +56,7 @@ type MPSCTypingUIProps = {
 
 export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [input, setInput] = useState("");
@@ -457,7 +458,7 @@ export function MPSCTypingUI({ paragraph }: MPSCTypingUIProps) {
         expectedText={paragraph.text}
         showTotalKeystrokes
         onRetry={handleRestart}
-        onNext={() => navigate("/practice/mpsc")}
+        onNext={() => navigate((location.state as { backUrl?: string } | null)?.backUrl ?? "/practice/mpsc")}
         portalContainer={isFullScreen ? fullscreenRef.current : undefined}
       />
       <div

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -47,6 +47,7 @@ type LessonTypingUIProps = {
 
 export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [input, setInput] = useState("");
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -333,7 +334,7 @@ export function LessonTypingUI({ paragraph }: LessonTypingUIProps) {
           paragraphId={paragraph?._id ?? ""}
           expectedText={typeof paragraph?.text === "string" ? paragraph.text : undefined}
           onRetry={handleRestart}
-          onNext={() => navigate(`/practice/${paragraph?.category ?? "lessons"}`)}
+          onNext={() => navigate((location.state as { backUrl?: string } | null)?.backUrl ?? `/practice/${paragraph?.category ?? "lessons"}`)}
           portalContainer={isFullScreen ? fullscreenRef.current : undefined}
         />
       )}

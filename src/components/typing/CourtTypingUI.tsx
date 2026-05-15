@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import jsPDF from "jspdf";
@@ -60,6 +60,7 @@ type CourtTypingUIProps = {
 
 export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [input, setInput] = useState("");
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -432,7 +433,7 @@ export function CourtTypingUI({ paragraph }: CourtTypingUIProps) {
         paragraphId={paragraph._id}
         expectedText={paragraph.text}
         onRetry={handleRestart}
-        onNext={() => navigate(`/practice/${paragraph.category}`)}
+        onNext={() => navigate((location.state as { backUrl?: string } | null)?.backUrl ?? `/practice/${paragraph.category}`)}
         checkNewlines
       />
       {!isStarted ? (
