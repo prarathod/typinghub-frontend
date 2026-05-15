@@ -130,8 +130,6 @@ function lessonOrderComparator(a: ParagraphListItem, b: ParagraphListItem): numb
 }
 
 export function EnglishPracticePage() {
-  const [page, setPage] = useState(1);
-  const [price, setPrice] = useState<PriceFilter>("all");
   const [loginOpen, setLoginOpen] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingProductId, setPricingProductId] = useState<string | null>(null);
@@ -143,13 +141,26 @@ export function EnglishPracticePage() {
   const categoryTitle = CATEGORY_TITLES[location.pathname] ?? "English Typing Practice";
   const category = PATH_TO_CATEGORY[location.pathname];
 
+  const searchParams = new URLSearchParams(location.search);
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+  const price = (searchParams.get("price") as PriceFilter | null) ?? "all";
+
+  const setPage = (p: number | ((prev: number) => number)) => {
+    const next = typeof p === "function" ? p(page) : p;
+    const params = new URLSearchParams(location.search);
+    params.set("page", String(next));
+    navigate({ search: params.toString() }, { replace: false });
+  };
+
   const handlePriceChange = (v: PriceFilter) => {
-    setPrice(v);
-    setPage(1);
+    const params = new URLSearchParams(location.search);
+    params.set("price", v);
+    params.set("page", "1");
+    navigate({ search: params.toString() }, { replace: false });
   };
 
   const handleCardClick = (p: ParagraphListItem) => {
-    const backUrl = location.pathname;
+    const backUrl = location.pathname + location.search;
     if (p.isFree) {
       navigate(`/practice/english/${p._id}`, { state: { backUrl } });
       return;
@@ -274,7 +285,7 @@ export function EnglishPracticePage() {
               {displayItems.map((p) => (
                 <div key={p._id} className="col-6 col-sm-4 col-lg-2">
                   {hasAccessToParagraph(user, p) ? (
-                    <ParagraphCard p={p} to={`/practice/english/${p._id}`} linkState={{ backUrl: location.pathname }} />
+                    <ParagraphCard p={p} to={`/practice/english/${p._id}`} linkState={{ backUrl: location.pathname + location.search }} />
                   ) : (
                     <ParagraphCard p={p} onClick={handleCardClick} />
                   )}
