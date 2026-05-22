@@ -119,9 +119,11 @@ function ExpectedParagraphHighlighted({
             ? "#15803d"
             : status === "incorrect"
               ? "#b91c1c"
-              : status === "omitted"
-                ? "#c2410c"
-                : "#374151";
+              : status === "misspelled"
+                ? "#ea580c"
+                : status === "omitted"
+                  ? "#c2410c"
+                  : "#374151";
         return (
           <span
             key={i}
