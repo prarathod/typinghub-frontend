@@ -6,6 +6,8 @@
 
 import { alignWords, splitWords } from "./wordHighlighting";
 
+export type WordPair = { correct: string; typed: string };
+
 export type TypingMetrics = {
   timeTakenSeconds: number;
   accuracy: number;
@@ -16,8 +18,10 @@ export type TypingMetrics = {
   kpm: number;
   incorrectWordsCount: number;
   incorrectWords: string[];
+  incorrectWordPairs: WordPair[];
   misspelledWordsCount: number;
   misspelledWords: string[];
+  misspelledWordPairs: WordPair[];
   extraWordsCount: number;
   extraWords: string[];
   omittedWordsCount: number;
@@ -41,7 +45,9 @@ export function computeTypingMetrics(
 
   let correctWordsCount = 0;
   const incorrectWords: string[] = [];
+  const incorrectWordPairs: WordPair[] = [];
   const misspelledWords: string[] = [];
+  const misspelledWordPairs: WordPair[] = [];
   const extraWords: string[] = [];
   const omittedWords: string[] = [];
 
@@ -52,15 +58,16 @@ export function computeTypingMetrics(
         break;
       case "incorrect":
         incorrectWords.push(a.typedWord ?? a.text);
+        incorrectWordPairs.push({ correct: a.text, typed: a.typedWord ?? a.text });
         break;
       case "misspelled":
         misspelledWords.push(a.typedWord ?? a.text);
+        misspelledWordPairs.push({ correct: a.text, typed: a.typedWord ?? a.text });
         break;
       case "extra":
         extraWords.push(a.typedWord ?? a.text);
         break;
       case "omitted":
-        // Count all omitted words (both skipped during typing and untyped at end)
         omittedWords.push(a.text);
         break;
     }
@@ -89,8 +96,10 @@ export function computeTypingMetrics(
     kpm,
     incorrectWordsCount,
     incorrectWords,
+    incorrectWordPairs,
     misspelledWordsCount,
     misspelledWords,
+    misspelledWordPairs,
     extraWordsCount,
     extraWords,
     omittedWordsCount,

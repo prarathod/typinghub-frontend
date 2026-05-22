@@ -120,7 +120,7 @@ function ExpectedParagraphHighlighted({
             : status === "incorrect"
               ? "#b91c1c"
               : status === "misspelled"
-                ? "#ea580c"
+                ? "#b91c1c"
                 : status === "omitted"
                   ? "#c2410c"
                   : "#374151";
@@ -172,9 +172,13 @@ export function TestResultsModal({
   checkNewlines
 }: TestResultsModalProps) {
   const [showViewDetails, setShowViewDetails] = useState(false);
+  const [wordPanel, setWordPanel] = useState<"misspelled" | "extra" | "omitted" | null>(null);
   useEffect(() => {
-    if (open) setShowViewDetails(false);
+    if (open) { setShowViewDetails(false); setWordPanel(null); }
   }, [open]);
+
+  const togglePanel = (panel: "misspelled" | "extra" | "omitted") =>
+    setWordPanel((prev) => (prev === panel ? null : panel));
   useEffect(() => {
     if (open) {
       const prev = document.body.style.overflow;
@@ -275,12 +279,22 @@ export function TestResultsModal({
                   <span>
                     <strong>Incorrect Words :</strong> {metrics.misspelledWordsCount + metrics.incorrectWordsCount + metrics.extraWordsCount}
                     <br />
-                    <span className="ms-3 d-inline-block" style={{ fontSize: "0.95em", color: "#555" }}>
+                    <span className="ms-3 d-inline-flex align-items-center gap-2" style={{ fontSize: "0.95em", color: "#555" }}>
                       ↳ <strong>Misspelled Words :</strong> {metrics.misspelledWordsCount + metrics.incorrectWordsCount}
+                      {(metrics.misspelledWordsCount + metrics.incorrectWordsCount) > 0 && (
+                        <button type="button" className="btn btn-link p-0 text-decoration-none" style={{ fontSize: "0.8em", color: "#0d9488", lineHeight: 1 }} onClick={() => togglePanel("misspelled")}>
+                          {wordPanel === "misspelled" ? "▲ Hide" : "▼ View"}
+                        </button>
+                      )}
                     </span>
                     <br />
-                    <span className="ms-3 d-inline-block" style={{ fontSize: "0.95em", color: "#555" }}>
+                    <span className="ms-3 d-inline-flex align-items-center gap-2" style={{ fontSize: "0.95em", color: "#555" }}>
                       ↳ <strong>Extra Words :</strong> {metrics.extraWordsCount}
+                      {metrics.extraWordsCount > 0 && (
+                        <button type="button" className="btn btn-link p-0 text-decoration-none" style={{ fontSize: "0.8em", color: "#0d9488", lineHeight: 1 }} onClick={() => togglePanel("extra")}>
+                          {wordPanel === "extra" ? "▲ Hide" : "▼ View"}
+                        </button>
+                      )}
                     </span>
                   </span>
                 </li>
@@ -288,9 +302,14 @@ export function TestResultsModal({
             </div>
             <div className="col-6 p-3" style={{ fontSize: "1.0625rem" }}>
               <ul className="list-unstyled mb-0">
-                <li className="mb-2 d-flex align-items-center">
+                <li className="mb-2 d-flex align-items-center gap-2">
                   <MetricArrow />
                   <span><strong>Omitted Words :</strong> {metrics.omittedWordsCount}</span>
+                  {metrics.omittedWordsCount > 0 && (
+                    <button type="button" className="btn btn-link p-0 text-decoration-none" style={{ fontSize: "0.8em", color: "#0d9488", lineHeight: 1 }} onClick={() => togglePanel("omitted")}>
+                      {wordPanel === "omitted" ? "▲ Hide" : "▼ View"}
+                    </button>
+                  )}
                 </li>
                 <li className="mb-2 d-flex align-items-center">
                   <MetricArrow />
@@ -313,6 +332,46 @@ export function TestResultsModal({
               </ul>
             </div>
           </div>
+          {wordPanel && (
+            <div className="mt-3 p-3 rounded-3" style={{ backgroundColor: "#f0fdf9", border: "1px solid #0d9488" }}>
+              {wordPanel === "misspelled" && (
+                <>
+                  <strong className="small" style={{ color: "#0d9488" }}>Misspelled Words</strong>
+                  <table className="table table-sm mb-0 mt-2" style={{ fontSize: "0.9em" }}>
+                    <thead><tr><th style={{ color: "#15803d" }}>Correct Word</th><th style={{ color: "#b91c1c" }}>You Typed</th></tr></thead>
+                    <tbody>
+                      {[...metrics.misspelledWordPairs, ...metrics.incorrectWordPairs].map((pair, i) => (
+                        <tr key={i}>
+                          <td className="font-monospace" style={{ color: "#15803d" }}>{pair.correct}</td>
+                          <td className="font-monospace" style={{ color: "#b91c1c" }}>{pair.typed}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+              {wordPanel === "extra" && (
+                <>
+                  <strong className="small" style={{ color: "#0d9488" }}>Extra Words (you typed these, but they are not in the passage)</strong>
+                  <div className="d-flex flex-wrap gap-2 mt-2">
+                    {metrics.extraWords.map((w, i) => (
+                      <span key={i} className="badge font-monospace" style={{ backgroundColor: "#fef3c7", color: "#92400e", border: "1px solid #f59e0b", fontWeight: 500 }}>{w}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+              {wordPanel === "omitted" && (
+                <>
+                  <strong className="small" style={{ color: "#0d9488" }}>Omitted Words (you skipped these)</strong>
+                  <div className="d-flex flex-wrap gap-2 mt-2">
+                    {metrics.omittedWords.map((w, i) => (
+                      <span key={i} className="badge font-monospace" style={{ backgroundColor: "#fff1f2", color: "#9f1239", border: "1px solid #fda4af", fontWeight: 500 }}>{w}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           <p className="small mb-0 mt-2" style={{ fontStyle: "italic", color: "#b02a37" }}>
             Note: In examinations, omitted words are also calculated as incorrect words.
           </p>
