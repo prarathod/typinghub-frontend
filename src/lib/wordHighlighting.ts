@@ -57,37 +57,41 @@ function wordsMatch(a: string, b: string, caseSensitive: boolean): boolean {
 }
 
 /**
- * Calculates Levenshtein edit distance between two strings.
- * Standard dynamic programming implementation.
+ * Calculates Damerau-Levenshtein edit distance between two strings.
+ * Counts adjacent transpositions (e.g. "taht"→"that") as 1 edit instead of 2,
+ * which correctly identifies common typing transposition errors as misspellings.
  */
 function levenshteinDistance(a: string, b: string): number {
   const aLen = a.length;
   const bLen = b.length;
-  
+
   if (aLen === 0) return bLen;
   if (bLen === 0) return aLen;
-  
+
   const matrix: number[][] = [];
-  
+
   for (let i = 0; i <= aLen; i++) {
     matrix[i] = [i];
   }
-  
   for (let j = 0; j <= bLen; j++) {
     matrix[0][j] = j;
   }
-  
+
   for (let i = 1; i <= aLen; i++) {
     for (let j = 1; j <= bLen; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,     // deletion
-        matrix[i][j - 1] + 1,     // insertion
-        matrix[i - 1][j - 1] + cost // substitution
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
       );
+      // Transposition: counts swapped adjacent chars as 1 edit
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + cost);
+      }
     }
   }
-  
+
   return matrix[aLen][bLen];
 }
 
