@@ -20,7 +20,6 @@ function SparkleIcon() {
 const CARD_CLASS =
   "rounded-3 p-4 shadow-sm d-block h-100 text-decoration-none";
 const CARD_ACTIVE = "bg-success bg-opacity-10 border border-success border-opacity-25";
-const CARD_DISABLED = "bg-light border border-secondary border-opacity-25";
 const CARD_HOVER = {
   style: { transition: "transform 0.2s, box-shadow 0.2s" as const },
   onMouseOver: (e: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>) => {
@@ -91,15 +90,16 @@ export function PracticePage() {
           </Link>
         </div>
         <div className="col-12 col-md-4">
-          <div
-            className={`${CARD_CLASS} ${CARD_DISABLED} text-center`}
-            style={{ cursor: "default", ...CARD_HOVER.style }}
+          <Link
+            to="/practice/custom"
+            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
+            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
           >
-            <h3 className="h5 fw-bold text-secondary mb-2">Other Exam Typing Practice</h3>
-            <p className="mb-0 small text-secondary opacity-75">Coming Soon...</p>
-          </div>
+            <h3 className="h5 fw-bold text-dark mb-2">Custom Practice</h3>
+            <p className="mb-0 small text-secondary">• Practice with your own text or PDF</p>
+          </Link>
         </div>
       </div>
 

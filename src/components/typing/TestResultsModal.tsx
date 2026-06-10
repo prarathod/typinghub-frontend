@@ -378,13 +378,14 @@ export function TestResultsModal({
           <div className="mt-4 mb-3">
             <strong className="text-dark">User Input:</strong>
             <div
-              className="mt-2 p-3 rounded font-monospace small text-break"
+              className="mt-2 p-3 rounded font-monospace text-break"
               style={{
                 whiteSpace: "pre-wrap",
                 maxHeight: "160px",
                 overflowY: "auto",
                 backgroundColor: "#f8f9fa",
-                border: "1px solid #dee2e6"
+                border: "1px solid #dee2e6",
+                fontSize: "1rem"
               }}
             >
               {expectedText && metrics.userInput ? (
@@ -401,13 +402,14 @@ export function TestResultsModal({
             <div className="mt-4 mb-3">
               <strong className="text-dark">User Paragraph:</strong>
               <div
-                className="mt-2 p-3 rounded font-monospace small text-break"
+                className="mt-2 p-3 rounded font-monospace text-break"
                 style={{
                   whiteSpace: "pre-wrap",
                   maxHeight: "160px",
                   overflowY: "auto",
                   backgroundColor: "#f8f9fa",
-                  border: "1px solid #dee2e6"
+                  border: "1px solid #dee2e6",
+                  fontSize: "1rem"
                 }}
               >
                 <ExpectedParagraphHighlighted

@@ -12,6 +12,8 @@ import { AdminPaymentsPage } from "@/pages/admin/AdminPaymentsPage";
 import { AdminSubmissionsPage } from "@/pages/admin/AdminSubmissionsPage";
 import { AdminUsersPage } from "@/pages/admin/AdminUsersPage";
 import { AboutPage } from "@/pages/AboutPage";
+import { CustomPracticePage } from "@/pages/CustomPracticePage";
+import { CustomTypingPage } from "@/pages/CustomTypingPage";
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { DisclaimerPage } from "@/pages/DisclaimerPage";
@@ -33,7 +35,9 @@ import { TypingPage } from "@/pages/TypingPage";
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
-  const isTypingPage = /^\/practice\/english\/[^/]+$/.test(location.pathname);
+  const isTypingPage =
+    /^\/practice\/english\/[^/]+$/.test(location.pathname) ||
+    location.pathname === "/practice/custom/typing";
 
   return (
     <div
@@ -116,6 +120,8 @@ function AppContent() {
           <Route path="/practice/court-exam" element={<EnglishPracticePage />} />
           <Route path="/practice/mpsc" element={<EnglishPracticePage />} />
           <Route path="/practice/english/:id" element={<TypingPageErrorBoundary><TypingPage /></TypingPageErrorBoundary>} />
+          <Route path="/practice/custom" element={<CustomPracticePage />} />
+          <Route path="/practice/custom/typing" element={<CustomTypingPage />} />
           <Route path="/practice/marathi" element={<MarathiPracticePage />} />
         </Routes>
       </div>
