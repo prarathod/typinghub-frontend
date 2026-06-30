@@ -50,6 +50,18 @@ export function isPaidParagraph(p: ParagraphForAccess): boolean {
   return getEffectiveAccessType(p) === "paid";
 }
 
+export function hasAnyPaidAccess(user: User | null): boolean {
+  if (!user) return false;
+  if (user.isPaid) return true;
+  const subs = user.subscriptions ?? [];
+  const now = new Date();
+  if (user.activeProductIds) return user.activeProductIds.length > 0;
+  if (subs.length > 0 && typeof subs[0] === "object" && subs[0] !== null && "productId" in subs[0]) {
+    return (subs as SubscriptionItem[]).some((s) => !s.validUntil || new Date(s.validUntil) > now);
+  }
+  return false;
+}
+
 export function hasAccessToParagraph(
   user: User | null,
   paragraph: ParagraphForAccess

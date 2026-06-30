@@ -97,7 +97,10 @@ export function PracticePage() {
             onMouseOver={CARD_HOVER.onMouseOver}
             onMouseOut={CARD_HOVER.onMouseOut}
           >
-            <h3 className="h5 fw-bold text-dark mb-2">Custom Practice</h3>
+            <div className="d-flex justify-content-center align-items-center gap-2 mb-2">
+              <h3 className="h5 fw-bold text-dark mb-0">Custom Practice</h3>
+              <span className="badge bg-warning text-dark" style={{ fontSize: "0.7rem" }}>Pro</span>
+            </div>
             <p className="mb-0 small text-secondary">• Practice with your own text or PDF</p>
           </Link>
         </div>

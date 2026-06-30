@@ -1,5 +1,9 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
+import { hasAnyPaidAccess } from "@/lib/access";
+import { LoginDialog } from "@/components/LoginDialog";
+import { PricingDialog } from "@/components/PricingDialog";
 
 type Layout = "show" | "hide";
 
@@ -47,6 +51,9 @@ async function extractTextFromPdf(file: File): Promise<string> {
 
 export function CustomPracticePage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pasteText, setPasteText] = useState("");
   const [title, setTitle] = useState("");
@@ -56,6 +63,65 @@ export function CustomPracticePage() {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [inputMode, setInputMode] = useState<"paste" | "pdf">("paste");
+
+  const isPaid = hasAnyPaidAccess(user);
+
+  if (!user) {
+    return (
+      <>
+        <LoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
+        <main className="container py-5 d-flex flex-column align-items-center justify-content-center" style={{ maxWidth: "520px", minHeight: "60vh" }}>
+          <div className="text-center mb-4">
+            <span className="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-semibold" style={{ fontSize: "0.8rem" }}>Pro Feature</span>
+            <h1 className="display-6 fw-bold text-dark mb-2">Custom Practice</h1>
+            <p className="text-secondary mb-4">
+              Sign in to access Custom Practice — upload a PDF or paste any paragraph and start typing.
+            </p>
+            <button
+              type="button"
+              className="btn btn-primary btn-lg rounded-pill px-5"
+              onClick={() => setShowLoginDialog(true)}
+            >
+              Sign in to continue
+            </button>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  if (!isPaid) {
+    return (
+      <>
+        <PricingDialog open={showPricingDialog} onOpenChange={setShowPricingDialog} />
+        <main className="container py-5 d-flex flex-column align-items-center justify-content-center" style={{ maxWidth: "520px", minHeight: "60vh" }}>
+          <div className="text-center mb-4">
+            <span className="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-semibold" style={{ fontSize: "0.8rem" }}>Pro Feature</span>
+            <h1 className="display-6 fw-bold text-dark mb-2">Custom Practice</h1>
+            <p className="text-secondary mb-4">
+              Custom Practice is available exclusively for paid subscribers. Upgrade to upload your own PDFs or paste any text and practice at your own pace.
+            </p>
+            <button
+              type="button"
+              className="btn btn-primary btn-lg rounded-pill px-5"
+              onClick={() => setShowPricingDialog(true)}
+            >
+              Upgrade to unlock
+            </button>
+            <div className="mt-3">
+              <a
+                href="/practice"
+                className="text-secondary text-decoration-none small"
+                onClick={(e) => { e.preventDefault(); navigate("/practice"); }}
+              >
+                ← Back to practice
+              </a>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
