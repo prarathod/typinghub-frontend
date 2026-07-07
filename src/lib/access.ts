@@ -50,16 +50,28 @@ export function isPaidParagraph(p: ParagraphForAccess): boolean {
   return getEffectiveAccessType(p) === "paid";
 }
 
-export function hasAnyPaidAccess(user: User | null): boolean {
-  if (!user) return false;
-  if (user.isPaid) return true;
+/**
+ * Derive currently-active product IDs from the user object.
+ * Always re-checks validUntil dates so stale localStorage cache can't bypass expiry.
+ * Falls back to cached activeProductIds only when subscriptions array is absent
+ * (e.g. legacy isPaid admin users whose backend grants them all products directly).
+ */
+function getActiveProductIds(user: User): string[] {
   const subs = user.subscriptions ?? [];
   const now = new Date();
-  if (user.activeProductIds) return user.activeProductIds.length > 0;
   if (subs.length > 0 && typeof subs[0] === "object" && subs[0] !== null && "productId" in subs[0]) {
-    return (subs as SubscriptionItem[]).some((s) => !s.validUntil || new Date(s.validUntil) > now);
+    return (subs as SubscriptionItem[])
+      .filter((s) => !s.validUntil || new Date(s.validUntil) > now)
+      .map((s) => s.productId);
   }
-  return false;
+  // No subscription records: fall back to cached activeProductIds (covers isPaid users
+  // where the backend sets them without creating Subscription documents).
+  return user.activeProductIds ?? [];
+}
+
+export function hasAnyPaidAccess(user: User | null): boolean {
+  if (!user) return false;
+  return getActiveProductIds(user).length > 0;
 }
 
 export function hasAccessToParagraph(
@@ -71,13 +83,7 @@ export function hasAccessToParagraph(
   if (accessType === "free-after-login") return user != null;
   if (!user) return false;
   const productId = getProductIdForParagraph(paragraph.language, paragraph.category);
-  const subs = user.subscriptions ?? [];
-  const now = new Date();
-  const activeIds =
-    user.activeProductIds ??
-    (subs.length > 0 && typeof subs[0] === "object" && subs[0] !== null && "productId" in subs[0]
-      ? (subs as SubscriptionItem[]).filter((s) => !s.validUntil || new Date(s.validUntil) > now).map((s) => s.productId)
-      : (subs as unknown as string[]));
+  const activeIds = getActiveProductIds(user);
   if (productId) return activeIds.includes(productId);
   // Paid lesson (category "lessons"): grant access if user has any product for this language
   if (paragraph.category === "lessons") {
