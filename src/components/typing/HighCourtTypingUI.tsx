@@ -40,6 +40,9 @@ const AUTO_SUBMIT_OPTIONS = [
   { value: 0, label: "Off" }
 ] as const;
 
+const FONT_SIZES = [14, 16, 18, 20, 22, 24] as const;
+const DEFAULT_FONT_INDEX = 2; // 18px
+
 type HighCourtTypingUIProps = {
   paragraph: ParagraphDetail;
 };
@@ -59,6 +62,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [showTimer, setShowTimer] = useState(true);
   const [enableBackspace, setEnableBackspace] = useState(false);
+  const [fontSizeIndex, setFontSizeIndex] = useState(DEFAULT_FONT_INDEX);
   const [autoSubmitSeconds, setAutoSubmitSeconds] = useState(10 * 60);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [backspaceCount, setBackspaceCount] = useState(0);
@@ -292,6 +296,8 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
     await submitCurrentAttempt();
   };
 
+  const fontSize = FONT_SIZES[fontSizeIndex];
+
   const handleRestart = () => {
     setInput("");
     setTimerSeconds(autoSubmitSeconds > 0 ? autoSubmitSeconds : 0);
@@ -372,6 +378,37 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
               ))}
             </select>
           </div>
+          <div className="d-flex align-items-center gap-1">
+            <label className="small mb-0">Font:</label>
+            <div className="btn-group btn-group-sm">
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setFontSizeIndex((i) => Math.max(0, i - 1))}
+                disabled={fontSizeIndex === 0}
+                aria-label="Decrease font size"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                disabled
+                style={{ minWidth: "2.5rem" }}
+              >
+                {fontSize}
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setFontSizeIndex((i) => Math.min(FONT_SIZES.length - 1, i + 1))}
+                disabled={fontSizeIndex === FONT_SIZES.length - 1}
+                aria-label="Increase font size"
+              >
+                +
+              </button>
+            </div>
+          </div>
           <button
             type="button"
             className="btn btn-outline-secondary btn-sm"
@@ -413,7 +450,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
                 minHeight: 0,
                 whiteSpace: "pre-wrap",
                 backgroundColor: "#f8f9fa",
-                fontSize: "18px",
+                fontSize: `${fontSize}px`,
                 fontFamily: "inherit",
                 lineHeight: 1.6,
                 color: "#1a1a1a",
@@ -446,7 +483,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
               disabled={hasSubmitted}
               autoFocus
               aria-label="Typing input"
-              style={{ fontSize: "18px", lineHeight: 1.6, resize: "none", flex: "1 1 auto", minHeight: 0 }}
+              style={{ fontSize: `${fontSize}px`, lineHeight: 1.6, resize: "none", flex: "1 1 auto", minHeight: 0 }}
             />
           </div>
         </div>
