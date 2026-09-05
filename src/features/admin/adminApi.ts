@@ -27,7 +27,7 @@ export type AdminParagraph = {
   isFree: boolean;
   accessType?: AdminAccessType;
   language: "english" | "marathi";
-  category: "lessons" | "court-exam" | "mpsc";
+  category: "lessons" | "court-exam" | "mpsc" | "high-court";
   order: number;
   solvedCount: number;
   text: string;

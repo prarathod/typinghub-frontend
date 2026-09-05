@@ -5,6 +5,7 @@ import axios from "axios";
 
 import { TypingPageErrorBoundary } from "@/components/TypingPageErrorBoundary";
 import { CourtTypingUI } from "@/components/typing/CourtTypingUI";
+import { HighCourtTypingUI } from "@/components/typing/HighCourtTypingUI";
 import { LessonTypingUI } from "@/components/typing/LessonTypingUI";
 import { MPSCTypingUI } from "@/components/typing/MPSCTypingUI";
 import { fetchParagraphById } from "@/features/paragraphs/paragraphsApi";
@@ -20,6 +21,8 @@ function renderTypingUI(paragraph: ParagraphDetail) {
       return <CourtTypingUI paragraph={paragraph} />;
     case "mpsc":
       return <MPSCTypingUI paragraph={paragraph} />;
+    case "high-court":
+      return <HighCourtTypingUI paragraph={paragraph} />;
     default:
       return <LessonTypingUI paragraph={paragraph} />;
   }
@@ -28,7 +31,8 @@ function renderTypingUI(paragraph: ParagraphDetail) {
 const CATEGORY_TO_PATH: Record<string, string> = {
   lessons: "/practice/lessons",
   "court-exam": "/practice/court-exam",
-  mpsc: "/practice/mpsc"
+  mpsc: "/practice/mpsc",
+  "high-court": "/practice/high-court"
 };
 
 export function TypingPage() {

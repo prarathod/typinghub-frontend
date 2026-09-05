@@ -11,6 +11,7 @@ function getBackUrl(): string {
 }
 
 function backLabel(backUrl: string): string {
+  if (backUrl.includes("high-court")) return "← Back to High Court Typing";
   if (backUrl.includes("court-exam")) return "← Back to Court Typing";
   if (backUrl.includes("mpsc")) return "← Back to MPSC";
   return "← Back to Lessons";

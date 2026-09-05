@@ -119,6 +119,7 @@ function AppContent() {
           <Route path="/practice/lessons" element={<EnglishPracticePage />} />
           <Route path="/practice/court-exam" element={<EnglishPracticePage />} />
           <Route path="/practice/mpsc" element={<EnglishPracticePage />} />
+          <Route path="/practice/high-court" element={<EnglishPracticePage />} />
           <Route path="/practice/english/:id" element={<TypingPageErrorBoundary><TypingPage /></TypingPageErrorBoundary>} />
           <Route path="/practice/custom" element={<CustomPracticePage />} />
           <Route path="/practice/custom/typing" element={<CustomTypingPage />} />

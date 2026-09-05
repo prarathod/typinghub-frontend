@@ -108,12 +108,14 @@ const CATEGORY_TITLES: Record<string, string> = {
   "/practice/lessons": "Lessons",
   "/practice/court-exam": "Court Exam Typing Practice",
   "/practice/mpsc": "MPSC Exam Typing",
+  "/practice/high-court": "Latest High Court Typing Practice",
 };
 
-const PATH_TO_CATEGORY: Record<string, "lessons" | "court-exam" | "mpsc"> = {
+const PATH_TO_CATEGORY: Record<string, "lessons" | "court-exam" | "mpsc" | "high-court"> = {
   "/practice/lessons": "lessons",
   "/practice/court-exam": "court-exam",
   "/practice/mpsc": "mpsc",
+  "/practice/high-court": "high-court",
 };
 
 const PRICE_OPTIONS: { value: PriceFilter; label: string }[] = [

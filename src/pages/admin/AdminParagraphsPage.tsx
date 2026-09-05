@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 import {
   createParagraph,
   deleteParagraph,
@@ -144,6 +145,7 @@ export function AdminParagraphsPage() {
                 <option value="lessons">Lessons</option>
                 <option value="court-exam">Court Exam</option>
                 <option value="mpsc">MPSC</option>
+                <option value="high-court">High Court</option>
               </select>
             </div>
           </div>
@@ -248,54 +250,7 @@ export function AdminParagraphsPage() {
             </div>
           </div>
 
-          {data.totalPages > 1 && (
-            <nav className="mt-3">
-              <ul className="pagination justify-content-center mb-0">
-                <li className={`page-item ${page <= 1 ? "disabled" : ""}`}>
-                  <button
-                    type="button"
-                    className="page-link"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page <= 1}
-                  >
-                    Previous
-                  </button>
-                </li>
-                {Array.from({ length: data.totalPages }, (_, i) => i + 1).map(
-                  (n) => (
-                    <li
-                      key={n}
-                      className={`page-item ${n === page ? "active" : ""}`}
-                    >
-                      <button
-                        type="button"
-                        className="page-link"
-                        onClick={() => setPage(n)}
-                      >
-                        {n}
-                      </button>
-                    </li>
-                  )
-                )}
-                <li
-                  className={`page-item ${
-                    page >= data.totalPages ? "disabled" : ""
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className="page-link"
-                    onClick={() =>
-                      setPage((p) => Math.min(data.totalPages, p + 1))
-                    }
-                    disabled={page >= data.totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          )}
+          <AdminPagination page={page} totalPages={data.totalPages} onPageChange={setPage} />
         </>
       ) : null}
 
@@ -389,13 +344,14 @@ export function AdminParagraphsPage() {
                       onChange={(e) =>
                         setEditingParagraph({
                           ...editingParagraph,
-                          category: e.target.value as "lessons" | "court-exam" | "mpsc"
+                          category: e.target.value as "lessons" | "court-exam" | "mpsc" | "high-court"
                         })
                       }
                     >
                       <option value="lessons">Lessons</option>
                       <option value="court-exam">Court Exam</option>
                       <option value="mpsc">MPSC</option>
+                      <option value="high-court">High Court</option>
                     </select>
                   </div>
                   <div className="col-md-6">

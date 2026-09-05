@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 
 export type Language = "english" | "marathi";
-export type Category = "lessons" | "court-exam" | "mpsc";
+export type Category = "lessons" | "court-exam" | "mpsc" | "high-court";
 
 export type AccessType = "free" | "free-after-login" | "paid";
 

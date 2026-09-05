@@ -65,7 +65,7 @@ export function PracticePage() {
 
       {/* Middle row: Court Exam and MPSC side by side */}
       <div className="row g-4 mb-4 justify-content-center">
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-md-3">
           <Link
             to="/practice/court-exam"
             className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
@@ -77,7 +77,7 @@ export function PracticePage() {
             <p className="mb-0 small text-secondary">• Typing practice based on Court exam pattern</p>
           </Link>
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-md-3">
           <Link
             to="/practice/mpsc"
             className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
@@ -89,7 +89,22 @@ export function PracticePage() {
             <p className="mb-0 small text-secondary">• Typing practice based on MPSC exam pattern</p>
           </Link>
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-md-3">
+          <Link
+            to="/practice/high-court"
+            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
+            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
+            onMouseOver={CARD_HOVER.onMouseOver}
+            onMouseOut={CARD_HOVER.onMouseOut}
+          >
+            <div className="d-flex justify-content-center align-items-center gap-2 mb-2 flex-wrap">
+              <h3 className="h5 fw-bold text-dark mb-0">Latest High Court Typing Practice</h3>
+              <span className="badge bg-success" style={{ fontSize: "0.7rem" }}>New</span>
+            </div>
+            <p className="mb-0 small text-secondary">• Typing Practice based on court exam screen to screen</p>
+          </Link>
+        </div>
+        <div className="col-12 col-md-3">
           <Link
             to="/practice/custom"
             className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
