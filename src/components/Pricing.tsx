@@ -15,6 +15,9 @@ import { getApiBaseUrl } from "@/lib/api";
 
 const FALLBACK_PRODUCTS: Product[] = [
   { productId: "english-court", name: "English Court Typing", amountPaise: 9900 },
+  // Same product as "english-court" (Latest High Court reuses Court Exam's passages),
+  // listed again under its own display name so it appears as a separate option.
+  { productId: "english-court", name: "English Typing For Court Exam (New Pattern)", amountPaise: 9900 },
   { productId: "english-mpsc", name: "English MPSC Typing Exam", amountPaise: 9900 },
   { productId: "marathi-court", name: "Marathi Court Exam", amountPaise: 9900 },
   { productId: "marathi-mpsc", name: "Marathi MPSC Typing Exam", amountPaise: 9900 },
@@ -66,6 +69,12 @@ function isComingSoon(productId: string): boolean {
 }
 
 function getProductTitleParts(p: Product): { first: string; second: string; color: string } {
+  // "english-court" is listed twice (see FALLBACK_PRODUCTS / backend PRODUCTS) under two
+  // display names for the same underlying product — disambiguate by name before the
+  // productId switch below, which can't tell the two apart on its own.
+  if (p.name.includes("New Pattern")) {
+    return { first: "English Typing", second: " for Court Exam (New Pattern)", color: "#0d6dfc" };
+  }
   switch (p.productId) {
     case "english-court":
       return { first: "English Typing", second: " for Court Exam", color: "#0d6dfc" };
@@ -269,12 +278,13 @@ export function Pricing() {
                   <div className="small text-muted">Loading…</div>
                 ) : (
                   <div className="d-flex flex-column gap-2 mb-3">
-                    {products.map((p) => {
+                    {products.map((p, idx) => {
                       const titleParts = getProductTitleParts(p);
                       const comingSoon = isComingSoon(p.productId);
+                      const listKey = `${p.productId}-${idx}`;
                       return (
                       <div
-                        key={p.productId}
+                        key={listKey}
                         role="button"
                         tabIndex={comingSoon ? -1 : 0}
                         onClick={() => !comingSoon && setPremiumSelected(p.productId)}
@@ -398,12 +408,13 @@ export function Pricing() {
                   <div className="small text-muted">Loading…</div>
                 ) : (
                   <div className="d-flex flex-column gap-2 mb-3">
-                    {products.map((p) => {
+                    {products.map((p, idx) => {
                       const titleParts = getProductTitleParts(p);
                       const comingSoon = isComingSoon(p.productId);
+                      const checkboxId = `custom-${p.productId}-${idx}`;
                       return (
                       <div
-                        key={p.productId}
+                        key={checkboxId}
                         role="button"
                         tabIndex={comingSoon ? -1 : 0}
                         onClick={() => toggleCustom(p.productId)}
@@ -433,13 +444,13 @@ export function Pricing() {
                             <input
                               type="checkbox"
                               className="form-check-input"
-                              id={`custom-${p.productId}`}
+                              id={checkboxId}
                               checked={customSelected.has(p.productId)}
                               disabled={comingSoon}
                               onChange={() => toggleCustom(p.productId)}
                               onClick={(e) => e.stopPropagation()}
                             />
-                            <label htmlFor={`custom-${p.productId}`} className="form-check-label small fw-semibold">
+                            <label htmlFor={checkboxId} className="form-check-label small fw-semibold">
                               <span className="text-dark">{titleParts.first}</span>
                               {titleParts.second && (
                                 <span style={{ color: titleParts.color }}>{titleParts.second}</span>

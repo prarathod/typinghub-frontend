@@ -381,6 +381,65 @@ a {
   }
 }
 
+/* ── Desktop: Latest High Court two-column layout ─────────────────────────
+   .hc-columns defaults to stacked (flexDirection:"column" inline style, set
+   in HighCourtTypingUI.tsx) and switches to side-by-side here; kept as our
+   own rule (not Bootstrap's flex-md-row) so the landscape override below,
+   which also needs flex-direction:row, doesn't fight a !important utility
+   class loaded after index.css.                                            */
+@media (min-width: 768px) {
+  .hc-columns {
+    flex-direction: row !important;
+  }
+}
+
+/* ── Landscape mobile: Latest High Court typing screen ───────────────────────
+   Squeeze every control (auto-submit, font, restart, title, timer, submit)
+   into one compact scrollable row; strip outer padding/margins so the two
+   side-by-side panels get maximum height. Must stay AFTER the portrait
+   .court-active-header rule above so its flex-wrap:nowrap wins here.        */
+@media (max-height: 540px) and (orientation: landscape) {
+  .hc-page {
+    padding: 0.35rem 0.4rem !important;
+  }
+  .hc-header {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    overflow-x: auto !important;
+    margin-bottom: 0.35rem !important;
+  }
+  .hc-header .court-header-left {
+    flex-wrap: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .hc-header .hc-header-title {
+    /* Undo the portrait .court-active-header rule's width:100%/order:-1, which
+       would otherwise make the title claim the whole nowrap row by itself. */
+    width: auto !important;
+    order: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .hc-hide-landscape {
+    display: none !important;
+  }
+  .hc-submit-inline {
+    display: inline-flex !important;
+    flex-shrink: 0 !important;
+  }
+  .hc-submit-row {
+    display: none !important;
+  }
+  .hc-columns {
+    flex-direction: row !important;
+    margin-bottom: 0 !important;
+  }
+}
+
 /* Pricing: bounce list items on hover */
 @keyframes pricing-bounce {
   0%, 100% { transform: translateY(0); }

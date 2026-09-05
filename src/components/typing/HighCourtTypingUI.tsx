@@ -313,7 +313,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
 
   return (
     <main
-      className="container py-4"
+      className="hc-page container-fluid py-4 px-3"
       style={{
         backgroundColor: "#fff",
         minHeight: "100vh",
@@ -334,7 +334,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
       />
 
       <div
-        className="court-active-header mb-3"
+        className="court-active-header hc-header mb-3"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr auto 1fr",
@@ -344,7 +344,10 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
         }}
       >
         <div className="court-header-left d-flex align-items-center gap-2 flex-wrap">
-          <label className="d-flex align-items-center gap-2 small mb-0">
+          <label
+            className="align-items-center gap-2 small mb-0 hc-hide-landscape"
+            style={{ display: "flex" }}
+          >
             <input
               type="checkbox"
               checked={showTimer}
@@ -353,7 +356,10 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
             />
             <span>Show timer</span>
           </label>
-          <label className="d-flex align-items-center gap-2 small mb-0">
+          <label
+            className="align-items-center gap-2 small mb-0 hc-hide-landscape"
+            style={{ display: "flex" }}
+          >
             <input
               type="checkbox"
               checked={enableBackspace}
@@ -417,10 +423,10 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
             Restart
           </button>
         </div>
-        <h1 className="court-header-title h4 fw-bold text-dark mb-0 text-center">
+        <h1 className="court-header-title hc-header-title h4 fw-bold text-dark mb-0 text-center">
           {paragraph.title}
         </h1>
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-end align-items-center gap-2">
           {showTimer && (
             <span
               className="d-inline-flex align-items-center gap-2 rounded-3 px-3 py-2 font-monospace"
@@ -432,12 +438,21 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
               {formatTime(timerSeconds)}
             </span>
           )}
+          <button
+            type="button"
+            className="btn btn-primary btn-sm hc-submit-inline"
+            onClick={handleSubmit}
+            disabled={hasSubmitted}
+            style={{ display: "none" }}
+          >
+            Submit
+          </button>
         </div>
       </div>
 
       <div
-        className="d-flex flex-column flex-md-row gap-3 mb-3"
-        style={{ flex: "1 1 auto", minHeight: 0 }}
+        className="d-flex gap-3 mb-3 hc-columns"
+        style={{ flex: "1 1 auto", minHeight: 0, flexDirection: "column" }}
       >
         <div className="card border shadow-sm d-flex flex-column" style={{ flex: "1 1 0", minHeight: 0 }}>
           <div className="card-body d-flex flex-column" style={{ minHeight: 0, flex: "1 1 auto" }}>
@@ -489,7 +504,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
         </div>
       </div>
 
-      <div className="d-flex justify-content-center mb-3" style={{ flexShrink: 0 }}>
+      <div className="justify-content-center mb-3 hc-submit-row" style={{ display: "flex", flexShrink: 0 }}>
         <button
           type="button"
           className="btn btn-primary btn-lg px-5"
