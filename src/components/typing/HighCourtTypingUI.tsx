@@ -306,7 +306,16 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
   };
 
   return (
-    <main className="container py-4" style={{ backgroundColor: "#fff", minHeight: "100vh" }}>
+    <main
+      className="container py-4"
+      style={{
+        backgroundColor: "#fff",
+        minHeight: "100vh",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
       <TestResultsModal
         open={resultsOpen}
         onOpenChange={setResultsOpen}
@@ -324,7 +333,8 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
           display: "grid",
           gridTemplateColumns: "1fr auto 1fr",
           gap: "0.75rem",
-          alignItems: "center"
+          alignItems: "center",
+          flexShrink: 0
         }}
       >
         <div className="court-header-left d-flex align-items-center gap-2 flex-wrap">
@@ -388,63 +398,61 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
         </div>
       </div>
 
-      <div className="row g-3 mb-3">
-        <div className="col-12 col-md-6">
-          <div className="card border shadow-sm h-100">
-            <div className="card-body">
-              <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
-              <div
-                ref={paragraphScrollRef}
-                className="overflow-auto rounded-3 p-4 mb-0"
-                style={{
-                  whiteSpace: "pre-wrap",
-                  minHeight: "260px",
-                  maxHeight: "420px",
-                  backgroundColor: "#f8f9fa",
-                  fontSize: "18px",
-                  fontFamily: "inherit",
-                  lineHeight: 1.6,
-                  color: "#1a1a1a",
-                  textAlign: "justify"
-                }}
-              >
-                {paragraph.text}
-              </div>
+      <div
+        className="d-flex flex-column flex-md-row gap-3 mb-3"
+        style={{ flex: "1 1 auto", minHeight: 0 }}
+      >
+        <div className="card border shadow-sm d-flex flex-column" style={{ flex: "1 1 0", minHeight: 0 }}>
+          <div className="card-body d-flex flex-column" style={{ minHeight: 0, flex: "1 1 auto" }}>
+            <h2 className="h6 fw-semibold mb-2" style={{ flexShrink: 0 }}>Paragraph to type</h2>
+            <div
+              ref={paragraphScrollRef}
+              className="overflow-auto rounded-3 p-4 mb-0"
+              style={{
+                flex: "1 1 auto",
+                minHeight: 0,
+                whiteSpace: "pre-wrap",
+                backgroundColor: "#f8f9fa",
+                fontSize: "18px",
+                fontFamily: "inherit",
+                lineHeight: 1.6,
+                color: "#1a1a1a",
+                textAlign: "justify"
+              }}
+            >
+              {paragraph.text}
             </div>
           </div>
         </div>
 
-        <div className="col-12 col-md-6">
-          <div className="card border shadow-sm h-100">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h2 className="h6 fw-semibold mb-0">Your typing</h2>
-                {hasSubmitted && (
-                  <span className="badge bg-success">Done</span>
-                )}
-              </div>
-              <textarea
-                ref={textareaRef}
-                className="form-control"
-                rows={12}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onCopy={(e) => e.preventDefault()}
-                onPaste={(e) => e.preventDefault()}
-                onCut={(e) => e.preventDefault()}
-                spellCheck={false}
-                disabled={hasSubmitted}
-                autoFocus
-                aria-label="Typing input"
-                style={{ fontSize: "18px", lineHeight: 1.6, resize: "none" }}
-              />
+        <div className="card border shadow-sm d-flex flex-column" style={{ flex: "1 1 0", minHeight: 0 }}>
+          <div className="card-body d-flex flex-column" style={{ minHeight: 0, flex: "1 1 auto" }}>
+            <div className="d-flex justify-content-between align-items-center mb-2" style={{ flexShrink: 0 }}>
+              <h2 className="h6 fw-semibold mb-0">Your typing</h2>
+              {hasSubmitted && (
+                <span className="badge bg-success">Done</span>
+              )}
             </div>
+            <textarea
+              ref={textareaRef}
+              className="form-control"
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onCopy={(e) => e.preventDefault()}
+              onPaste={(e) => e.preventDefault()}
+              onCut={(e) => e.preventDefault()}
+              spellCheck={false}
+              disabled={hasSubmitted}
+              autoFocus
+              aria-label="Typing input"
+              style={{ fontSize: "18px", lineHeight: 1.6, resize: "none", flex: "1 1 auto", minHeight: 0 }}
+            />
           </div>
         </div>
       </div>
 
-      <div className="d-flex justify-content-center mb-3">
+      <div className="d-flex justify-content-center mb-3" style={{ flexShrink: 0 }}>
         <button
           type="button"
           className="btn btn-primary btn-lg px-5"
