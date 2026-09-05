@@ -13,7 +13,13 @@ import type { ParagraphDetail } from "@/features/paragraphs/paragraphsApi";
 import { getDefaultProductIdForLanguage, getProductIdForParagraph, hasAccessToParagraph } from "@/lib/access";
 import { useAuthStore } from "@/stores/authStore";
 
-function renderTypingUI(paragraph: ParagraphDetail) {
+function renderTypingUI(paragraph: ParagraphDetail, forceHighCourtUI: boolean) {
+  // Latest High Court reuses Court Exam's (or any category's) passages but always
+  // renders with the split paragraph/typing layout, regardless of the passage's
+  // own category.
+  if (forceHighCourtUI) {
+    return <HighCourtTypingUI paragraph={paragraph} />;
+  }
   switch (paragraph.category) {
     case "lessons":
       return <LessonTypingUI paragraph={paragraph} />;
@@ -54,8 +60,10 @@ export function TypingPage() {
     }
   });
 
-  const backUrl = (location.state as { backUrl?: string } | null)?.backUrl
+  const navState = location.state as { backUrl?: string; forceHighCourtUI?: boolean } | null;
+  const backUrl = navState?.backUrl
     ?? (paragraph ? (CATEGORY_TO_PATH[paragraph.category] ?? "/practice/lessons") : "/practice/lessons");
+  const forceHighCourtUI = navState?.forceHighCourtUI ?? false;
 
   const is403 = axios.isAxiosError(error) && error.response?.status === 403;
   const showLoading = status === "pending" || isLoading || (status === "success" && !paragraph);
@@ -134,15 +142,14 @@ export function TypingPage() {
 
   useEffect(() => {
     if (!hasAccess && paragraph && !sessionInvalidated) {
-      const listPath = CATEGORY_TO_PATH[paragraph.category] ?? "/practice/lessons";
-      navigate(listPath, {
+      navigate(backUrl, {
         replace: true,
         state: notLoggedIn
           ? { openLogin: true }
           : { openPricing: true, productId: paidProductId ?? undefined }
       });
     }
-  }, [hasAccess, paragraph, notLoggedIn, paidProductId, sessionInvalidated, navigate]);
+  }, [hasAccess, paragraph, notLoggedIn, paidProductId, sessionInvalidated, navigate, backUrl]);
 
   if (!hasAccess) {
     return (
@@ -228,7 +235,7 @@ export function TypingPage() {
   return (
     <TypingPageErrorBoundary>
       <div style={{ minHeight: "100vh", backgroundColor: "#fff" }}>
-        {renderTypingUI(paragraph)}
+        {renderTypingUI(paragraph, forceHighCourtUI)}
       </div>
     </TypingPageErrorBoundary>
   );

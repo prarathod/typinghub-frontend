@@ -44,9 +44,9 @@ export function PracticePage() {
         </p>
       </div>
 
-      {/* Top row: single centered card - Typing Lessons */}
-      <div className="row justify-content-center mb-4">
-        <div className="col-12 col-md-4 col-lg-4 col-xl-4">
+      {/* Top row: Typing Lessons and Latest High Court Typing Practice */}
+      <div className="row g-4 mb-4 justify-content-center">
+        <div className="col-12 col-md-4">
           <Link
             to="/practice/lessons"
             className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
@@ -61,35 +61,7 @@ export function PracticePage() {
             </p>
           </Link>
         </div>
-      </div>
-
-      {/* Middle row: Court Exam and MPSC side by side */}
-      <div className="row g-4 mb-4 justify-content-center">
-        <div className="col-12 col-md-3">
-          <Link
-            to="/practice/court-exam"
-            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
-            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
-            onMouseOver={CARD_HOVER.onMouseOver}
-            onMouseOut={CARD_HOVER.onMouseOut}
-          >
-            <h3 className="h5 fw-bold text-dark mb-2">Court Exam Typing Practice</h3>
-            <p className="mb-0 small text-secondary">• Typing practice based on Court exam pattern</p>
-          </Link>
-        </div>
-        <div className="col-12 col-md-3">
-          <Link
-            to="/practice/mpsc"
-            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
-            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
-            onMouseOver={CARD_HOVER.onMouseOver}
-            onMouseOut={CARD_HOVER.onMouseOut}
-          >
-            <h3 className="h5 fw-bold text-dark mb-2">MPSC Exam Typing Practice</h3>
-            <p className="mb-0 small text-secondary">• Typing practice based on MPSC exam pattern</p>
-          </Link>
-        </div>
-        <div className="col-12 col-md-3">
+        <div className="col-12 col-md-4">
           <Link
             to="/practice/high-court"
             className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
@@ -104,7 +76,35 @@ export function PracticePage() {
             <p className="mb-0 small text-secondary">• Typing Practice based on court exam screen to screen</p>
           </Link>
         </div>
-        <div className="col-12 col-md-3">
+      </div>
+
+      {/* Second row: Court Exam, MPSC, Custom Practice */}
+      <div className="row g-4 mb-4 justify-content-center">
+        <div className="col-12 col-md-4">
+          <Link
+            to="/practice/court-exam"
+            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
+            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
+            onMouseOver={CARD_HOVER.onMouseOver}
+            onMouseOut={CARD_HOVER.onMouseOut}
+          >
+            <h3 className="h5 fw-bold text-dark mb-2">Court Exam Typing Practice</h3>
+            <p className="mb-0 small text-secondary">• Typing practice based on Court exam pattern</p>
+          </Link>
+        </div>
+        <div className="col-12 col-md-4">
+          <Link
+            to="/practice/mpsc"
+            className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
+            style={{ ...CARD_HOVER.style, backgroundColor: "#90cead" }}
+            onMouseOver={CARD_HOVER.onMouseOver}
+            onMouseOut={CARD_HOVER.onMouseOut}
+          >
+            <h3 className="h5 fw-bold text-dark mb-2">MPSC Exam Typing Practice</h3>
+            <p className="mb-0 small text-secondary">• Typing practice based on MPSC exam pattern</p>
+          </Link>
+        </div>
+        <div className="col-12 col-md-4">
           <Link
             to="/practice/custom"
             className={`${CARD_CLASS} ${CARD_ACTIVE} text-center`}
@@ -119,11 +119,6 @@ export function PracticePage() {
             <p className="mb-0 small text-secondary">• Practice with your own text or PDF</p>
           </Link>
         </div>
-      </div>
-
-      {/* Last row: disabled card - light gray */}
-      <div className="row">
-        
       </div>
     </main>
   );

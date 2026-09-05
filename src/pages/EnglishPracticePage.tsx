@@ -18,7 +18,7 @@ type ParagraphCardProps = {
   p: ParagraphListItem;
   /** For free lessons: navigate via Link. */
   to?: string;
-  linkState?: Record<string, string>;
+  linkState?: { backUrl?: string; forceHighCourtUI?: boolean };
   /** For paid lessons: show login/pricing dialog on click. */
   onClick?: (p: ParagraphListItem) => void;
 };
@@ -111,11 +111,13 @@ const CATEGORY_TITLES: Record<string, string> = {
   "/practice/high-court": "Latest High Court Typing Practice",
 };
 
-const PATH_TO_CATEGORY: Record<string, "lessons" | "court-exam" | "mpsc" | "high-court"> = {
+const PATH_TO_CATEGORY: Record<string, "lessons" | "court-exam" | "mpsc"> = {
   "/practice/lessons": "lessons",
   "/practice/court-exam": "court-exam",
   "/practice/mpsc": "mpsc",
-  "/practice/high-court": "high-court",
+  // Latest High Court reuses Court Exam's passages, shown with a different typing UI
+  // (see forceHighCourtUI below and HighCourtTypingUI).
+  "/practice/high-court": "court-exam",
 };
 
 const PRICE_OPTIONS: { value: PriceFilter; label: string }[] = [
@@ -161,10 +163,12 @@ export function EnglishPracticePage() {
     navigate({ search: params.toString() }, { replace: false });
   };
 
+  const forceHighCourtUI = location.pathname === "/practice/high-court";
+
   const handleCardClick = (p: ParagraphListItem) => {
     const backUrl = location.pathname + location.search;
     if (p.isFree) {
-      navigate(`/practice/english/${p._id}`, { state: { backUrl } });
+      navigate(`/practice/english/${p._id}`, { state: { backUrl, forceHighCourtUI } });
       return;
     }
     if (!user) {
@@ -179,7 +183,7 @@ export function EnglishPracticePage() {
       setPricingOpen(true);
       return;
     }
-    navigate(`/practice/english/${p._id}`, { state: { backUrl } });
+    navigate(`/practice/english/${p._id}`, { state: { backUrl, forceHighCourtUI } });
   };
 
   // When redirected from TypingPage (no access), open the appropriate popup and clear state
@@ -287,7 +291,11 @@ export function EnglishPracticePage() {
               {displayItems.map((p) => (
                 <div key={p._id} className="col-6 col-sm-4 col-lg-2">
                   {hasAccessToParagraph(user, p) ? (
-                    <ParagraphCard p={p} to={`/practice/english/${p._id}`} linkState={{ backUrl: location.pathname + location.search }} />
+                    <ParagraphCard
+                      p={p}
+                      to={`/practice/english/${p._id}`}
+                      linkState={{ backUrl: location.pathname + location.search, forceHighCourtUI }}
+                    />
                   ) : (
                     <ParagraphCard p={p} onClick={handleCardClick} />
                   )}

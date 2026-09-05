@@ -388,8 +388,8 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
         </div>
       </div>
 
-      <div className="d-flex flex-column flex-md-row gap-3 mb-3">
-        <div className="flex-fill" style={{ minWidth: 0 }}>
+      <div className="row g-3 mb-3">
+        <div className="col-12 col-md-6">
           <div className="card border shadow-sm h-100">
             <div className="card-body">
               <h2 className="h6 fw-semibold mb-2">Paragraph to type</h2>
@@ -414,7 +414,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
           </div>
         </div>
 
-        <div className="flex-fill" style={{ minWidth: 0 }}>
+        <div className="col-12 col-md-6">
           <div className="card border shadow-sm h-100">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center mb-2">
