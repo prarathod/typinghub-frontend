@@ -111,6 +111,11 @@ const CATEGORY_TITLES: Record<string, string> = {
   "/practice/high-court": "Latest High Court Typing Practice",
 };
 
+const DEFAULT_SUBTITLE = "Learn typing basics before starting practice.";
+const CATEGORY_SUBTITLES: Record<string, string> = {
+  "/practice/high-court": "Typing Practice based on court exam screen to screen",
+};
+
 const PATH_TO_CATEGORY: Record<string, "lessons" | "court-exam" | "mpsc"> = {
   "/practice/lessons": "lessons",
   "/practice/court-exam": "court-exam",
@@ -143,6 +148,7 @@ export function EnglishPracticePage() {
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const categoryTitle = CATEGORY_TITLES[location.pathname] ?? "English Typing Practice";
+  const categorySubtitle = CATEGORY_SUBTITLES[location.pathname] ?? DEFAULT_SUBTITLE;
   const category = PATH_TO_CATEGORY[location.pathname];
 
   const searchParams = new URLSearchParams(location.search);
@@ -240,7 +246,7 @@ export function EnglishPracticePage() {
           {categoryTitle}
         </h1>
         <p className="text-dark mb-0">
-          Learn typing basics before starting practice.
+          {categorySubtitle}
         </p>
       </div>
 
