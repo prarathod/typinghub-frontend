@@ -170,12 +170,11 @@ export async function fetchUserSubscriptions(
 
 export async function updateUserSubscriptions(
   userId: string,
-  productIds: string[],
-  days?: number
+  courses: { productId: string; days: number }[]
 ): Promise<{ productIds: string[] }> {
   const { data } = await adminApi.put<{ productIds: string[] }>(
     `/admin/users/${userId}/subscriptions`,
-    { productIds, ...(days !== undefined && { days }) }
+    { courses }
   );
   return data;
 }

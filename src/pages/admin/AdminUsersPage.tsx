@@ -31,12 +31,22 @@ export function AdminUsersPage() {
   });
 
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
-  const [subscriptionDays, setSubscriptionDays] = useState(30);
+  // Days to ADD to each course's expiry (0 = leave an existing subscription's
+  // expiry untouched; a brand-new grant with 0 falls back to the standard
+  // validity window server-side). Keyed by productId so each course is
+  // independent of the others.
+  const [productDays, setProductDays] = useState<Record<string, number>>({});
+  // Snapshot of isPaid when the dialog opened, so "auto-grant all courses"
+  // only fires on an actual free→paid transition in this edit — not whenever
+  // an already-paid user's courses happen to read as empty (e.g. an admin
+  // deliberately unchecking every course to revoke access).
+  const [originalIsPaid, setOriginalIsPaid] = useState(false);
 
   const handleEdit = (user: AdminUser) => {
     setEditingUser({ ...user });
     setSelectedProductIds([]);
-    setSubscriptionDays(30);
+    setProductDays({});
+    setOriginalIsPaid(user.isPaid);
   };
 
   const { data: subscriptionsData } = useQuery({
@@ -48,24 +58,42 @@ export function AdminUsersPage() {
   useEffect(() => {
     if (subscriptionsData?.productIds) {
       setSelectedProductIds([...subscriptionsData.productIds]);
+      setProductDays((prev) => {
+        const next = { ...prev };
+        for (const pid of subscriptionsData.productIds) {
+          if (next[pid] === undefined) next[pid] = 0;
+        }
+        return next;
+      });
     }
   }, [editingUser?._id, subscriptionsData?.productIds]);
 
   const handleSave = async () => {
     if (!editingUser) return;
+    // Guard against saving before this user's current course access has
+    // loaded — selectedProductIds would still be its handleEdit-time [],
+    // which could wipe or over-grant their existing courses.
+    if (!subscriptionsData) return;
     try {
       await updateUser(editingUser._id, {
         name: editingUser.name,
         email: editingUser.email,
         isPaid: editingUser.isPaid
       });
-      // If marking as paid and no courses selected, auto-grant all available courses
+      // Auto-grant all available courses only on an actual free→paid transition
+      // with nothing manually picked yet — never when an already-paid user's
+      // selection reads empty (that means the admin deliberately revoked everything).
       const allProductIds = subscriptionsData?.products?.map((p) => p.productId) ?? [];
-      const toGrant = editingUser.isPaid && selectedProductIds.length === 0
+      const toGrantIds = !originalIsPaid && editingUser.isPaid && selectedProductIds.length === 0
         ? allProductIds
         : selectedProductIds;
-      await updateUserSubscriptions(editingUser._id, toGrant, subscriptionDays);
+      const courses = toGrantIds.map((productId) => ({
+        productId,
+        days: productDays[productId] ?? 0
+      }));
+      await updateUserSubscriptions(editingUser._id, courses);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-subscriptions", editingUser._id] });
       setEditingUser(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to update user");
@@ -73,9 +101,23 @@ export function AdminUsersPage() {
   };
 
   const handleCourseAccessToggle = (productId: string) => {
-    setSelectedProductIds((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
-    );
+    setSelectedProductIds((prev) => {
+      if (prev.includes(productId)) {
+        return prev.filter((id) => id !== productId);
+      }
+      setProductDays((d) => {
+        if (d[productId] !== undefined) return d;
+        const hasExisting = (subscriptionsData?.productIds ?? []).includes(productId);
+        // New grant defaults to a 30-day starter window; an already-owned
+        // course defaults to "no change" until the admin enters extra days.
+        return { ...d, [productId]: hasExisting ? 0 : 30 };
+      });
+      return [...prev, productId];
+    });
+  };
+
+  const handleProductDaysChange = (productId: string, days: number) => {
+    setProductDays((prev) => ({ ...prev, [productId]: days }));
   };
 
   const handleDelete = async (id: string) => {
@@ -252,7 +294,9 @@ export function AdminUsersPage() {
                 <div className="mb-3">
                   <label className="form-label d-block">Course access</label>
                   <small className="text-muted d-block mb-2">
-                    Grant, revoke, or swap courses. Uncheck a paid course to remove it; check a new one to add it.
+                    Grant, revoke, or swap courses independently. Uncheck a course to remove it,
+                    check a new one to add it, and use "+days" to extend a course's own expiry
+                    without affecting the others — 0 leaves an existing expiry unchanged.
                   </small>
                   {subscriptionsData?.products?.length ? (
                     <div className="d-flex flex-column gap-2">
@@ -264,30 +308,69 @@ export function AdminUsersPage() {
                         const subEntry = subscriptionsData?.subscriptions?.find(
                           (s) => s.productId === product.productId
                         );
-                        const expiryText = subEntry?.validUntil
-                          ? `Expires: ${new Date(subEntry.validUntil).toLocaleDateString()}`
+                        const existingValidUntil = subEntry?.validUntil ? new Date(subEntry.validUntil) : null;
+                        const expiryText = existingValidUntil
+                          ? `Expires: ${existingValidUntil.toLocaleDateString()}`
                           : subEntry ? "No expiry" : null;
+                        const days = productDays[product.productId] ?? 0;
+                        const newExpiry = hasAccess && days > 0
+                          ? new Date(
+                              Math.max(existingValidUntil?.getTime() ?? 0, Date.now()) + days * 86400000
+                            )
+                          : null;
                         return (
                           <div key={product.productId} className="form-check">
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              id={`course-${product.productId}`}
-                              checked={hasAccess}
-                              onChange={() => handleCourseAccessToggle(product.productId)}
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor={`course-${product.productId}`}
-                            >
-                              {product.name}
-                              {initialPaymentBased && (
-                                <span className="badge bg-warning text-dark ms-2" style={{ fontSize: "10px" }}>paid</span>
+                            <div className="d-flex align-items-center flex-wrap gap-2">
+                              <input
+                                type="checkbox"
+                                className="form-check-input mt-0"
+                                id={`course-${product.productId}`}
+                                checked={hasAccess}
+                                onChange={() => handleCourseAccessToggle(product.productId)}
+                              />
+                              <label
+                                className="form-check-label mb-0"
+                                htmlFor={`course-${product.productId}`}
+                              >
+                                {product.name}
+                                {initialPaymentBased && (
+                                  <span className="badge bg-warning text-dark ms-2" style={{ fontSize: "10px" }}>paid</span>
+                                )}
+                                {expiryText && (
+                                  <span className="text-muted small ms-2">{expiryText}</span>
+                                )}
+                              </label>
+                              {hasAccess && (
+                                <div className="d-flex align-items-center gap-1 ms-auto">
+                                  <label
+                                    className="small text-muted mb-0"
+                                    htmlFor={`days-${product.productId}`}
+                                  >
+                                    +days:
+                                  </label>
+                                  <input
+                                    type="number"
+                                    id={`days-${product.productId}`}
+                                    className="form-control form-control-sm"
+                                    style={{ width: "70px" }}
+                                    min={0}
+                                    max={3650}
+                                    value={days}
+                                    onChange={(e) =>
+                                      handleProductDaysChange(
+                                        product.productId,
+                                        Math.max(0, Math.min(3650, parseInt(e.target.value, 10) || 0))
+                                      )
+                                    }
+                                  />
+                                </div>
                               )}
-                              {expiryText && (
-                                <span className="text-muted small ms-2">{expiryText}</span>
-                              )}
-                            </label>
+                            </div>
+                            {newExpiry && (
+                              <small className="text-success d-block" style={{ marginLeft: "1.6rem" }}>
+                                New expiry: {newExpiry.toLocaleDateString()}
+                              </small>
+                            )}
                           </div>
                         );
                       })}
@@ -296,25 +379,6 @@ export function AdminUsersPage() {
                     <span className="text-muted small">No courses configured.</span>
                   ) : (
                     <span className="text-muted small">Loading…</span>
-                  )}
-                  {(editingUser.isPaid || selectedProductIds.length > 0) && (
-                    <div className="mt-3">
-                      <label className="form-label mb-1">Duration (days)</label>
-                      <input
-                        type="number"
-                        className="form-control form-control-sm w-auto"
-                        min={1}
-                        max={3650}
-                        value={subscriptionDays}
-                        onChange={(e) =>
-                          setSubscriptionDays(Math.max(1, Math.min(3650, parseInt(e.target.value, 10) || 1)))
-                        }
-                      />
-                      <small className="text-muted d-block mt-1">
-                        Expires on:{" "}
-                        {new Date(Date.now() + subscriptionDays * 86400000).toLocaleDateString()}
-                      </small>
-                    </div>
                   )}
                 </div>
               </div>
@@ -330,6 +394,8 @@ export function AdminUsersPage() {
                   type="button"
                   className="btn btn-primary"
                   onClick={handleSave}
+                  disabled={!subscriptionsData}
+                  title={!subscriptionsData ? "Loading current course access…" : undefined}
                 >
                   Save
                 </button>
