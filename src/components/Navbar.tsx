@@ -9,6 +9,7 @@ import { getApiBaseUrl } from "@/lib/api";
 
 const PRODUCT_NAMES: Record<string, string> = {
   "english-court": "English Court",
+  "english-court-new": "English Court (New Pattern)",
   "english-mpsc": "English MPSC",
   "marathi-court": "Marathi Court",
   "marathi-mpsc": "Marathi MPSC",

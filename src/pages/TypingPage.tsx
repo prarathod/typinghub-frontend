@@ -136,8 +136,11 @@ export function TypingPage() {
   // Paid passage: 1) not logged in → LoginDialog; 2) logged in but no subscription → Get Access (PricingDialog)
   const hasAccess = hasAccessToParagraph(user, paragraph);
   const paidProductId =
-    getProductIdForParagraph(paragraph.language, paragraph.category) ??
-    getDefaultProductIdForLanguage(paragraph.language);
+    getProductIdForParagraph(
+      paragraph.language,
+      paragraph.category,
+      forceHighCourtUI ? "english-court-new" : undefined
+    ) ?? getDefaultProductIdForLanguage(paragraph.language);
   const notLoggedIn = !user;
 
   useEffect(() => {

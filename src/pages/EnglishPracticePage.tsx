@@ -183,8 +183,11 @@ export function EnglishPracticePage() {
     }
     if (!hasAccessToParagraph(user, p)) {
       const productId =
-        getProductIdForParagraph(p.language, p.category) ??
-        getDefaultProductIdForLanguage(p.language);
+        getProductIdForParagraph(
+          p.language,
+          p.category,
+          forceHighCourtUI ? "english-court-new" : undefined
+        ) ?? getDefaultProductIdForLanguage(p.language);
       setPricingProductId(productId);
       setPricingOpen(true);
       return;

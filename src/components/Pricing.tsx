@@ -15,9 +15,10 @@ import { getApiBaseUrl } from "@/lib/api";
 
 const FALLBACK_PRODUCTS: Product[] = [
   { productId: "english-court", name: "English Court Typing", amountPaise: 9900 },
-  // Same product as "english-court" (Latest High Court reuses Court Exam's passages),
-  // listed again under its own display name so it appears as a separate option.
-  { productId: "english-court", name: "English Typing For Court Exam (New Pattern)", amountPaise: 9900 },
+  // Independent product from "english-court" — both unlock the same underlying
+  // Court Exam passages (Latest High Court reuses them), but are purchased,
+  // selected, and tracked separately.
+  { productId: "english-court-new", name: "English Typing For Court Exam (New Pattern)", amountPaise: 9900 },
   { productId: "english-mpsc", name: "English MPSC Typing Exam", amountPaise: 9900 },
   { productId: "marathi-court", name: "Marathi Court Exam", amountPaise: 9900 },
   { productId: "marathi-mpsc", name: "Marathi MPSC Typing Exam", amountPaise: 9900 },
@@ -69,15 +70,11 @@ function isComingSoon(productId: string): boolean {
 }
 
 function getProductTitleParts(p: Product): { first: string; second: string; color: string } {
-  // "english-court" is listed twice (see FALLBACK_PRODUCTS / backend PRODUCTS) under two
-  // display names for the same underlying product — disambiguate by name before the
-  // productId switch below, which can't tell the two apart on its own.
-  if (p.name.includes("New Pattern")) {
-    return { first: "English Typing", second: " for Court Exam (New Pattern)", color: "#0d6dfc" };
-  }
   switch (p.productId) {
     case "english-court":
       return { first: "English Typing", second: " for Court Exam", color: "#0d6dfc" };
+    case "english-court-new":
+      return { first: "English Typing", second: " for Court Exam (New Pattern)", color: "#0d6dfc" };
     case "english-mpsc":
       return { first: "English Typing", second: " for MPSC Exam", color: "#56B9D7" };
     case "marathi-court":

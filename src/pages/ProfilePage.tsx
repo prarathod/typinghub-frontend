@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 
 const PRODUCT_DISPLAY_NAMES: Record<string, string> = {
   "english-court": "English Court Typing",
+  "english-court-new": "English Typing For Court Exam (New Pattern)",
   "english-mpsc": "MPSC Exam Typing",
   "marathi-court": "Marathi Court Exam",
   "marathi-mpsc": "Marathi MPSC Typing Exam",
