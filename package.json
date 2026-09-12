@@ -13,7 +13,6 @@
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
     "@tanstack/react-query": "^5.90.20",
-    "@vercel/analytics": "^1.6.1",
     "aceternity-ui": "^0.2.2",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
