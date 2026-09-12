@@ -145,7 +145,6 @@ export function AdminParagraphsPage() {
                 <option value="lessons">Lessons</option>
                 <option value="court-exam">Court Exam</option>
                 <option value="mpsc">MPSC</option>
-                <option value="high-court">High Court</option>
               </select>
             </div>
           </div>
@@ -344,14 +343,13 @@ export function AdminParagraphsPage() {
                       onChange={(e) =>
                         setEditingParagraph({
                           ...editingParagraph,
-                          category: e.target.value as "lessons" | "court-exam" | "mpsc" | "high-court"
+                          category: e.target.value as "lessons" | "court-exam" | "mpsc"
                         })
                       }
                     >
                       <option value="lessons">Lessons</option>
                       <option value="court-exam">Court Exam</option>
                       <option value="mpsc">MPSC</option>
-                      <option value="high-court">High Court</option>
                     </select>
                   </div>
                   <div className="col-md-6">

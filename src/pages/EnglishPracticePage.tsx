@@ -9,6 +9,7 @@ import {
   fetchParagraphs,
   type AccessType,
   type ParagraphListItem,
+  type ParagraphViewContext,
   type PriceFilter,
 } from "@/features/paragraphs/paragraphsApi";
 import { getDefaultProductIdForLanguage, getProductIdForParagraph, hasAccessToParagraph } from "@/lib/access";
@@ -170,29 +171,30 @@ export function EnglishPracticePage() {
   };
 
   const forceHighCourtUI = location.pathname === "/practice/high-court";
+  const context: ParagraphViewContext = forceHighCourtUI ? "high-court" : "court-exam";
+  // "ctx" in the path itself is the durable signal (survives refresh/new-tab/shared
+  // links); nav state is kept alongside for in-app back-navigation convenience only.
+  const detailPathSuffix = forceHighCourtUI ? "?ctx=high-court" : "";
 
   const handleCardClick = (p: ParagraphListItem) => {
     const backUrl = location.pathname + location.search;
     if (p.isFree) {
-      navigate(`/practice/english/${p._id}`, { state: { backUrl, forceHighCourtUI } });
+      navigate(`/practice/english/${p._id}${detailPathSuffix}`, { state: { backUrl, forceHighCourtUI } });
       return;
     }
     if (!user) {
       setLoginOpen(true);
       return;
     }
-    if (!hasAccessToParagraph(user, p)) {
+    if (!hasAccessToParagraph(user, p, context)) {
       const productId =
-        getProductIdForParagraph(
-          p.language,
-          p.category,
-          forceHighCourtUI ? "english-court-new" : undefined
-        ) ?? getDefaultProductIdForLanguage(p.language);
+        getProductIdForParagraph(p.language, p.category, context) ??
+        getDefaultProductIdForLanguage(p.language);
       setPricingProductId(productId);
       setPricingOpen(true);
       return;
     }
-    navigate(`/practice/english/${p._id}`, { state: { backUrl, forceHighCourtUI } });
+    navigate(`/practice/english/${p._id}${detailPathSuffix}`, { state: { backUrl, forceHighCourtUI } });
   };
 
   // When redirected from TypingPage (no access), open the appropriate popup and clear state
@@ -220,16 +222,17 @@ export function EnglishPracticePage() {
       })
   });
 
-  // After list API returns, prefetch each paragraph detail so first click loads instantly
+  // After list API returns, prefetch each paragraph detail so first click loads instantly.
+  // Query key must match TypingPage's ["paragraph", id, context] shape or this is a wasted fetch.
   useEffect(() => {
     if (!data?.items?.length) return;
     data.items.forEach((item) => {
       queryClient.prefetchQuery({
-        queryKey: ["paragraph", item._id],
-        queryFn: () => fetchParagraphById(item._id),
+        queryKey: ["paragraph", item._id, context],
+        queryFn: () => fetchParagraphById(item._id, context),
       });
     });
-  }, [data?.items, queryClient]);
+  }, [data?.items, queryClient, context]);
 
   const displayItems =
     data?.items && category === "lessons"
@@ -299,10 +302,10 @@ export function EnglishPracticePage() {
             <div className="row g-4 mb-4">
               {displayItems.map((p) => (
                 <div key={p._id} className="col-6 col-sm-4 col-lg-2">
-                  {hasAccessToParagraph(user, p) ? (
+                  {hasAccessToParagraph(user, p, context) ? (
                     <ParagraphCard
                       p={p}
-                      to={`/practice/english/${p._id}`}
+                      to={`/practice/english/${p._id}${detailPathSuffix}`}
                       linkState={{ backUrl: location.pathname + location.search, forceHighCourtUI }}
                     />
                   ) : (

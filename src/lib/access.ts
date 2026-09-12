@@ -1,5 +1,5 @@
 import type { SubscriptionItem, User } from "@/types/auth";
-import type { AccessType, Category, Language } from "@/features/paragraphs/paragraphsApi";
+import type { AccessType, Category, Language, ParagraphViewContext } from "@/features/paragraphs/paragraphsApi";
 
 export type ProductId =
   | "english-court"
@@ -14,18 +14,23 @@ const PRODUCT_IDS_BY_LANGUAGE: Record<Language, ProductId[]> = {
   marathi: ["marathi-court", "marathi-mpsc"]
 };
 
-/** All product IDs whose ownership unlocks a given paragraph. Usually one, but
- * Court Exam paragraphs are unlocked by either "english-court" or the
- * separately-sold "english-court-new" ("New Pattern"), since Latest High
- * Court reuses Court Exam's passages under a second, independent product. */
+/** All product IDs whose ownership unlocks a given paragraph, for a given
+ * viewing context. Every category maps to exactly one product except Court
+ * Exam, which resolves to "english-court" or the separately-sold
+ * "english-court-new" ("New Pattern") depending on context — defaulting to
+ * "english-court" when context is omitted, so an unrecognized/missing
+ * context never falls back to accepting either product. */
 export function getAcceptableProductIdsForParagraph(
   language: Language,
-  category: Category
+  category: Category,
+  context?: ParagraphViewContext
 ): ProductId[] {
   if (category === "lessons") return [];
   const key = `${language}-${category}` as const;
+  if (key === "english-court-exam") {
+    return context === "high-court" ? ["english-court-new"] : ["english-court"];
+  }
   const map: Record<string, ProductId[]> = {
-    "english-court-exam": ["english-court", "english-court-new"],
     "english-mpsc": ["english-mpsc"],
     "marathi-court-exam": ["marathi-court"],
     "marathi-mpsc": ["marathi-mpsc"]
@@ -33,20 +38,12 @@ export function getAcceptableProductIdsForParagraph(
   return map[key] ?? [];
 }
 
-/**
- * The single productId to offer for purchase for a paragraph. Defaults to the
- * first acceptable id; pass `preferProductId` (e.g. "english-court-new" when
- * viewing via the Latest High Court entry point) to offer that one instead,
- * when it's actually one of the acceptable ids for this paragraph.
- */
 export function getProductIdForParagraph(
   language: Language,
   category: Category,
-  preferProductId?: ProductId
+  context?: ParagraphViewContext
 ): ProductId | null {
-  const acceptable = getAcceptableProductIdsForParagraph(language, category);
-  if (preferProductId && acceptable.includes(preferProductId)) return preferProductId;
-  return acceptable[0] ?? null;
+  return getAcceptableProductIdsForParagraph(language, category, context)[0] ?? null;
 }
 
 /** Default productId to show in pricing when paragraph has no direct product (e.g. paid lessons). */
@@ -97,13 +94,14 @@ export function hasAnyPaidAccess(user: User | null): boolean {
 
 export function hasAccessToParagraph(
   user: User | null,
-  paragraph: ParagraphForAccess
+  paragraph: ParagraphForAccess,
+  context?: ParagraphViewContext
 ): boolean {
   const accessType = getEffectiveAccessType(paragraph);
   if (accessType === "free") return true;
   if (accessType === "free-after-login") return user != null;
   if (!user) return false;
-  const acceptableIds = getAcceptableProductIdsForParagraph(paragraph.language, paragraph.category);
+  const acceptableIds = getAcceptableProductIdsForParagraph(paragraph.language, paragraph.category, context);
   const activeIds = getActiveProductIds(user);
   if (acceptableIds.length > 0) return acceptableIds.some((id) => activeIds.includes(id));
   // Paid lesson (category "lessons"): grant access if user has any product for this language

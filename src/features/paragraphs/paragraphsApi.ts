@@ -5,6 +5,13 @@ export type Category = "lessons" | "court-exam" | "mpsc" | "high-court";
 
 export type AccessType = "free" | "free-after-login" | "paid";
 
+/** Which entry point a Court Exam paragraph is being viewed through. "Latest
+ * High Court" reuses Court Exam's exact passages (same stored category), so
+ * this is the only signal that can distinguish which of the two separately-
+ * sold products should be required — it must be sent with the request, not
+ * derived from the paragraph's own stored fields. */
+export type ParagraphViewContext = "court-exam" | "high-court";
+
 export type ParagraphListItem = {
   _id: string;
   title: string;
@@ -55,8 +62,13 @@ export async function fetchParagraphs(
 
 export type ParagraphDetail = ParagraphListItem & { text: string };
 
-export async function fetchParagraphById(id: string): Promise<ParagraphDetail> {
-  const { data } = await api.get<ParagraphDetail>(`/paragraphs/${id}`);
+export async function fetchParagraphById(
+  id: string,
+  context?: ParagraphViewContext
+): Promise<ParagraphDetail> {
+  const { data } = await api.get<ParagraphDetail>(`/paragraphs/${id}`, {
+    params: context ? { context } : undefined
+  });
   return data;
 }
 
@@ -79,11 +91,13 @@ export type TypingSubmissionPayload = {
 
 export async function submitTypingResult(
   paragraphId: string,
-  payload: TypingSubmissionPayload
+  payload: TypingSubmissionPayload,
+  context?: ParagraphViewContext
 ): Promise<{ _id: string }> {
   const { data } = await api.post<{ _id: string }>(
     `/paragraphs/${paragraphId}/submissions`,
-    payload
+    payload,
+    { params: context ? { context } : undefined }
   );
   return data;
 }

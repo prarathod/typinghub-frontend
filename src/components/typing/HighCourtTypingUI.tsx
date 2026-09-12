@@ -194,7 +194,7 @@ export function HighCourtTypingUI({ paragraph }: HighCourtTypingUIProps) {
         userInput: metricsToUse.userInput,
         omittedWordsCount: metricsToUse.omittedWordsCount,
         totalPassageWords
-      });
+      }, "high-court");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["leaderboard", paragraph._id] }),
         queryClient.invalidateQueries({ queryKey: ["history", paragraph._id] }),
